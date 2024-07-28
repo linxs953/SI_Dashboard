@@ -1,0 +1,33 @@
+description: "画布功能接口"
+key: "canvans"
+apis:
+  - url: "/api/v1/canvans/save"
+    auth:
+      type: "jwt"
+      need: true
+    query:
+      - name: "name"
+        value: "1"
+      - name: "p2"
+        value: "v2"
+    method: "post"
+    key: "save"
+    contentType: "application/json"
+    body:
+      json: {}
+      form: {}
+  - url: "/api/v1/canvans/get"
+    auth:
+      type: "jwt"
+      need: true
+    query:
+      - name: "name"
+        value: "1"
+      - name: "p2"
+        value: "v2"
+    method: "get"
+    key: "get"
+    contentType: "application/json"
+    body:
+      json: {}
+      form: {}
