@@ -129,10 +129,18 @@ const Dashboard: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-        <div className="demo-logo-vertical" style={{height:'100px'}} onClick={() => {
-          window.history.pushState({},"","/dashboard")
-          window.location.reload()
-        }} />
+        <div>
+          <img
+            src={`../../../../logo.png`}
+            alt="Logo"
+            className="demo-logo-vertical"
+            style={{ height: '100px',width: "200px", cursor: 'pointer' }}
+            onClick={() => {
+              window.history.pushState({}, "", "/dashboard");
+              window.location.reload();
+            }}
+          />
+        </div>
         <Menu openKeys={getMenuOpenKeys()} selectedKeys={selectedItem}
              onSelect={() => {setSelectedItem(getSelectedOneKey())}} 
              theme="dark" mode="inline"  items={items} />

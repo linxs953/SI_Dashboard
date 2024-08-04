@@ -12,6 +12,7 @@ import ApiSyncList from './components/interface_auto/apiSyncList'
 import MyListComponent from './components/interface_auto/apiAutoSceneConfig'
 import ScenConfig from './components/interface_auto/apiAutoSceneConfig'
 import DragDemo from './components/interface_auto/dragList'
+import EditScene from './components/interface_auto/editScene'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -31,6 +32,7 @@ function App() {
           <Route path='/dashboard/api/scene' element = {<ScenConfig />} />
           <Route path='/dashboard/tool/user' element = {<UserManager />} />
           <Route path='/dashboard/api/sync' element={<ApiSyncList  />} />
+          <Route path='/dashboard/api/scene/edit' element={<EditScene />} />
         </Route>
       </Routes>
     </Router>
