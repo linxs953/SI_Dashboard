@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } from 'antd';
 import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import NewDataModal from '../common/createModal';
 
 interface Task {
   taskId: string;
@@ -200,113 +201,46 @@ const TaskList: React.FC = () => {
     setSelectedScenes(selectedScenes.filter(s => s.sceneId !== scene.sceneId));
   };
 
+  const fetch = async (page?: number, pageSize?: number) => {
+
+  }
+
   return (
-    <div>
-      <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-        新增任务
-      </Button>
-      <Modal
-        title="新建任务"
-        open={isModalVisible}
-        onOk={handleNewTaskOk}
-        onCancel={handleNewTaskCancel}
-        okText="提交"
-        cancelText="取消"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="任务ID"
-            name="taskId"
-            initialValue={tasks.length + 1}
-            rules={[
-              {
-                required: false,
-                message: '请输入任务ID!',
-              },
-            ]}
-          >
-            <Input disabled placeholder="自动分配" />
-          </Form.Item>
-          <Form.Item
-            label="任务名称"
-            name="name"
-            rules={[
-              {
-                required: true,
-                message: '请输入任务名称!',
-              },
-            ]}
-          >
-            <Input placeholder="请输入任务名称" />
-          </Form.Item>
-          <Form.Item
-            label="场景列表"
-            name="scenes"
-            rules={[
-              {
-                required: true,
-                message: '请选择场景列表!',
-              },
-            ]}
-          >
-            <Button type="primary" onClick={handleAddScenes}>添加场景</Button>
-            <List
-              header={<div>已选择的场景:</div>}
-              bordered
-              dataSource={selectedScenes}
-              renderItem={(scene) => (
-                <List.Item>
-                  <List.Item.Meta title={scene.name} description={`场景ID: ${scene.sceneId}`} />
-                  <Popconfirm
-                    title="确定要移除此场景吗?"
-                    onConfirm={() => handleRemoveScene(scene)}
-                  >
-                    <a>移除</a>
-                  </Popconfirm>
-                </List.Item>
-              )}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="选择场景"
-        open={isSelectModalVisible}
-        onOk={handleSelectOk}
-        onCancel={handleSelectCancel}
-        okText="确定"
-        cancelText="取消"
-      >
-        <Form layout="vertical">
-          <Form.Item label="搜索场景">
-            <Input.Search
-              placeholder="输入关键词搜索"
-              value={searchKeyword}
-              onChange={handleSearch}
-              onSearch={handleSearchSubmit}
-            />
-          </Form.Item>
-          <List
-            header={<div>搜索结果:</div>}
-            bordered
-            dataSource={searchResults.slice((page - 1) * pageSize, page * pageSize)}
-            pagination={{
-              current: page,
-              pageSize,
-              total,
-              onChange: handlePageChange,
-              onShowSizeChange: handlePageSizeChange,
-            }}
-            renderItem={(scene) => (
-              <List.Item>
-                <List.Item.Meta title={scene.name} description={`场景ID: ${scene.sceneId}`} />
-                <Button type="primary" onClick={() => handleSelectScene(scene)}>选择</Button>
-              </List.Item>
-            )}
-          />
-        </Form>
-      </Modal>
-      <Table columns={columns} dataSource={tasks} rowKey="taskId" />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+      <div style={{ marginBottom: '1rem', marginLeft: '1rem', marginRight: '1rem', marginTop: '1rem' }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
+          新增任务
+        </Button>
+      </div>
+      <div style={{ flex: 1 }}>
+        <Table columns={columns} dataSource={tasks} rowKey="taskId" style={{ width: '100%' }} />
+      </div>
+      <NewDataModal
+        visible={isModalVisible}
+        title={"新建任务"}
+        searchTitle={"搜索场景"}
+        fetchData={fetch}
+        closeModel={handleNewTaskCancel}
+        newModalFormSpec={[
+          {
+            disable: false,
+            itemErrorMsg: "请输入任务名称",
+            itemLabel: "任务名称",
+            itemName: "taskName",
+            itemStyle: { width: "100%" },
+            type: "input",
+          },
+          {
+            disable: false,
+            itemErrorMsg: "请选择场景",
+            itemLabel: "场景",
+            itemName: "sceneId",
+            itemStyle: { width:"100%" },
+            type: "input",
+          }
+        ]}
+        searchPlaceholder={"请输入场景名称"}
+      />
     </div>
   );
 };

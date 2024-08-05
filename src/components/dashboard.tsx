@@ -50,7 +50,8 @@ const MenuItemKeyMap:any = {
       {
         "key": "task-config",
         "icon": <PieChartOutlined />,
-        "label": '任务配置'
+        "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
+        "path": "/dashboard/api/task"
       }
     ]
   },
