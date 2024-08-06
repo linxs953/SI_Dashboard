@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } from 'antd';
 import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import NewDataModal from '../common/createModal';
+import NewDataModal from './task/createModal';
 
 interface Task {
   taskId: string;
@@ -227,15 +227,7 @@ const TaskList: React.FC = () => {
             itemErrorMsg: "请输入任务名称",
             itemLabel: "任务名称",
             itemName: "taskName",
-            itemStyle: { width: "100%" },
-            type: "input",
-          },
-          {
-            disable: false,
-            itemErrorMsg: "请选择场景",
-            itemLabel: "场景",
-            itemName: "sceneId",
-            itemStyle: { width:"100%" },
+            itemStyle: {width: '450px', marginBottom: '16px'  },
             type: "input",
           }
         ]}
