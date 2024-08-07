@@ -62,7 +62,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
 }) => {
 
   // state: 创建场景 Modal 的数据列表
-  const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([{id: 1, text:"场景1", instanceCount:1}]);
+  const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([]);
 
   // state: 创建场景 Modal 的搜索框
   const [searchValue, setSearchValue] = useState('');
@@ -110,27 +110,34 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
           message.error("场景列表为空")
           return
         }
-        let payload:createNewTaskPayload = {
-           taskName: values["taskName"],
-           taskSpec: values["taskSpec"],
-           scenes: listData.map((data) => {
-            return {
-              sceneID: data.id,
-              sceneName: data.text,
-              count: data.instanceCount
-            }
-           })
+        let payload = {
+           "taskName": values.taskName,
+           "author": "",
+           "sceneList": listData.map((item: Scene) => {return {sceneId: item.id,count: item.instanceCount}})
         }
         console.log(payload)
-        message.info("已提交")
+        const submitTaskUrl = "http://localhost:8000/task/create"
+        const response = await axios.post(submitTaskUrl,payload)
+        if (response.status === 200) {
+          message.success("新建任务成功")
+          closeModel()
+          form.resetFields()
+          fetchData()
+        } else {
+          message.error("新建任务失败")
+        }
+        
     } catch(err) {
-
+      console.log(err)
+      message.error("创建任务失败")
+      return
     }
   };
 
   const handleCancel = () => {
     closeModel()
     form.resetFields()
+    setListData([])
   };
 
   const showSearchModal = () => {
@@ -184,32 +191,44 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
 
 
   const onSearch = (value: string) => {
+    const allSceneUrl = `http://localhost:8000/scene/allScenes`
+    var reqUrl = `http://localhost:8000/scene/search?keyword=${value}`
+
     if (value === '') {
-        message.error('请输入关键词');
+        searchApi(allSceneUrl).then(data => {
+          if (data.data.length === 0) {
+            message.info('无搜索结果');
+            return
+          } else {
+            const formattedData = data.data.map((item: any, index: number) => ({
+              id: item.sceneId,
+              text: `${item.sceneName}`, // 替换为实际的字段名
+            }));
+          setSearchResults(formattedData);          }
+        }).catch(err=>{
+          console.error('Error occurred:', err);
+          message.error('搜索失败');
+          return
+      })
         return
     }
-    // var reqUrl = `http://localhost:8000/api/searchApi?keyword=${value}`
-    // searchApi(reqUrl).then(data => {
-    //     if (data.data.length === 0) {
-    //         message.info('无搜索结果');
-    //         return
-    //     } else {
-    //         const formattedData = data.data.map((item: any, index: number) => ({
-    //             id: item.id,
-    //             text: `${item.fullName} / ${item.name}`, // 替换为实际的字段名
-    //           }));
-    //         setSearchResults(formattedData);
-    //         setSearchResultsVisible(true);
-    //     }
-    // }).catch(err=>{
-    //     console.error('Error occurred:', err);
-    //     message.error('搜索失败');
-    //     return
-    // })
-    setSearchResults([{
-      id: 1,
-      text: "场景测试"
-    }])
+    searchApi(reqUrl).then(data => {
+        if (data.data.length === 0) {
+            message.info('无搜索结果');
+            return
+        } else {
+            const formattedData = data.data.map((item: any, index: number) => ({
+                id: item.sceneId,
+                text: `${item.sceneName}`, 
+              }));
+            setSearchResults(formattedData);
+            setSearchResultsVisible(true);
+        }
+    }).catch(err=>{
+        console.error('Error occurred:', err);
+        message.error('搜索失败');
+        return
+    })
   };
 
   const checkAndAddSelectedItems = () => {

@@ -3,6 +3,7 @@ import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } f
 import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import NewDataModal from './task/createModal';
+import axios from 'axios';
 
 interface Task {
   taskId: string;
@@ -35,11 +36,24 @@ const TaskList: React.FC = () => {
   // 假设这是一个获取任务列表的API调用
   const fetchTasks = async () => {
     // 这里可以替换为真实的API请求
-    const response: Task[] = [
-      { taskId: "1", name: 'Task 1', scenes: 5, creator: 'Alice', createdAt: '2023-01-01', updatedAt: '2023-01-02' },
-      { taskId: "2", name: 'Task 2', scenes: 3, creator: 'Bob', createdAt: '2023-01-03', updatedAt: '2023-01-04' },
-    ];
-    setTasks(response);
+    const url = "http://localhost:8000/task/getList?page=1&pageSize=10"
+    const response = await axios.get(url)
+    if (response.status === 200) {
+      let  data: Task[] = [
+      ]
+      response.data.data.map(task => {
+        data.push({
+          taskId: task.taskId,
+          name: task.taskName,
+          scenes: task.scenes.length,
+          creator: task.author,
+          createdAt: task.createAt,
+          updatedAt: task.updateAt,
+        })
+      })
+      console.log(data)
+      setTasks(data);
+    }
   };
 
   useEffect(() => {
@@ -219,7 +233,7 @@ const TaskList: React.FC = () => {
         visible={isModalVisible}
         title={"新建任务"}
         searchTitle={"搜索场景"}
-        fetchData={fetch}
+        fetchData={fetchTasks}
         closeModel={handleNewTaskCancel}
         newModalFormSpec={[
           {
