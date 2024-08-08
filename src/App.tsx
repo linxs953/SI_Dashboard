@@ -8,6 +8,7 @@ import ApiSyncList from './components/interface_auto/apiSyncList'
 import ScenConfig from './components/interface_auto/apiAutoSceneConfig'
 import EditScene from './components/interface_auto/editScene'
 import TaskList from './components/interface_auto/apiAutoTaskConfig'
+import EditTask from './components/interface_auto/editTask'
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
           <Route path='/dashboard/api/sync' element={<ApiSyncList  />} />
           <Route path='/dashboard/api/scene/edit' element={<EditScene />} />
           <Route path='/dashboard/api/task' element={<TaskList />} />
+          <Route path='/dashboard/api/task/edit' element={<EditTask />} />
         </Route>
       </Routes>
     </Router>
