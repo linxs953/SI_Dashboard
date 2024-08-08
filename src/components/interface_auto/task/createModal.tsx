@@ -112,7 +112,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
         }
         let payload = {
            "taskName": values.taskName,
-           "author": "",
+           "author": values.author,
            "sceneList": listData.map((item: Scene) => {return {sceneId: item.id,count: item.instanceCount}})
         }
         console.log(payload)

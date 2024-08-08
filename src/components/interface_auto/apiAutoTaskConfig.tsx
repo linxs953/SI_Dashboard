@@ -248,7 +248,7 @@ const TaskList: React.FC = () => {
             disable: false,
             itemErrorMsg: "创建人不能为空",
             itemLabel: "创建人",
-            itemName: "taskName",
+            itemName: "author",
             itemStyle: {width: '530px', marginBottom: '16px'  },
             type: "input",
           }
