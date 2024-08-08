@@ -373,6 +373,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
         initialValues={{ remember: true }}
         autoComplete="off"
         layout='inline'
+        labelCol={{ span: 5 }} wrapperCol={{ span: 14 }}
       >
         {newModalFormSpec.map(item => (
           <Form.Item

@@ -241,7 +241,7 @@ const TaskList: React.FC = () => {
             itemErrorMsg: "请输入任务名称",
             itemLabel: "任务名称",
             itemName: "taskName",
-            itemStyle: {width: '450px', marginBottom: '16px'  },
+            itemStyle: {width: '530px', marginBottom: '16px'  },
             type: "input",
           },
           {
@@ -249,7 +249,7 @@ const TaskList: React.FC = () => {
             itemErrorMsg: "创建人不能为空",
             itemLabel: "创建人",
             itemName: "taskName",
-            itemStyle: {width: '450px', marginBottom: '16px'  },
+            itemStyle: {width: '530px', marginBottom: '16px'  },
             type: "input",
           }
         ]}
