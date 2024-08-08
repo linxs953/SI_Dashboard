@@ -243,6 +243,14 @@ const TaskList: React.FC = () => {
             itemName: "taskName",
             itemStyle: {width: '450px', marginBottom: '16px'  },
             type: "input",
+          },
+          {
+            disable: false,
+            itemErrorMsg: "创建人不能为空",
+            itemLabel: "创建人",
+            itemName: "taskName",
+            itemStyle: {width: '450px', marginBottom: '16px'  },
+            type: "input",
           }
         ]}
         searchPlaceholder={"请输入场景名称"}
