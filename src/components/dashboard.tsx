@@ -32,7 +32,7 @@ function getItem(
 const MenuItemKeyMap:any = {
   "inteface": {
     icon: <TeamOutlined />,
-    label: "接口",
+    label: "自动化",
     key: "inteface",
     children: [
       {
@@ -52,9 +52,16 @@ const MenuItemKeyMap:any = {
         "icon": <PieChartOutlined />,
         "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
         "path": "/dashboard/api/task"
-      }
+      },
+      {
+        "key": "api-td-manage",
+        "icon": <PieChartOutlined />,
+        "label": <Link to={'/dashboard/api/testdata/import'}>数据管理</Link>,
+        "path": "/dashboard/api/testdata/import"
+      },
     ]
   },
+  
 }
 
 
