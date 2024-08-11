@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/pro-components": "^2.7.15",
     "antd": "^5.19.3",
     "axios": "^1.6.8",
     "classnames": "^2.5.1",
