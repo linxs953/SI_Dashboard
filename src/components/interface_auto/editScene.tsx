@@ -747,54 +747,75 @@ const EditScene: React.FC = () => {
             onFinish={handleSave}
             layout="vertical"
           >
-            <Form.Item
-              label="场景名称"
-              name="sceneName"
-              rules={[{ required: true, message: '请输入场景名称!' }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="场景描述"
-              name="sceneDesc"
-              rules={[{ required: true, message: '请输入场景描述!' }]}
-            >
-              <Input.TextArea rows={4} />
-            </Form.Item>
-            <Form.Item
-              label="重试次数"
-              name="sceneRetries"
-              rules={[{ required: true, message: '请输入重试次数!' }]}
-            >
-              <InputNumber min={0} max={10} />
-            </Form.Item>
-            <Form.Item
-              label="超时时间"
-              name="sceneTimeout"
-              rules={[{ required: true, message: '请输入超时时间!' }]}
-            >
-              <InputNumber min={0} />
-            </Form.Item>
-            <Form.Item label="步骤列表">
-              <Table
-                dataSource={sceneData?.actions}
-                columns={columns}
-                pagination={false}
-                rowKey="actionId"
-                style={{ width: "1000px" }}
-                scroll={{ x: 600 }}
-              />
-            </Form.Item>
-            <Form.Item>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Button onClick={handleBack} style={{ marginRight: '10px' }} >
-                返回
-              </Button>
-              <Button type="primary" htmlType="submit" >
-                保存
-              </Button>
-            </div>
-            </Form.Item>
+            <Row gutter={20}>
+              <Col span={8}>
+                <Form.Item
+                label="场景名称"
+                name="sceneName"
+                rules={[{ required: true, message: '请输入场景名称!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={5} offset={1}>
+              <Form.Item
+                  label="重试次数"
+                  name="sceneRetries"
+                  rules={[{ required: true, message: '请输入重试次数!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={5} offset={1}>
+              <Form.Item
+                  label="超时时间"
+                  name="sceneTimeout"
+                  rules={[{ required: true, message: '请输入超时时间!' }]}
+                >
+                  <Input  />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={20}>
+              <Col span={20}>
+                <Form.Item
+                    label="场景描述"
+                    name="sceneDesc"
+                    rules={[{ required: true, message: '请输入场景描述!' }]}
+                    >
+                      <Input.TextArea rows={4} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={20}>
+              <Col span={20}>
+                <Form.Item label="步骤列表">
+                    <Table
+                      dataSource={sceneData?.actions}
+                      columns={columns}
+                      pagination={false}
+                      rowKey="actionId"
+                      style={{ width: "1000px" }}
+                      scroll={{ x: 600 }}
+                    />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row >
+              <Col span={24}>
+                <Form.Item>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Button onClick={handleBack} style={{ marginRight: '10px' }} >
+                      返回
+                    </Button>
+                    <Button type="primary" htmlType="submit" >
+                      保存
+                    </Button>
+                  </div>
+                </Form.Item>
+              </Col>
+            </Row>
+
           </Form>
         </Col>
       </Row>

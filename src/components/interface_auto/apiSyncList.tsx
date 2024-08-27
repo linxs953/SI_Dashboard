@@ -53,7 +53,7 @@ const columns = [
 
 
 const { Option } = Select;
-
+const domain = import.meta.env.VITE_API_URL 
 
 
 export default function ApiSyncList() {
@@ -81,7 +81,7 @@ const handleChange = (value) => {
     setLoading(true); // 开始加载数据
     try {
       // 格式化请求参数
-      const url  = `http://localhost:8000/api/getApiList?pageSize=${pagination.pageSize}&pageNum=${current}`
+      const url  = `${domain}/api/getApiList?pageSize=${pagination.pageSize}&pageNum=${current}`
       const response = await axios.get(url); 
       console.log(response.data)
       // 给 data 的每个元素加上一个 state 属性
