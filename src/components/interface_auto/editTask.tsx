@@ -5,7 +5,6 @@ import "../../../node_modules/antd/dist/reset.css"
 import TabPane from 'antd/es/tabs/TabPane';
 import { useForm } from 'antd/es/form/Form';
 
-const { Text,Title } = Typography;
 const {Option} = Select
 
 const SceneList = () => {
@@ -42,6 +41,8 @@ const SceneList = () => {
   const [currentStepForConfig, setCurrentStepForConfig] = useState(null);
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+
+  const [isEditSceneModalVisible, setIsEditSceneModalVisible] = useState(false);            
 
   const [currentStep, setCurrentStep] = useState(null);
 
@@ -147,16 +148,27 @@ const SceneList = () => {
     }));
   };
 
+  const showEditSceneModal = (sceneId) => {
+    const scene = scenes.find(s => s.id === sceneId);
+    setIsEditSceneModalVisible(true);
+    console.log(scene)
+  };
+
   const items = scenes.map((scene) => ({
     key: scene.id,
     label: scene.name,
     children: (
+      <>
+        <div style={{marginBottom: 10}}>
+          <Button type='primary' onClick={() => showEditSceneModal(scene.id)}>编辑场景</Button>
+        </div>
         <Table
             columns={columns}
             dataSource={stepsData[scene.id].map(step => ({ ...step, key: step.step }))}
             pagination={false}
             bordered
         />
+      </>
     ),
   }));
 
@@ -175,37 +187,49 @@ const SceneList = () => {
           onClose={handleConfigDrawerClose}
           open={isConfigDrawerVisible}
         >
-          <Tabs>
-            <TabPane tab="请求头" key="header">
-              <Form>
-                <Form.Item label="数据源类型">
-                  <Select>
-                    <Option value="scene">场景</Option>
-                    <Option value="basic">基础数据</Option>
-                    <Option value="custom">自定义数据</Option>
-                    <Option value="event">基于事件生成</Option>
-                  </Select>
-                </Form.Item>
-                <Form.Item label="目标字段">
-                  <Input />
-                </Form.Item>
-                {/* {currentStepForConfig.dataSourceType === 'scene' && (
-                  <Form.Item label="关联场景字段">
-                    <Input />
-                  </Form.Item>
-                )} */}
-              </Form>
-            </TabPane>
-            <TabPane tab="请求路径" key="path">
-              ...
-            </TabPane>
-            <TabPane tab="请求参数" key="params">
-              ...
-            </TabPane>
-            <TabPane tab="请求体" key="body">
-              ...
-            </TabPane>
-          </Tabs>
+          <Tabs
+            items={[
+              {
+                key: 'header',
+                label: '请求头',
+                children: (
+                  <Form>
+                    <Form.Item label="数据源类型">
+                      <Select>
+                        <Option value="scene">场景</Option>
+                        <Option value="basic">基础数据</Option>
+                        <Option value="custom">自定义数据</Option>
+                        <Option value="event">基于事件生成</Option>
+                      </Select>
+                    </Form.Item>
+                    <Form.Item label="目标字段">
+                      <Input />
+                    </Form.Item>
+                    {/* {currentStepForConfig.dataSourceType === 'scene' && (
+                      <Form.Item label="关联场景字段">
+                        <Input />
+                      </Form.Item>
+                    )} */}
+                  </Form>
+                ),
+              },
+              {
+                key: 'path',
+                label: '请求路径',
+                children: '...',
+              },
+              {
+                key: 'params',
+                label: '请求参数',
+                children: '...',
+              },
+              {
+                key: 'body',
+                label: '请求体',
+                children: '...',
+              },
+            ]}
+          />
           <Button type="primary" block style={{ marginTop: 16 }}>
             保存
           </Button>
@@ -243,6 +267,28 @@ const SceneList = () => {
             </Form.Item>
             <Form.Item name="retry" label="重试次数">
               <InputNumber />
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="编辑场景"
+          open={isEditSceneModalVisible}
+          onCancel={() => setIsEditSceneModalVisible(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setIsEditSceneModalVisible(false)}>
+              取消
+            </Button>,
+            <Button key="submit" type="primary" onClick={() => {}}>
+              保存
+            </Button>,
+          ]}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item name="name" label="场景名称" rules={[{ required: true, message: '请输入场景名称' }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="description" label="场景描述">
+              <Input.TextArea rows={4} />
             </Form.Item>
           </Form>
         </Modal>
