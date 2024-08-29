@@ -252,9 +252,6 @@ const SceneList = () => {
         >
           <Form
             form={form}
-            // onFinish={(values) => {
-            //   setCurrentStep({ ...currentStep, ...values });
-            // }}
           >
             <Form.Item name="name" label="步骤名称">
               <Input />
@@ -283,14 +280,51 @@ const SceneList = () => {
             </Button>,
           ]}
         >
-          <Form form={form} layout="vertical">
-            <Form.Item name="name" label="场景名称" rules={[{ required: true, message: '请输入场景名称' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item name="description" label="场景描述">
-              <Input.TextArea rows={4} />
-            </Form.Item>
-          </Form>
+                <Form
+                  form={form}
+                  layout="vertical"
+                >
+                  <Row gutter={20}>
+                    <Col span={8}>
+                      <Form.Item
+                      label="场景名称"
+                      name="sceneName"
+                      rules={[{ required: true, message: '请输入场景名称!' }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={6} offset={0.5}>
+                    <Form.Item
+                        label="重试次数"
+                        name="sceneRetries"
+                        rules={[{ required: true, message: '请输入重试次数!' }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={6} offset={0.5}>
+                    <Form.Item
+                        label="超时时间"
+                        name="sceneTimeout"
+                        rules={[{ required: true, message: '请输入超时时间!' }]}
+                      >
+                        <Input  />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Row gutter={20}>
+                    <Col span={20}>
+                      <Form.Item
+                          label="场景描述"
+                          name="sceneDesc"
+                          rules={[{ required: true, message: '请输入场景描述!' }]}
+                          >
+                            <Input.TextArea rows={4} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Form>
         </Modal>
     </Card>
 
