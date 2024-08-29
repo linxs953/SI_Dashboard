@@ -46,6 +46,11 @@ const SceneList = () => {
 
   const [currentStep, setCurrentStep] = useState(null);
 
+  const [additionalRows, setAdditionalRows] = useState(0); // 新增的状态用于跟踪附加行的数量
+
+  const [fields, setFields] = useState([{ key: Math.random().toString(36).substring(7) }]);
+
+
   const columns = [
     {
         title: '步骤ID',
@@ -154,6 +159,14 @@ const SceneList = () => {
     console.log(scene)
   };
 
+  
+  const onFinish = async (values) => {
+    const value = await form.getFieldsValue()
+    console.log('Form values:', value);
+    // 处理提交逻辑
+  };
+
+
   const items = scenes.map((scene) => ({
     key: scene.id,
     label: scene.name,
@@ -186,6 +199,7 @@ const SceneList = () => {
           closable={false}
           onClose={handleConfigDrawerClose}
           open={isConfigDrawerVisible}
+          width={"40%"}
         >
           <Tabs
             items={[
@@ -193,24 +207,57 @@ const SceneList = () => {
                 key: 'header',
                 label: '请求头',
                 children: (
-                  <Form>
-                    <Form.Item label="数据源类型">
-                      <Select>
-                        <Option value="scene">场景</Option>
-                        <Option value="basic">基础数据</Option>
-                        <Option value="custom">自定义数据</Option>
-                        <Option value="event">基于事件生成</Option>
-                      </Select>
-                    </Form.Item>
-                    <Form.Item label="目标字段">
-                      <Input />
-                    </Form.Item>
-                    {/* {currentStepForConfig.dataSourceType === 'scene' && (
-                      <Form.Item label="关联场景字段">
-                        <Input />
-                      </Form.Item>
-                    )} */}
+                  <Form form={form}>
+                    <Form.List name="headers">
+                      {(fields, { add,remove }) => (
+                        <>
+                          {fields.map(({ key, name, ...restField }) => (
+                            <Row key={key} gutter={20} >
+                              <Col span={6}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name]}
+                                  // fieldKey={[field.key, 'type']}
+                                  label="数据源类型"
+                                >
+                                  <Select>
+                                    <Option value="scene">场景</Option>
+                                    <Option value="basic">基础数据</Option>
+                                    <Option value="custom">自定义数据</Option>
+                                    <Option value="event">基于事件生成</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'index']}
+                                  // fieldKey={[field, 'index']}
+                                  label="数据源索引"
+                                >
+                                  <Input />
+                                </Form.Item>
+                              </Col>
+                              <Col span={8}>
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, 'target']}
+                                  // fieldKey={[fieldKey, 'target']}
+                                  label="目标字段"
+                                >
+                                  <Input />
+                                </Form.Item>
+                              </Col>
+                            </Row>
+                          ))}
+                          <Button type="dashed" block onClick={() => add()} style={{ marginTop: 16 }}>
+                            添加一行
+                          </Button>
+                        </>
+                      )}
+                    </Form.List>
                   </Form>
+
                 ),
               },
               {
@@ -230,6 +277,7 @@ const SceneList = () => {
               },
             ]}
           />
+
           <Button type="primary" block style={{ marginTop: 16 }}>
             保存
           </Button>
@@ -280,51 +328,54 @@ const SceneList = () => {
             </Button>,
           ]}
         >
-                <Form
-                  form={form}
-                  layout="vertical"
-                >
-                  <Row gutter={20}>
-                    <Col span={8}>
-                      <Form.Item
-                      label="场景名称"
-                      name="sceneName"
-                      rules={[{ required: true, message: '请输入场景名称!' }]}
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6} offset={0.5}>
+            <Row justify={"center"}>
+              <Form
+                form={form}
+                layout="vertical"
+              >
+                <Row gutter={20}>
+                  <Col span={8}>
                     <Form.Item
-                        label="重试次数"
-                        name="sceneRetries"
-                        rules={[{ required: true, message: '请输入重试次数!' }]}
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col>
-                    <Col span={6} offset={0.5}>
+                    label="场景名称"
+                    name="sceneName"
+                    rules={[{ required: true, message: '请输入场景名称!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={6} offset={0.5}>
+                  <Form.Item
+                      label="重试次数"
+                      name="sceneRetries"
+                      rules={[{ required: true, message: '请输入重试次数!' }]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={6} offset={0.5}>
+                  <Form.Item
+                      label="超时时间"
+                      name="sceneTimeout"
+                      rules={[{ required: true, message: '请输入超时时间!' }]}
+                    >
+                      <Input  />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={20}>
+                  <Col span={20}>
                     <Form.Item
-                        label="超时时间"
-                        name="sceneTimeout"
-                        rules={[{ required: true, message: '请输入超时时间!' }]}
-                      >
-                        <Input  />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={20}>
-                    <Col span={20}>
-                      <Form.Item
-                          label="场景描述"
-                          name="sceneDesc"
-                          rules={[{ required: true, message: '请输入场景描述!' }]}
-                          >
-                            <Input.TextArea rows={4} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Form>
+                        label="场景描述"
+                        name="sceneDesc"
+                        rules={[{ required: true, message: '请输入场景描述!' }]}
+                        >
+                          <Input.TextArea rows={4} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            </Row>
+
         </Modal>
     </Card>
 
