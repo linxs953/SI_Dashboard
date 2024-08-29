@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Form, Input, Row, Col, Typography, List, Layout, Breadcrumb, Table, Tooltip, Button, Popconfirm, message, Tabs, Drawer, Select, Modal, InputNumber } from 'antd';
+import { Card, Form, Input, Row, Col, Typography, List, Layout, Breadcrumb, Table, Tooltip, Button, Popconfirm, message, Tabs, Drawer, Select, Modal, InputNumber, FormListFieldData } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import "../../../node_modules/antd/dist/reset.css"
 import TabPane from 'antd/es/tabs/TabPane';
@@ -184,6 +184,57 @@ const SceneList = () => {
       </>
     ),
   }));
+  
+  const headersForm = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
+    <>
+      {fields.map(({ key, name, ...restField }) => (
+        <Row key={key} gutter={20}>
+          <Col span={6}>
+            <Form.Item
+              {...restField}
+              name={[name, 'type']}
+              label="数据源类型"
+            >
+              <Select>
+                <Option value="scene">场景</Option>
+                <Option value="basic">基础数据</Option>
+                <Option value="custom">自定义数据</Option>
+                <Option value="event">基于事件生成</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              {...restField}
+              name={[name, 'index']}
+              label="数据源索引"
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              {...restField}
+              name={[name, 'target']}
+              label="目标字段"
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={2}>
+            <Button onClick={() => remove(name)} type="link" danger>
+              删除
+            </Button>
+          </Col>
+        </Row>
+      ))}
+      <Form.Item>
+        <Button type="dashed" onClick={() => add()} block>
+          添加请求头
+        </Button>
+      </Form.Item>
+    </>
+  )
 
 
   return (
@@ -200,6 +251,22 @@ const SceneList = () => {
           onClose={handleConfigDrawerClose}
           open={isConfigDrawerVisible}
           width={"40%"}
+          footer={
+            <div
+              style={{
+                textAlign: 'center',
+              }}
+            >
+              <Button onClick={handleConfigDrawerClose} style={{ marginRight: 20 }}>
+                取消
+              </Button>
+              <Button type="primary" onClick={() => {
+                console.log(form.getFieldsValue());
+              }}>
+                保存
+              </Button>
+            </div>
+          }
         >
           <Tabs
             items={[
@@ -207,54 +274,9 @@ const SceneList = () => {
                 key: 'header',
                 label: '请求头',
                 children: (
-                  <Form form={form}>
+                  <Form form={form} onFinish={onFinish}>
                     <Form.List name="headers">
-                      {(fields, { add,remove }) => (
-                        <>
-                          {fields.map(({ key, name, ...restField }) => (
-                            <Row key={key} gutter={20} >
-                              <Col span={6}>
-                                <Form.Item
-                                  {...restField}
-                                  name={[name]}
-                                  // fieldKey={[field.key, 'type']}
-                                  label="数据源类型"
-                                >
-                                  <Select>
-                                    <Option value="scene">场景</Option>
-                                    <Option value="basic">基础数据</Option>
-                                    <Option value="custom">自定义数据</Option>
-                                    <Option value="event">基于事件生成</Option>
-                                  </Select>
-                                </Form.Item>
-                              </Col>
-                              <Col span={8}>
-                                <Form.Item
-                                  {...restField}
-                                  name={[name, 'index']}
-                                  // fieldKey={[field, 'index']}
-                                  label="数据源索引"
-                                >
-                                  <Input />
-                                </Form.Item>
-                              </Col>
-                              <Col span={8}>
-                                <Form.Item
-                                  {...restField}
-                                  name={[name, 'target']}
-                                  // fieldKey={[fieldKey, 'target']}
-                                  label="目标字段"
-                                >
-                                  <Input />
-                                </Form.Item>
-                              </Col>
-                            </Row>
-                          ))}
-                          <Button type="dashed" block onClick={() => add()} style={{ marginTop: 16 }}>
-                            添加一行
-                          </Button>
-                        </>
-                      )}
+                        {(fields, { add, remove }) => headersForm(fields, { add, remove })}
                     </Form.List>
                   </Form>
 
@@ -263,27 +285,28 @@ const SceneList = () => {
               {
                 key: 'path',
                 label: '请求路径',
-                children: '...',
+                children: (
+                  <Form form={form} onFinish={onFinish}>
+                    <Form.List name="path">
+                        {(fields, { add, remove }) => headersForm(fields, { add, remove })}
+                    </Form.List>
+                  </Form>
+
+                ),
               },
-              {
-                key: 'params',
-                label: '请求参数',
-                children: '...',
-              },
-              {
-                key: 'body',
-                label: '请求体',
-                children: '...',
-              },
+              // {
+              //   key: 'params',
+              //   label: '请求参数',
+              //   children: '...',
+              // },
+              // {
+              //   key: 'body',
+              //   label: '请求体',
+              //   children: '...',
+              // },
             ]}
           />
 
-          <Button type="primary" block style={{ marginTop: 16 }}>
-            保存
-          </Button>
-          <Button block onClick={handleConfigDrawerClose} style={{ marginTop: 8 }}>
-            取消
-          </Button>
         </Drawer>
         <Modal
           title="编辑步骤"
