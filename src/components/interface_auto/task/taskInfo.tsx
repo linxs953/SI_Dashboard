@@ -1,99 +1,74 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Row, Col, message } from 'antd';
+import React, { useEffect } from 'react';
+import { Card, Col, Form, Input, Row } from 'antd';
 
-interface TaskInfoProps {
-  taskData: any;
-  onTaskDataChange: (newTaskData: any) => void;
-}
 
-const TaskInfo: React.FC<TaskInfoProps> = ({ taskData, onTaskDataChange }) => {
+const TaskInfo: React.FC<{ taskDetail: TaskDetail; onTaskDetailChange: (updatedTaskDetail: TaskDetail) => void }> = ({ taskDetail, onTaskDetailChange }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue(taskData);
-  }, [taskData, form]);
+    form.setFieldsValue(taskDetail);
+  }, [taskDetail]);
 
-  const handleSave = () => {
-    form.validateFields().then(values => {
-      onTaskDataChange(values);
-    }).catch(error => {
-      console.error('Validation failed:', error);
-    });
+  const handleFormChange = () => {
+    const updatedValues = form.getFieldsValue();
+    onTaskDetailChange(updatedValues as TaskDetail);
   };
 
   return (
-    <Form
-      form={form}
-      layout="horizontal"
-      labelCol={{ span: 4 }}
-      wrapperCol={{ span: 20 }}
-      style={{ maxWidth: '90%', margin: 'auto' }}
-    >
-      <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <Form.Item
-            label="任务ID"
-            name="taskId"
-            rules={[{ required: true, message: 'Please input the task ID!' }]}
-          >
-            <Input disabled />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            label="任务场景数"
-            name="scenesCount"
-            rules={[{ required: true, message: 'Please input the scenes count!' }]}
-          >
-            <Input disabled />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <Form.Item
-            label="任务名称"
-            name="taskName"
-            rules={[{ required: true, message: 'Please input the task name!' }]}
-          >
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            label="创建人"
-            name="author"
-            rules={[{ required: true, message: 'Please input the author!' }]}
-          >
-            <Input disabled />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <Form.Item
-            label="创建时间"
-            name="createdAt"
-          >
-            <Input disabled />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            label="更新时间"
-            name="updatedAt"
-          >
-            <Input disabled />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row justify="end">
-        <Col span={24}>
-          <Button type="primary" onClick={handleSave}>保存</Button>
-        </Col>
-      </Row>
-    </Form>
+    <Card title="任务详情" style={{ width: '100%' }}>
+      <Form form={form} layout="vertical" onValuesChange={handleFormChange}>
+        <Row gutter={20}>
+          <Col span={5}>
+            <Form.Item label="任务ID" name="taskId">
+              <Input disabled />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="创建人" name="creator">
+              <Input disabled />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="创建时间" name="creationTime">
+              <Input disabled />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="修改时间" name="updateTime">
+              <Input disabled />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="任务名称" name="taskName">
+              <Input  />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="场景数" name="relateSceneNum">
+              <Input disabled />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="超时时间" name="timeout">
+              <Input  />
+            </Form.Item>
+          </Col>
+          <Col span={5}>
+            <Form.Item label="重试次数" name="retry">
+              <Input  />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={20}>
+          <Col span={20}>
+            <Form.Item label="任务描述" name="description">
+              <Input.TextArea rows={4}  />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    </Card>
   );
 };
 
-export default TaskInfo
+export default TaskInfo;
