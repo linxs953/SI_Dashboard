@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button } from 'antd';
+import { Layout, Button, Modal, Result, message } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import "../../../node_modules/antd/dist/reset.css"
 import SceneList from './task/sceneList';
 import TaskInfo from './task/taskInfo';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+
+
+const domain = import.meta.env.VITE_API_URL
 
 const TaskDetails = () => {
   const [taskInfo, setTaskInfo] = useState<TaskDetail>({
@@ -14,109 +19,182 @@ const TaskDetails = () => {
       timeout: 0,
       retry: 0,
       creator: '',
-      creationTime: ''
+      creationTime: '',
+      updateTime: ''
   })
   
   const [sceneList, setSceneList] = useState<SceneInfo[]>([])
-  
-  useEffect(() => {
-    const taskInfo:TaskDetail = {
-      taskId: 'T001',
-      taskName: '项目A',
-      relateSceneNum: 5,
-      description: '这是一个关于数据分析的任务',
-      creator: '张三',
-      creationTime: '2023-09-01',
-      timeout: 10,
-      retry: 3
+  const searchParams = new URLSearchParams(location.search);
+  const taskId = searchParams.get('taskId');  
+  const navigate = useNavigate()
+
+  const fetchTaskDetails = async () => {
+    const getDataSource = (type:string) => {
+      if (type === '1') return 'scene';
+      if (type === '2') return 'basic';
+      if (type === '3') return 'custom';
+      return 'event'
     }
-    const sceneList = [
-      {
-        sceneId: 'S001',
-        sceneName: '场景1',
-        sceneDescription: '这是一个场景',
-        sceneTimeout: 10,
-        sceneRetries: 1,
-        actionList: [
-          {
-            stepId: 'A001',
-            stepName: '步骤1',
-            stepDescription: '这是一个步骤',
-            stepTimeout: 10,
-            stepRetry: 1,
-            stepMethod: 'GET',
-            stepRoute: '/api/data',
-            stepDependencies: [
-              {
-                dependType: 'headers',
-                targetField: 'Authorization',
-                dsType: 'scene',
-                relateStep: 'S002.A001'
-              },
-              {
-                dependType: 'payload',
-                targetField: 'account',
-                dsType: 'basic',
-                cacheKey: 'td.user.0.phone'
-              },
-              {
-                dependType: 'params',
-                targetField: 'page',
-                dsType: 'custom',
-                customValue: '10'
-              },
-              {
-                dependType: 'path',
-                targetField: 'orderId',
-                dsType: 'custom',
-                customValue: '123456'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        sceneId: 'S002',
-        sceneName: '场景2',
-        sceneDescription: '这是一个场景',
-        sceneTimeout: 10,
-        sceneRetries: 1,
-        actionList: [
-          {
-            stepId: 'B001',
-            stepName: '步骤2',
-            stepDescription: '这是一个步骤',
-            stepTimeout: 10,
-            stepRetry: 1,
-            stepMethod: 'GET',
-            stepRoute: '/api/data2',
-            stepDependencies: []
-          }
-        ]
-      },
-      {
-        sceneId: 'S003',
-        sceneName: '场景3',
-        sceneDescription: '这是一个场景',
-        sceneTimeout: 10,
-        sceneRetries: 1,
-        actionList: [
-          {
-            stepId: 'C001',
-            stepName: '步骤1',
-            stepDescription: '这是一个步骤',
-            stepTimeout: 10,
-            stepRetry: 1,
-            stepMethod: 'GET',
-            stepRoute: '/api/data3',
-            stepDependencies: []
-          }
-        ]
+
+    const processString = (str: string): string => {
+      if (!str.includes('.')) {
+        return str;
       }
-    ]
-    setTaskInfo(taskInfo)
-    setSceneList(sceneList)
-  }, [])
+      const parts = str.split('.');
+      return `${parts.slice(1).join('.')}`;
+    }
+    try {
+      const response = await axios.get(`${domain}/task/getOne?taskId=${taskId}`);
+      if (response.data && response.data.code === 0) {
+          setTaskInfo({
+            taskId: response.data.data.taskId,
+            taskName: response.data.data.taskName,
+            relateSceneNum: response.data.data.taskSpec.length,
+            description: response.data.data.description ? response.data.data.description : "无描述",
+            timeout: response.data.data.timeout ? response.data.data.timeout : 1,
+            retry: response.data.data.retry ? response.data.data.retry : 1,
+            creator: response.data.data.author,
+            creationTime: response.data.data.createTime,
+            updateTime: response.data.data.updateTime,
+          });
+
+          
+          
+          let sceneInfoList: SceneInfo[] = response.data.data.taskSpec.map(scene => (
+
+            {
+              sceneId: scene.sceneId,
+              sceneName: scene.sceneName,
+              sceneDescription: scene.description || "无描述",
+              sceneTimeout: scene.timeout || 1,
+              sceneRetries: scene.retry || 0,
+              searchKey: scene.searchKey,
+              environment: scene.envKey,
+              actionList: scene.actions ? scene.actions.map(action => ({
+                ...action,
+                actionMethod: action.actionMethod,
+                relateId: action.relateId,
+                actionRoute: action.actionPath,
+                actionRetry: action.retry || 0,
+                actionTimeout: action.timeout || 1,
+                actionDomain: action.domainKey,
+                actionEnvironment: action.envKey,
+                actionSearchKey: action.searchKey,
+                actionExpect: action.expect,
+                actionOutput: action.output,
+                actionDependencies: [
+                  ...(action.dependency || []).map(dep => ({
+                    dependType: dep?.refer?.type || '',
+                    targetField: processString(dep.refer?.target),
+                    dsType: getDataSource(dep?.type),
+                    dataKey:dep?.dataKey  || '' ,
+                    customValue: dep?.type === "3" ? `${dep?.dataKey}` || '' : '',
+                    cacheKey: dep?.type === "2" ? `${dep?.dataKey}` || '' : '',
+                    relateStep: dep?.type === "1" ? `${dep?.actionKey}` || '' : ''
+                  })),
+                ]
+              })) : []
+            }));
+          sceneInfoList = sceneInfoList.filter(scene => scene.actionList.length > 0);
+          setSceneList(sceneInfoList);
+          console.log(sceneInfoList)
+      } else {
+        message.error('获取任务详情失败');
+      }
+    } catch (error) {
+      console.error('获取任务详情时出错:', error);
+      message.error('获取任务详情时发生错误');
+    }
+  };
+
+  const updateTask = async(taskInfo:TaskDetail, scenes:SceneInfo[]) => {
+    const getDataSourceCode = (dsName:string) => {
+      if (dsName === 'scene') return '1';
+      if (dsName === 'basic') return '2';
+      if (dsName === 'custom') return '3';
+      return "4"
+    }
+    
+    try {
+      const requestBody = {
+        taskId: taskInfo.taskId,
+        taskName: taskInfo.taskName,
+        author: taskInfo.creator,
+        // description: taskInfo.description,
+        // timeout: taskInfo.timeout,
+        // retry: taskInfo.retry,
+        taskType: 'autoapi',
+        taskSpec: scenes.map(scene => ({
+          sceneId: scene.sceneId,
+          sceneName: scene.sceneName,
+          description: scene.sceneDescription,
+          timeout: scene.sceneTimeout,
+          retry: scene.sceneRetries,
+          author: "linxs",
+          searchKey: scene.searchKey,
+          envKey: scene.environment,
+          actions: scene.actionList.map(action => ({
+            actionId: action.actionId,
+            relateId: action.relateId,
+            actionName: action.actionName,
+            actionPath: action.actionRoute,
+            actionMethod: action.actionMethod,
+            timeout: action.actionTimeout,
+            retry: action.actionRetry,
+            domainKey: action.actionDomain,
+            envKey: action.actionEnvironment,
+            searchKey: action.actionSearchKey,
+            expect: action.actionExpect,
+            output: action.actionOutput,
+            dependency: action.actionDependencies.map(dep => {
+              const baseDep = {
+                actionKey: dep.relateaction,
+                dataKey: dep.dataKey?dep.dataKey: '',
+                type: getDataSourceCode(dep.dsType),
+                refer: {
+                  type: dep.dependType,
+                  target: dep.targetField
+                }
+              };
+              
+              switch(dep.dsType) {
+                case 'scene':
+                  return { ...baseDep, actionKey: dep.relateStep };
+                case 'basic':
+                  return { ...baseDep, dataKey: dep.cacheKey };
+                case 'custom':
+                  return { ...baseDep, dataKey: dep.customValue };
+                case 'event':
+                  return { ...baseDep, dataKey: dep.eventKey };
+                default:
+                  return baseDep;
+              }
+            }),
+            headers: action.actionDependencies
+              .filter(dep => dep.dependType === 'headers')
+              .reduce((acc, dep) => ({...acc, [dep.targetField]: dep.customValue}), {})
+          }))
+        }))
+      };
+
+      const response = await axios.post(`${domain}/task/update?taskId=${taskInfo.taskId}`, requestBody);
+      
+      if (response.data && response.data.code === 0) {
+        message.success('更新任务成功');
+      } else {
+        message.error('更新任务失败');
+      }
+    } catch (error) {
+      console.error('更新任务时出错:', error);
+      message.error('更新任务时发生错误');
+    }
+  }
+
+  useEffect(() => {
+    if (taskId) {
+      fetchTaskDetails();
+    }
+  }, [taskId]);
 
   return (
       <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -129,10 +207,26 @@ const TaskDetails = () => {
           <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', background: '#fff' }}>
             <Button style={{ marginRight: '10px' }}>取消</Button>
             <Button type="primary" onClick={() => {
-              console.log(taskInfo);
-              console.log(sceneList);
+              updateTask(taskInfo, sceneList);
+              // navigate('/dashboard/api/task')
             }}>保存</Button>
           </div>
+          {(!taskId || taskId === "") && (
+          <Modal
+            title="警告"
+            open={true}
+            footer={[
+              <Button key="ok" type="primary" danger onClick={() => {
+                navigate('/dashboard/api/task')
+              }}>
+                确定
+              </Button>
+            ]}
+            closable={false}
+            maskClosable={false}
+          >无效的请求信息
+          </Modal>
+          )}
       </Layout>
   );
 };

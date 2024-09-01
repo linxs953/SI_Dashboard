@@ -6,25 +6,34 @@ interface SceneInfo {
     sceneDescription: string
     sceneTimeout: number
     sceneRetries: number
-    actionList: StepInfo[]
+    searchKey: string
+    environment: string
+    actionList: ActionInfo[]
   }
   
-interface StepInfo {
-    stepId: string
-    stepName: string
-    stepDescription: string
-    stepTimeout: number
-    stepRetry: number
-    stepMethod: string
-    stepRoute: string
-    stepDependencies: StepDependencies[]
+interface ActionInfo {    
+    actionId: string
+    relateId:string
+    actionName: string
+    actionDescription: string
+    actionTimeout: number
+    actionRetry: number
+    actionMethod: string
+    actionRoute: string
+    actionExpect: Object
+    actionOutput: Object
+    actionSearchKey: string
+    actionDomain: string
+    actionEnvironment: string
+    actionDependencies: actionDependencies[]
 }
 
-interface StepDependencies {
+interface actionDependencies {
+    dataKey?: string
     dependType: string
     targetField: string
     dsType: string
-    relateStep?: string // 当dependType为scene时，relateStep为必填
+    relateaction?: string // 当dependType为scene时，relateaction为必填
     customValue?: string // 当dependType为custom时，targetValue为必填
     cacheKey?: string // 当dependType为basic时，cacheKey为必填
 }
@@ -38,6 +47,7 @@ interface TaskDetail {
     retry: number
     creator: string
     creationTime: string
+    updateTime: string
 }
 
 interface TaskInfoState {

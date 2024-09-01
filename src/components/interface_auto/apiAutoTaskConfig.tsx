@@ -118,7 +118,7 @@ const TaskList: React.FC = () => {
 
 //  编辑任务
   const handleEdit = (taskId: string) => {
-    navgate(`/dashboard/api/task/edit?task=${taskId}`);
+    navgate(`/dashboard/api/task/edit?taskId=${taskId}`);
   };
 
 //   运行任务
@@ -129,7 +129,7 @@ const TaskList: React.FC = () => {
 
 //   查看任务报告
   const handleReport = (taskId: string) => {
-    navgate(`/dashboard/api/task/reports?task=${taskId}`);
+    navgate(`/dashboard/api/task/reports?taskId=${taskId}`);
   };
 
 //   新增按钮触发弹窗

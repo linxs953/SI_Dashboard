@@ -6,23 +6,27 @@ import { useEffect, useState } from "react"
 const {Option} = Select
 
 const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
-  const [activeTabKey, setActiveTabKey] = useState(sceneList[0]?.sceneId);
+  const [activeTabKey, setActiveTabKey] = useState(sceneList[0]?.sceneId || '');
   const [form] = useForm()
   const [isConfigDrawerVisible, setIsConfigDrawerVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isEditSceneModalVisible, setIsEditSceneModalVisible] = useState(false); 
-  
   const [dependSelectTab, setDependSelectTab] = useState('headers');
-
-  const [currentStep, setCurrentStep] = useState<StepInfo>({
-    stepId: '',
-    stepName: '',
-    stepDescription: '',
-    stepTimeout: 0,
-    stepRetry: 0,
-    stepMethod: '',
-    stepRoute: '',
-    stepDependencies: []
+  const [currentStep, setCurrentStep] = useState<ActionInfo>({
+    actionId: '',
+    actionName: '',
+    actionDescription: '',
+    actionTimeout: 0,
+    actionRetry: 0,
+    actionMethod: '',
+    actionRoute: '',
+    actionDependencies: [],
+    relateId: '',
+    actionExpect: '',
+    actionOutput: '',
+    actionSearchKey: '',
+    actionDomain: '',
+    actionEnvironment: '',
   });
   const [currentScene, setCurrentScene] = useState<SceneInfo>({
     sceneId: '',
@@ -30,48 +34,50 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     sceneDescription: '',
     sceneTimeout: 0,
     sceneRetries: 0,
-    actionList: []
+    actionList: [],
+    searchKey: '',
+    environment: ''
   });
 
   const columns = [
     {
         title: '步骤ID',
-        dataIndex: 'stepId',
+        dataIndex: 'actionId',
         key: 'stepId',
-        width: 200, 
+        width: 250, 
         align: 'center',
     },
     {
         title: '步骤名称',
-        dataIndex: 'stepName',
+        dataIndex: 'actionName',
         key: 'stepName',
         width: 200, 
         align: 'center',
     },
     {
       title: '请求方法',
-      dataIndex: 'stepMethod',
+      dataIndex: 'actionMethod',
       key: 'stepMethod',
       width: 200, 
       align: 'center',
     },
     {
       title: '请求路由',
-      dataIndex: 'stepRoute',
+      dataIndex: 'actionPath',
       key: 'stepRoute',
       width: 200, 
       align: 'center',
     },
     {
       title: '重试次数',
-      dataIndex: 'stepRetry',
+      dataIndex: 'retry',
       key: 'stepRetry',
       width: 200, 
       align: 'center',
     },
     {
       title: '超时时间',
-      dataIndex: 'stepTimeout',
+      dataIndex: 'timeout',
       key: 'stepTimeout',
       width: 200,
       align: 'center',
@@ -80,7 +86,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
       title: '操作',
       key: 'action',
       width: 250, // 指定操作列的宽度为250像素
-      render: (_: any, record: StepInfo) => (
+      render: (_: any, record: ActionInfo) => (
           <>
               <Tooltip title="编辑">
                   <Button type="link" onClick={() => showEditModal(record)} style={{ marginRight: 8 }}>
@@ -94,7 +100,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               </Tooltip>
               <Popconfirm
                   title="确定要删除这个步骤吗？"
-                  onConfirm={() => handleDelete(activeTabKey, record.stepId)}
+                  onConfirm={() => handleDelete(activeTabKey, record.actionId)}
                   okText="确定"
                   cancelText="取消"
               >
@@ -107,13 +113,15 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }
   ];
 
+
   // 编辑步骤
-  const showEditModal = (step: StepInfo) => {
+  const showEditModal = (step: ActionInfo) => {
     const scene = sceneList.find(s => s.sceneId === activeTabKey);
     setCurrentScene(scene as SceneInfo);
     setCurrentStep(step);
     setIsEditModalVisible(true);
     form.setFieldsValue(step);
+    console.log(step)
   };
 
   const handleEditModalCancel = () => {
@@ -123,13 +131,13 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   const handleDelete = (sceneId: string, stepId: string) => {
     const updatedSceneList = sceneList.map(scene => 
       scene.sceneId === sceneId
-        ? {...scene, actionList: scene.actionList.filter(step => step.stepId !== stepId)}
+        ? {...scene, actionList: scene.actionList.filter(step => step.actionId !== stepId)}
         : scene
     );
     updateSceneList(updatedSceneList);
   };
 
-  const updateStepOk = (updatedStep: StepInfo) => {
+  const updateStepOk = (updatedStep: ActionInfo) => {
 
     let upScene: SceneInfo = sceneList.find(s => s.sceneId === activeTabKey) as SceneInfo;
     // 更新 upScene 中的 step
@@ -139,7 +147,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }
 
     const updatedActionList = upScene.actionList.map(step => 
-      step.stepId === updatedStep.stepId ? updatedStep : step
+      step.actionId === updatedStep.actionId ? updatedStep : step
     );
     upScene = {
       ...upScene,
@@ -153,7 +161,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     message.success('场景更新成功');
     setIsEditModalVisible(false);
 
-    console.log(upScene)
+
   };
 
   // 编辑场景
@@ -179,9 +187,16 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setIsEditSceneModalVisible(false);    
   };
 
-  const showConfigDrawer = (step: StepInfo) => {
-    setCurrentStep(step);
+  const showConfigDrawer = (step: ActionInfo) => {
+    setCurrentStep({ ...step });
     setIsConfigDrawerVisible(true);
+    form.resetFields();
+    form.setFieldsValue({
+      headers: step.actionDependencies.filter(dep => dep.dependType === 'headers'),
+      path: step.actionDependencies.filter(dep => dep.dependType === 'path'),
+      params: step.actionDependencies.filter(dep => dep.dependType === 'params'),
+      payload: step.actionDependencies.filter(dep => dep.dependType === 'payload')
+    });
   };
 
   const handleConfigDrawerClose = () => {
@@ -211,13 +226,24 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               <Select 
                 value={form.getFieldValue([dependSelectTab, name, 'dsType'])}
                 onChange={(value) => {
-                  const newFields = [...fields];
-                  const originalField = form.getFieldValue([dependSelectTab, name]);
-                  newFields[name] = {
-                    ...originalField,
+                  const currentField = form.getFieldValue([dependSelectTab, name]);
+                  const updatedField = {
+                    ...currentField,
                     dsType: value
-                  } as FormListFieldData;
-                  form.setFieldsValue({ [dependSelectTab]: newFields });
+                  };
+                  
+                  // 清除其他类型特有的字段
+                  delete updatedField.relateStep;
+                  delete updatedField.cacheKey;
+                  delete updatedField.customValue;
+                  delete updatedField.eventKey;
+                  
+                  // 只更新当前记录
+                  form.setFieldsValue({
+                    [dependSelectTab]: {
+                      [name]: updatedField
+                    }
+                  });
                 }}
               >
                 <Option value="scene">场景</Option>
@@ -230,7 +256,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           <Col span={8}>
             {(() => {
               const dsType = form.getFieldValue([dependSelectTab, name, 'dsType']);
-              console.log(dependSelectTab,dsType)
               switch (dsType) {
                 case 'scene':
                   return (
@@ -316,6 +341,13 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }
   }, [currentStep])
 
+  useEffect(() => {
+    if (sceneList.length > 0) {
+      setActiveTabKey(sceneList[0].sceneId)
+    }
+    console.log(sceneList)
+  }, [sceneList])
+
   return (
     <>
       <Card title="关联场景列表" style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -331,11 +363,11 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                       <Button type='primary' onClick={() => showEditSceneModal()}>编辑场景</Button>
                     </div>
                     <Table
-                        columns={columns.map(column => ({
+                        columns={columns.map((column, index) => ({
                           ...column,
-                          title: <div style={{ textAlign: 'center' }}>{column.title}</div>
+                          title: <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
                         }))}
-                        dataSource={scene.actionList.map(step => ({ ...step, key: step.stepId }))}
+                        dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
                         pagination={{
                           pageSize: 10,
                           showQuickJumper: true,
@@ -366,6 +398,38 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 </Button>
                 <Button type="primary" onClick={() => {
                   console.log(form.getFieldsValue());
+                  const updatedDependencies = form.getFieldsValue();
+                  const updatedActionDependencies = [
+                    ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.dependType)),
+                    ...updatedDependencies.headers || [],
+                    ...updatedDependencies.path || [],
+                    ...updatedDependencies.params || [],
+                    ...updatedDependencies.payload || []
+                  ];
+
+
+                  const updatedStep = {
+                    ...currentStep,
+                    actionDependencies: updatedActionDependencies
+                  };
+
+                  console.log(updatedStep)
+
+
+                  const updatedSceneList = sceneList.map(scene => 
+                    scene.sceneId === activeTabKey
+                      ? {
+                          ...scene,
+                          actionList: scene.actionList.map(step => 
+                            step.actionId === updatedStep.actionId ? updatedStep : step
+                          )
+                        }
+                      : scene
+                  );
+                  console.log(updatedSceneList)
+
+                  updateSceneList(updatedSceneList);
+                  setIsConfigDrawerVisible(false)
                 }}>
                   保存
                 </Button>
@@ -381,7 +445,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'headers',
                   label: '请求头',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ headers: currentStep?.stepDependencies.filter(dep => dep.dependType === 'headers') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ headers: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'headers') }}>
                       <Form.List name="headers">
                           {(fields, { add, remove }) => dependForm(fields, { add, remove })}
                       </Form.List>
@@ -392,7 +456,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'path',
                   label: '请求路径',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ path: currentStep?.stepDependencies.filter(dep => dep.dependType === 'path') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ path: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'path') }}>
                       <Form.List name="path">
                           {(fields, { add, remove }) => dependForm(fields, { add, remove })}
                       </Form.List>
@@ -403,7 +467,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'params',
                   label: '请求参数',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ params: currentStep?.stepDependencies.filter(dep => dep.dependType === 'params') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ params: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'params') }}>
                       <Form.List name="params">
                           {(fields, { add, remove }) => dependForm(fields, { add, remove })}
                       </Form.List>
@@ -414,7 +478,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'payload',
                   label: '请求体',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ payload: currentStep?.stepDependencies.filter(dep => dep.dependType === 'payload') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ payload: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'payload') }}>
                       <Form.List name="payload">
                           {(fields, { add, remove }) => dependForm(fields, { add, remove })}
                       </Form.List>
@@ -428,6 +492,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             title="编辑步骤"
             open={isEditModalVisible}
             onCancel={handleEditModalCancel}
+            width={700}
             footer={[
               <Button key="cancel" onClick={handleEditModalCancel}>
                 取消
@@ -444,31 +509,28 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             >
                <Row gutter={20}>
                <Col span={8}>
-                <Form.Item name="stepName" label="步骤名称">
+                <Form.Item name="actionName" label="步骤名称">
                   <Input />
                 </Form.Item>
                </Col>
                <Col span={6} offset={0.5}>
-                <Form.Item name="stepTimeout" label="超时时间">
+                <Form.Item name="timeout" label="超时时间">
                   <InputNumber />
                 </Form.Item>
                </Col>
                <Col span={6} offset={0.5}>
-                <Form.Item name="stepRetry" label="重试次数">
+                <Form.Item name="retry" label="重试次数">
                   <InputNumber />
                 </Form.Item>
                </Col>
                </Row>
               <Row gutter={20}>
                 <Col span={20}>
-                <Form.Item name="stepDescription" label="步骤描述">
-                  <Input.TextArea rows={4} />
+                <Form.Item name="description" label="步骤描述">
+                  <Input.TextArea disabled rows={4} />
                 </Form.Item>
                 </Col>
               </Row>
-
-
-
             </Form>
           </Modal>
           {isEditSceneModalVisible && (
@@ -535,7 +597,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 </Row>
             </Modal>
           )}
-
       </Card>
     </>
   );
