@@ -43,6 +43,7 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
         updateActionList(actionList.map((action) => action.actionId === step.actionId ? updateStep : action))
         handleEditModalCancel()
         console.log(updateStep)
+        message.success("更新流程成功")
     }
 
     const showEditModal = (step:ActionInfo) => {
@@ -52,6 +53,8 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
 
     const handleDelete = (actionId:string) => {
         message.error(`${actionId}`)
+        const updatedAc = actionList.filter(ac => ac.actionId != actionId)
+        updateActionList(updatedAc)
     }
 
     const handleConfigDrawerClose = () => {
