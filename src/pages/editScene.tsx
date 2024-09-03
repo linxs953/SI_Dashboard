@@ -8,9 +8,9 @@ import axios from 'axios';
 import { Store } from 'antd/lib/form/interface';
 import TabPane from 'antd/es/tabs/TabPane';
 import { Option } from 'antd/es/mentions';
-import SceneInfo from './scene/sceneInfo';
+import SceneInfo from '../components/interface_auto/scene/sceneInfo';
 import { Content } from 'antd/es/layout/layout';
-import ActionList from './scene/actionList';
+import ActionList from '../components/interface_auto/scene/actionList';
 
 interface SceneData {
   sceneId: string;
@@ -534,9 +534,7 @@ const EditScene: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [sceneData, setSceneData] = useState<SceneData | null>(null);
-  const [selectedAction, setSelectedAction] = useState<ActionData | null>(null);
+  const [sceneData, setSceneData] = useState<SceneInfo | null>(null);
   const searchParams = new URLSearchParams(location.search);
   const sceneId = searchParams.get('sceneId');
   
@@ -545,30 +543,7 @@ const EditScene: React.FC = () => {
     if (!sceneId) {
       showModal();
     } else {
-      // fetchSceneData(sceneId);
-      setSceneData({
-        sceneId: 'scid',
-        sceneName: '测试场景',
-        sceneDesc: '测试场景',
-        sceneRetries: 10,
-        sceneTimeout: 10,
-        author: 'linxs',
-        createTime: '2024-10-10: 00:00:00',
-        updateTime: '2024-10-10: 00:00:00',
-        actionNum: 10,
-        actions: [
-          {
-            actionId: "acid",
-            actionName: 'string',
-            retry: 10,
-            timeout: 10,
-            relateId: 'string',
-            actionMethod: 'string',
-            actionPath: '/api/path',
-            dependency: []
-          },
-        ]
-      })
+      fetchSceneData(sceneId);
     }
   }, [location, sceneId]);
 
@@ -592,57 +567,111 @@ const EditScene: React.FC = () => {
       return;
     }
     const data: SceneData = {
-      "sceneId": response.data.data.sceneId,
-      "sceneName": response.data.data.scname,
-      "sceneDesc": response.data.data.description,
-      "sceneRetries": response.data.data.retry,
-      "sceneTimeout": response.data.data.timeout,
-      "author": response.data.data.author,
-      "createTime": response.data.data.createAt,
-      "updateTime": response.data.data.updateAt,
-      "actionNum": response.data.data.actions?.length,
-      "actions": response.data.data.actions
+      sceneId: response.data.data.sceneId,
+      sceneName: response.data.data.scname,
+      sceneDescription: response.data.data.description,
+      sceneRetries: response.data.data.retry,
+      sceneTimeout: response.data.data.timeout,
+      author: response.data.data.author,
+      createTime: response.data.data.createAt,
+      updateTime: response.data.data.updateAt,
+      actionNum: response.data.data.actions?.length,
+      actions: response.data.data.actions.map((action: any) => ({
+        actionId: action.actionId,
+        relateId: action.relateId,
+        actionName: action.actionName,
+        actionDescription: action.actionDescription,
+        actionTimeout: action.timeout,
+        actionRetry: action.retry,
+        actionMethod: action.actionMethod,
+        actionRoute: action.actionPath,
+        actionExpect: action.expect,
+        actionOutput: action.output,
+        actionSearchKey: action.searchKey,
+        actionDomain: action.domainKey,
+        actionEnvironment: action.envKey,
+        actionDependencies: action.dependency.map((dep: any) => ({
+          dataKey: dep.dataKey,
+          dependType: dep.refer.type,
+          targetField: dep.refer.target,
+          dsType: (() => {
+            switch(dep.type) {
+              case '1':
+                return 'scene';
+              case '2':
+                return 'basic';
+              case '3':
+                return 'custom';
+              case '4':
+                return 'event';
+            }
+          })(),
+          relateaction: dep.actionKey,
+          customValue: dep.dataKey,
+          cacheKey: dep.dataKey
+        }))
+      }))
     };
-    console.log(response.data.data)
     setSceneData(data);
     form.setFieldsValue(data);
   };
 
-  const handleOk = () => {
-    setIsModalVisible(false);
-    navigate('/dashboard/api/scene');
-  };
-
-  const handleBack = () => {
-    navigate('/dashboard/api/scene');
-  };
-
-  const handleSave = async () => {
+  const updateScene = async () => {
     try {
-      const values = await form.getFieldsValue();
       if (sceneData?.actions.length == 0) {
         message.error("列表数据为空")
         return
       }
       const data = {
-        "scname": values?.sceneName,
-        "description": values?.sceneDesc,
-        "timeout": values?.sceneTimeout,
-        "retry": values?.sceneRetries,
-        "actions": sceneData?.actions
+        "scname": sceneData?.sceneName,
+        "description": sceneData?.sceneDescription,
+        "timeout": sceneData?.sceneTimeout,
+        "retry": sceneData?.sceneRetries,
+        "actions": sceneData?.actions.map((action: ActionInfo) => ({
+          actionId: action.actionId,
+          relateId: action.relateId,
+          actionName: action.actionName,
+          actionDescription: action.actionDescription,
+          timeout: action.actionTimeout,
+          retry: action.actionRetry,
+          actionMethod: action.actionMethod,
+          actionPath: action.actionRoute,
+          expect: action.actionExpect,
+          output: action.actionOutput,
+          searchKey: action.actionSearchKey,
+          domainKey: action.actionDomain,
+          envKey: action.actionEnvironment,
+          dependency: action.actionDependencies.map((dep) => ({
+            dataKey: dep.dataKey,
+            refer: {
+              type: dep.dependType,
+              target: dep.targetField
+            },
+            type: (() => {
+              switch(dep.dsType) {
+                case 'scene': return '1';
+                case 'basic': return '2';
+                case 'custom': return '3';
+                case 'event': return '4';
+                default: return '';
+              }
+            })(),
+            actionKey: dep.relateaction,
+            // dataKey: dep.customValue || dep.cacheKey
+          }))
+        }))
       }
-      console.log(values)
-      // const response = await axios.put(`http://localhost:8000/scene/update?scid=${sceneId}`, data)
-      // if (response.status != 200) {
-      //   message.error("保存场景失败")
-      //   return
-      // }
-      // if (response.data.code && response.data.code >  0) {
-      //   message.error("保存场景出现错误")
-      //   return
-      // }
-      // navigate("/dashboard/api/scene")
-      // message.success("更新场景成功")
+      const response = await axios.put(`http://localhost:8000/scene/update?scid=${sceneId}`, data)
+      if (response.status != 200) {
+        message.error("保存场景失败")
+        return
+      }
+      if (response.data.code && response.data.code >  0) {
+        message.error("保存场景出现错误")
+        return
+      }
+      navigate("/dashboard/api/scene")
+      message.success("更新场景成功")
       return
       
     } catch (errorInfo) {
@@ -650,117 +679,160 @@ const EditScene: React.FC = () => {
     }
   };
 
-  const handleDelete = (record: ActionData) => {
-    const newActions = sceneData?.actions.filter(item => item.actionId !== record.actionId);
-    setSceneData(prevState => ({
-      ...prevState!,
-      actions: newActions!
-    }));
+  const handleOk = () => {
+    setIsModalVisible(false);
+    navigate('/dashboard/api/scene');
   };
 
+  // const handleBack = () => {
+  //   navigate('/dashboard/api/scene');
+  // };
 
-  const handleEditCancel = () => {
-    setEditModalVisible(false);
-    setSelectedAction(null)
-    form.resetFields()
-  };
-
-  const handleEditOk = async () => {
-    try {
-      const values = await form.validateFields();
-      if (selectedAction) {
-        const updatedActions = sceneData!.actions.map(action => {
-          if (action.actionId === selectedAction.actionId) {
-            return { ...action, ...values };
-          }
-          return action;
-        });
-        setSceneData(prevState => ({
-          ...prevState!,
-          actions: updatedActions
-        }));
-      }
-      // setDrawerVisible(false);
-    } catch (errorInfo) {
-      console.log('Failed:', errorInfo);
-    }
-  };
-  const handleEdit = (record: ActionData,idx:any) => {
-    console.log(record)
-    setSelectedAction(record);
-    setEditModalVisible(true);
-  };
-
-  const columns = [
-    {
-      title: 'ApiID',
-      dataIndex: 'relateId',
-      key: 'actionId',
-    },
-    {
-      title: '请求方法',
-      dataIndex: 'actionMethod',
-      key: 'actionMethod',
-    },
-    {
-      title: '流程节点名称',
-      dataIndex: 'actionName',
-      key: 'actionName',
-    },
-    {
-      title: '重试次数',
-      dataIndex: 'retry',
-      key: 'retries',
-    },
-    {
-      title: '执行超时时间',
-      dataIndex: 'timeout',
-      key: 'timeout',
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (idx: any, record: ActionData) => (
-        <span style={{ display: 'flex', alignItems: 'center' }}>
-          <Tooltip title="编辑">
-            <EditOutlined onClick={() => handleEdit(record,idx)} style={{ marginRight: '8px' }} />
-          </Tooltip>
-          <Tooltip title="删除">
-            <DeleteOutlined onClick={() => handleDelete(record)} />
-          </Tooltip>
-        </span>
-      ),
-    },
-  ];
-
-  const getPreActions = (): Record<string, ActionData[]> => {
-    let data: Record<string, ActionData[]> = {};
-    
-    // 遍历每个 ActionData
-    sceneData?.actions.map((currentAction: ActionData,index:number) => {
-      // 初始化当前 actionId 的前置动作列表
-      if (!data[currentAction.actionId]) {
-        data[currentAction.actionId] = [];
-      }
-      data[currentAction.actionId] = sceneData.actions.slice(0,index)
-    });
-    return data
-  }
-
-  const saveActionRecord = (action:ActionData) => {
-    const index = sceneData?.actions?.findIndex(item => item.actionId === action.actionId)
-    console.log(action)
-    if (index !== -1) {
-      let updatedActions = sceneData?.actions as ActionData[];
+  // const handleSave = async () => {
+  //   try {
+  //     const values = await form.getFieldsValue();
+  //     if (sceneData?.actions.length == 0) {
+  //       message.error("列表数据为空")
+  //       return
+  //     }
+  //     const data = {
+  //       "scname": values?.sceneName,
+  //       "description": values?.sceneDesc,
+  //       "timeout": values?.sceneTimeout,
+  //       "retry": values?.sceneRetries,
+  //       "actions": sceneData?.actions
+  //     }
+  //     console.log(values)
+  //     // const response = await axios.put(`http://localhost:8000/scene/update?scid=${sceneId}`, data)
+  //     // if (response.status != 200) {
+  //     //   message.error("保存场景失败")
+  //     //   return
+  //     // }
+  //     // if (response.data.code && response.data.code >  0) {
+  //     //   message.error("保存场景出现错误")
+  //     //   return
+  //     // }
+  //     // navigate("/dashboard/api/scene")
+  //     // message.success("更新场景成功")
+  //     return
       
-      updatedActions[index] = action; // 更新对应索引的 ActionData
+  //   } catch (errorInfo) {
+  //     console.log('Failed:', errorInfo);
+  //   }
+  // };
+
+  // const handleDelete = (record: ActionData) => {
+  //   const newActions = sceneData?.actions.filter(item => item.actionId !== record.actionId);
+  //   setSceneData(prevState => ({
+  //     ...prevState!,
+  //     actions: newActions!
+  //   }));
+  // };
+
+
+  // const handleEditCancel = () => {
+  //   setEditModalVisible(false);
+  //   setSelectedAction(null)
+  //   form.resetFields()
+  // };
+
+  // const handleEditOk = async () => {
+  //   try {
+  //     const values = await form.validateFields();
+  //     if (selectedAction) {
+  //       const updatedActions = sceneData!.actions.map(action => {
+  //         if (action.actionId === selectedAction.actionId) {
+  //           return { ...action, ...values };
+  //         }
+  //         return action;
+  //       });
+  //       setSceneData(prevState => ({
+  //         ...prevState!,
+  //         actions: updatedActions
+  //       }));
+  //     }
+  //     // setDrawerVisible(false);
+  //   } catch (errorInfo) {
+  //     console.log('Failed:', errorInfo);
+  //   }
+  // };
+  // const handleEdit = (record: ActionData,idx:any) => {
+  //   console.log(record)
+  //   setSelectedAction(record);
+  //   setEditModalVisible(true);
+  // };
+
+  // const columns = [
+  //   {
+  //     title: 'ApiID',
+  //     dataIndex: 'relateId',
+  //     key: 'actionId',
+  //   },
+  //   {
+  //     title: '请求方法',
+  //     dataIndex: 'actionMethod',
+  //     key: 'actionMethod',
+  //   },
+  //   {
+  //     title: '流程节点名称',
+  //     dataIndex: 'actionName',
+  //     key: 'actionName',
+  //   },
+  //   {
+  //     title: '重试次数',
+  //     dataIndex: 'retry',
+  //     key: 'retries',
+  //   },
+  //   {
+  //     title: '执行超时时间',
+  //     dataIndex: 'timeout',
+  //     key: 'timeout',
+  //   },
+  //   {
+  //     title: '操作',
+  //     key: 'action',
+  //     render: (idx: any, record: ActionData) => (
+  //       <span style={{ display: 'flex', alignItems: 'center' }}>
+  //         <Tooltip title="编辑">
+  //           <EditOutlined onClick={() => handleEdit(record,idx)} style={{ marginRight: '8px' }} />
+  //         </Tooltip>
+  //         <Tooltip title="删除">
+  //           <DeleteOutlined onClick={() => handleDelete(record)} />
+  //         </Tooltip>
+  //       </span>
+  //     ),
+  //   },
+  // ];
+
+  // const getPreActions = (): Record<string, ActionData[]> => {
+  //   let data: Record<string, ActionData[]> = {};
+    
+  //   // 遍历每个 ActionData
+  //   sceneData?.actions.map((currentAction: ActionData,index:number) => {
+  //     // 初始化当前 actionId 的前置动作列表
+  //     if (!data[currentAction.actionId]) {
+  //       data[currentAction.actionId] = [];
+  //     }
+  //     data[currentAction.actionId] = sceneData.actions.slice(0,index)
+  //   });
+  //   return data
+  // }
+
+  // const saveActionRecord = (action:ActionData) => {
+  //   const index = sceneData?.actions?.findIndex(item => item.actionId === action.actionId)
+  //   console.log(action)
+  //   if (index !== -1) {
+  //     let updatedActions = sceneData?.actions as ActionData[];
+      
+  //     updatedActions[index] = action; // 更新对应索引的 ActionData
   
-      setSceneData(prevState => ({
-        ...prevState!,
-        actions: updatedActions
-      }));
-    }
-  }
+  //     setSceneData(prevState => ({
+  //       ...prevState!,
+  //       actions: updatedActions
+  //     }));
+  //   }
+  // }
+
   return (
     <>
       <Modal
@@ -780,25 +852,24 @@ const EditScene: React.FC = () => {
       <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Content style={{ padding: '0 50px', width: '100%', flex: 1 }}>
               <div style={{ background: '#fff', padding: 24, minHeight: 360, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <SceneInfo sceneDetail={sceneData as SceneDetail} onSceneDetailChange={(updatedSceneDetail: SceneDetail) => setSceneData(prevState => ({
+                  <SceneInfo sceneDetail={sceneData as SceneInfo} onSceneDetailChange={(updatedSceneDetail: SceneInfo) => setSceneData(prevState => ({
                     ...prevState!,
                     ...updatedSceneDetail
                   }))} />
                   <ActionList 
                     actionList={sceneData?.actions || []} 
-                    updateActionList={(updatedActionList: ActionData[]) => setSceneData(prevState => ({
+                    updateActionList={(updatedActionList: ActionInfo[]) => setSceneData(prevState => ({
                       ...prevState!,
                       actions: updatedActionList
                     }))}
                   />
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', background: '#fff' }}>
-                <Button style={{ marginRight: '10px' }}>取消</Button>
-                <Button type="primary" onClick={() => {
-                  // updateTask(taskInfo, sceneList);
-                  
-                  message.success("保存成功")
-                }}>保存</Button>
+                <Button style={{ marginRight: '10px' }} onClick={() => {
+                    navigate('/dashboard/api/scene')
+                  }
+                }>取消</Button>
+                <Button type="primary" onClick={updateScene}>保存</Button>
               </div>
           </Content>
         </Layout>

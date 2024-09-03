@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } from 'antd';
 import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import NewDataModal from './task/createModal';
+import NewDataModal from '../components/interface_auto/task/createModal';
 import axios from 'axios';
 
 interface Task {

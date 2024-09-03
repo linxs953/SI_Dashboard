@@ -2,15 +2,19 @@ import { Card, Tabs, Button, Table, Drawer, Modal, Row, Col, Input, InputNumber,
 import React, { useState } from "react";
 import sceneList from "../task/sceneList";
 import { useForm } from "antd/es/form/Form";
+import { useEffect } from "react";
 
-const {Option} = Select
+const { Option } = Select;
 
-const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (updatedActionList: ActionInfo[]) => void }> = ({ actionList, updateActionList }) => {
-    const [form ] = useForm()
-    const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
-    const [isConfigDrawerVisible, setIsConfigDrawerVisible] = React.useState(false);
-    const [dependSelectTab, setDependSelectTab] = useState('headers');
-    const [currentStep, setCurrentStep] = useState<ActionInfo>({
+const ActionList: React.FC<{ 
+  actionList: ActionInfo[], 
+  updateActionList: (updatedActionList: ActionInfo[]) => void 
+}> = ({ actionList, updateActionList }) => {
+  const [form] = useForm();
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isConfigDrawerVisible, setIsConfigDrawerVisible] = useState(false);
+  const [dependSelectTab, setDependSelectTab] = useState('headers');
+  const [currentStep, setCurrentStep] = useState<ActionInfo>({
         actionId: '',
         actionName: '',
         actionDescription: '',
@@ -25,7 +29,7 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
         actionSearchKey: '',
         actionDomain: '',
         actionEnvironment: '',
-    });
+  });
 
     const handleEditModalCancel = () => {
         setIsEditModalVisible(false);
@@ -42,12 +46,27 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
         }
         updateActionList(actionList.map((action) => action.actionId === step.actionId ? updateStep : action))
         handleEditModalCancel()
-        console.log(updateStep)
         message.success("更新流程成功")
     }
 
     const showEditModal = (step:ActionInfo) => {
-        setCurrentStep(step);
+        setCurrentStep({
+            ...step,
+            actionId: step.actionId,
+            actionName: step.actionName,
+            actionDescription: step.actionDescription,
+            actionTimeout: step.actionTimeout,
+            actionRetry: step.actionRetry,
+            actionMethod: step.actionMethod,
+            actionRoute: step.actionRoute,
+            actionDependencies: step.actionDependencies,
+            relateId: step.relateId,
+            actionExpect: step.actionExpect,
+            actionOutput: step.actionOutput,
+            actionSearchKey: step.actionSearchKey,
+            actionDomain: step.actionDomain,
+            actionEnvironment: step.actionEnvironment,
+        });
         setIsEditModalVisible(true);
     }
 
@@ -59,6 +78,19 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
 
     const handleConfigDrawerClose = () => {
         setIsConfigDrawerVisible(false);
+    };
+
+
+    const handleConfigDrawerOpen = (step: ActionInfo) => {
+        setCurrentStep(step);
+        form.resetFields();
+        form.setFieldsValue({
+          headers: step.actionDependencies.filter(dep => dep.dependType === 'headers'),
+          path: step.actionDependencies.filter(dep => dep.dependType  === 'path'),
+          params: step.actionDependencies.filter(dep => dep.dependType  === 'params'),
+          payload: step.actionDependencies.filter(dep => dep.dependType  === 'payload')
+        });
+        setIsConfigDrawerVisible(true);
     };
 
     const onFinish = (values: any) => {
@@ -89,21 +121,21 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
         },
         {
           title: '请求路由',
-          dataIndex: 'actionPath',
+          dataIndex: 'actionRoute',
           key: 'stepRoute',
           width: 200, 
           align: 'center',
         },
         {
           title: '重试次数',
-          dataIndex: 'retry',
+          dataIndex: 'actionRetry',
           key: 'stepRetry',
           width: 200, 
           align: 'center',
         },
         {
           title: '超时时间',
-          dataIndex: 'timeout',
+          dataIndex: 'actionTimeout',
           key: 'stepTimeout',
           width: 200,
           align: 'center',
@@ -117,6 +149,11 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
                   <Tooltip title="编辑">
                       <Button type="link" onClick={() => showEditModal(record)} style={{ marginRight: 8 }}>
                           编辑
+                      </Button>
+                  </Tooltip>
+                  <Tooltip title="配置依赖">
+                      <Button type="link" onClick={() => handleConfigDrawerOpen(record) } style={{ marginRight: 8 }}>
+                          配置依赖
                       </Button>
                   </Tooltip>
                   <Popconfirm
@@ -245,7 +282,8 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
               form.setFieldsValue({
                 [dependSelectTab]: {
                   [fields.length]: {
-                    dsType: 'scene'
+                    dsType: 'scene',
+                    dependType: dependSelectTab
                   }
                 }
               })
@@ -255,6 +293,16 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
           </Form.Item>
         </>
     )
+
+
+    useEffect(() => {
+        if (currentStep) {
+            setCurrentStep(currentStep)
+        }
+    }, [currentStep])
+
+    useEffect(() => {
+    }, [actionList])
 
     return (
         <>
@@ -289,8 +337,7 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
                   <Button onClick={handleConfigDrawerClose} style={{ marginRight: 20 }}>
                     取消
                   </Button>
-                  <Button type="primary" onClick={() => {
-                    console.log(form.getFieldsValue());
+                  <Button type="primary" onClick={() => {    
                     const updatedDependencies = form.getFieldsValue();
                     const updatedActionDependencies = [
                       ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.dependType)),
@@ -304,9 +351,14 @@ const ActionList: React.FC<{ actionList: ActionInfo[], updateActionList: (update
                       ...currentStep,
                       actionDependencies: updatedActionDependencies
                     };
-  
-                    console.log(updatedStep)
-  
+                    // 更新 actionList
+                    const updatedActionList = actionList.map(action => 
+                      action.actionId === updatedStep.actionId ? updatedStep : action
+                    );
+
+                    updateActionList(updatedActionList);
+                    message.success("依赖配置已更新");
+    
                     setIsConfigDrawerVisible(false)
                   }}>
                     保存

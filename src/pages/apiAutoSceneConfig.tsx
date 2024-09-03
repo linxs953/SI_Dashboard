@@ -4,8 +4,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
-import ConfirmDeleteModal from './scene/deleteSceneModal';
-import NewSceneModal from './scene/newSceneModal';
+import ConfirmDeleteModal from '../components/interface_auto/scene/deleteSceneModal';
+import NewSceneModal from '../components/interface_auto/scene/newSceneModal';
 
 
 

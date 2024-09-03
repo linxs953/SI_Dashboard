@@ -3,17 +3,16 @@ import { useEffect } from "react";
 
 
 
-const SceneInfo: React.FC<{ sceneDetail: SceneDetail; onSceneDetailChange: (updatedSceneDetail: SceneDetail) => void }> = ({ sceneDetail, onSceneDetailChange }) => {
+const SceneInfo: React.FC<{ sceneDetail: SceneInfo; onSceneDetailChange: (updatedSceneDetail: SceneInfo) => void }> = ({ sceneDetail, onSceneDetailChange }) => {
     const [form] = Form.useForm();
 
     useEffect(() => {
       form.setFieldsValue(sceneDetail);
-      console.log(sceneDetail);
     }, [sceneDetail]);
   
     const handleFormChange = () => {
       const updatedValues = form.getFieldsValue();
-      onSceneDetailChange(updatedValues as SceneDetail);
+      onSceneDetailChange(updatedValues as SceneInfo);
     };
   
     return (
@@ -63,7 +62,7 @@ const SceneInfo: React.FC<{ sceneDetail: SceneDetail; onSceneDetailChange: (upda
           </Row>
           <Row gutter={20}>
             <Col span={20}>
-              <Form.Item label="工作流描述" name="sceneDesc">
+              <Form.Item label="工作流描述" name="sceneDescription">
                 <Input.TextArea rows={4}  />
               </Form.Item>
             </Col>
