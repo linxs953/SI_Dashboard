@@ -545,7 +545,30 @@ const EditScene: React.FC = () => {
     if (!sceneId) {
       showModal();
     } else {
-      fetchSceneData(sceneId);
+      // fetchSceneData(sceneId);
+      setSceneData({
+        sceneId: 'scid',
+        sceneName: '测试场景',
+        sceneDesc: '测试场景',
+        sceneRetries: 10,
+        sceneTimeout: 10,
+        author: 'linxs',
+        createTime: '2024-10-10: 00:00:00',
+        updateTime: '2024-10-10: 00:00:00',
+        actionNum: 10,
+        actions: [
+          {
+            actionId: "acid",
+            actionName: 'string',
+            retry: 10,
+            timeout: 10,
+            relateId: 'string',
+            actionMethod: 'string',
+            actionPath: '/api/path',
+            dependency: []
+          },
+        ]
+      })
     }
   }, [location, sceneId]);
 
