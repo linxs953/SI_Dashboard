@@ -10,26 +10,26 @@ const ActionList: React.FC<{
   actionList: ActionInfo[], 
   updateActionList: (updatedActionList: ActionInfo[]) => void 
 }> = ({ actionList, updateActionList }) => {
-  const [form] = useForm();
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isConfigDrawerVisible, setIsConfigDrawerVisible] = useState(false);
-  const [dependSelectTab, setDependSelectTab] = useState('headers');
-  const [currentStep, setCurrentStep] = useState<ActionInfo>({
-        actionId: '',
-        actionName: '',
-        actionDescription: '',
-        actionTimeout: 0,
-        actionRetry: 0,
-        actionMethod: '',
-        actionRoute: '',
-        actionDependencies: [],
-        relateId: '',
-        actionExpect: '',
-        actionOutput: '',
-        actionSearchKey: '',
-        actionDomain: '',
-        actionEnvironment: '',
-  });
+    const [form] = useForm();
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isConfigDrawerVisible, setIsConfigDrawerVisible] = useState(false);
+    const [dependSelectTab, setDependSelectTab] = useState('headers');
+    const [currentStep, setCurrentStep] = useState<ActionInfo>({
+          actionId: '',
+          actionName: '',
+          actionDescription: '',
+          actionTimeout: 0,
+          actionRetry: 0,
+          actionMethod: '',
+          actionRoute: '',
+          actionDependencies: [],
+          relateId: '',
+          actionExpect: '',
+          actionOutput: '',
+          actionSearchKey: '',
+          actionDomain: '',
+          actionEnvironment: '',
+    });
 
     const handleEditModalCancel = () => {
         setIsEditModalVisible(false);

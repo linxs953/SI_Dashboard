@@ -22,15 +22,7 @@ interface Scene {
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedScenes, setSelectedScenes] = useState<Scene[]>([]);
-  const [isSelectModalVisible, setIsSelectModalVisible] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchResults, setSearchResults] = useState<Scene[]>([]);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
   const navgate = useNavigate();
-  const [form] = Form.useForm();
 
 
   // 假设这是一个获取任务列表的API调用
@@ -137,86 +129,14 @@ const TaskList: React.FC = () => {
     setIsModalVisible(true);
   };
 
-//   新增Modal---取消操作
-  const handleNewTaskCancel = () => {
-    form.resetFields();
-    setSelectedScenes([]);
-    setIsModalVisible(false);
-  };
 
-//   新增Modal -- 提交创建任务
-  const handleNewTaskOk = async () => {
-    try {
-      await form.validateFields();
-      const values = form.getFieldsValue();
+  const newModalOk = () => {
+    setIsModalVisible(false)
+    fetchTasks()
+  }
 
-      // 请求Api成功后关闭弹窗,刷新列表
-      form.resetFields();
-      setIsModalVisible(false);
-      fetchTasks();
-    } catch (error) {
-      console.error('Validation failed:', error);
-    }
-  };
-
-
-//   新增Modal添加场景
-  const handleAddScenes = () => {
-    setIsSelectModalVisible(true);
-  };
-
-//   关闭选择场景Modal
-  const handleSelectCancel = () => {
-    setIsSelectModalVisible(false);
-  };
-
-//   选择场景Modal --- 加载到列表
-  const handleSelectOk = () => {
-    setIsSelectModalVisible(false);
-  };
-
-//   选择场景Modal --- 设置输入框的关键词
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchKeyword(e.target.value);
-  };
-
-//   选择场景Modal --- 点击搜索按钮, 获取数据填充到列表中
-  const handleSearchSubmit = () => {
-    // 假设这是搜索API调用
-    const results: Scene[] = [
-      { sceneId: "1", name: "Scene 1" },
-      { sceneId: "2", name: "Scene 2" },
-      { sceneId: "3", name: "Scene 3" },
-    ].filter((scene) =>
-      scene.name.toLowerCase().includes(searchKeyword.toLowerCase())
-    );
-    setSearchResults(results);
-    setTotal(results.length);
-  };
-
-//   选择弹窗Modal --- 搜索结果翻页
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-  const handlePageSizeChange = (current: number, size: number) => {
-    setPageSize(size);
-  };
-
-  const handleSelectScene = (scene: Scene) => {
-    if (!selectedScenes.some(s => s.sceneId === scene.sceneId)) {
-      setSelectedScenes([...selectedScenes, scene]);
-    } else {
-      message.warning("此场景已添加!");
-    }
-  };
-
-//   移除场景
-  const handleRemoveScene = (scene: Scene) => {
-    setSelectedScenes(selectedScenes.filter(s => s.sceneId !== scene.sceneId));
-  };
-
-  const fetch = async (page?: number, pageSize?: number) => {
-
+  const newModalCancel = () => {
+    setIsModalVisible(false)
   }
 
   return (
@@ -233,8 +153,10 @@ const TaskList: React.FC = () => {
         visible={isModalVisible}
         title={"新建任务"}
         searchTitle={"搜索场景"}
-        fetchData={fetchTasks}
-        closeModel={handleNewTaskCancel}
+        onOk={newModalOk}
+        onCancel={newModalCancel}
+        // fetchData={fetchTasks}
+        // closeModel={handleNewTaskCancel}
         newModalFormSpec={[
           {
             disable: false,

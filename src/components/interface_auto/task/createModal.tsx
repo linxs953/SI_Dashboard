@@ -47,18 +47,22 @@ interface NewSceneModalProps {
   newModalFormSpec:Array<FormItemInfo>,
   searchPlaceholder: string,
   visible: boolean;
-  fetchData: (page?: number, pageSize?: number) => Promise<void>;
-  closeModel: () =>(void);
+  // fetchData: (page?: number, pageSize?: number) => Promise<void>;
+  // closeModel: () =>(void);
+  onOk: () => (void);
+  onCancel: () => (void);
 }
 
 const NewDataModal: React.FC<NewSceneModalProps> = ({
   visible,
   title,
   searchTitle,
-  fetchData,
-  closeModel,
+  // fetchData,
+  // closeModel,
   newModalFormSpec,
-  searchPlaceholder
+  searchPlaceholder,
+  onCancel,
+  onOk
 }) => {
 
   // state: 创建场景 Modal 的数据列表
@@ -120,9 +124,11 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
         const response = await axios.post(submitTaskUrl,payload)
         if (response.status === 200) {
           message.success("新建任务成功")
-          closeModel()
+          // 执行成功回调函数
+          onOk()
           form.resetFields()
-          fetchData()
+          // closeModel()
+          // fetchData()
         } else {
           message.error("新建任务失败")
         }
@@ -135,9 +141,11 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   };
 
   const handleCancel = () => {
-    closeModel()
+    // 执行NewModal关闭的回调函数
+    onCancel()
+    // closeModel()
     form.resetFields()
-    setListData([])
+    // setListData([])
   };
 
   const showSearchModal = () => {
