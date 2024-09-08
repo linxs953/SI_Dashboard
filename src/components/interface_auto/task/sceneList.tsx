@@ -1,7 +1,9 @@
 import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Table, Tabs, Tooltip } from "antd"
 import { useForm } from "antd/es/form/Form"
+import Search from "antd/es/input/Search"
 import React from "react"
 import { useEffect, useState } from "react"
+import ActionExpect from "../scene/actionExpect";
 
 const {Option} = Select
 
@@ -22,7 +24,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     actionRoute: '',
     actionDependencies: [],
     relateId: '',
-    actionExpect: '',
+    actionExpect: {api: [], sql: []},
     actionOutput: '',
     actionSearchKey: '',
     actionDomain: '',
@@ -38,6 +40,122 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     searchKey: '',
     environment: ''
   });
+
+  const [selectScene, setSelectScene] = useState<SceneInfo>({
+    sceneId: '',
+    sceneName: '',
+    sceneDescription: '',
+    sceneTimeout: 0,
+    sceneRetries: 0,
+    actionList: [],
+    searchKey: '',
+    environment: ''
+  });
+
+  const [searchKey, setSearchKey] = useState('');
+
+  const [isSelectActionModalVisible, setIsSelectActionModalVisible] = useState(false)
+
+  const [isCacheModalVisible, setIsCacheModalVisible] = useState(false)
+
+
+  // 设置场景依赖时,具体的记录
+  const [sceneIndex, setSceneIndex] = useState(0);
+
+  // 设置缓存依赖时,具体的记录
+  const [cacheIndex, setCacheIndex] = useState(0);
+
+
+  const [isExpectDrawerModalVisible,setIsExpectDrawerModalVisible] = useState(false)
+
+
+  useEffect(() => {
+    // form.setFieldsValue({
+    //   sceneName: selectScene.sceneName,
+    //   sceneDescription: selectScene.sceneDescription,
+    //   sceneTimeout: selectScene.sceneTimeout,
+    //   sceneRetries: selectScene.sceneRetries,
+    //   searchKey: selectScene.searchKey,
+    //   environment: selectScene.environment,
+    // });
+  }, [selectScene]);
+
+
+  const updateCurrentStepExpect = (updateAction: ActionInfo) => {
+    // 更新 sceneList
+    const updatedSceneList = sceneList.map(scene => {
+      if (scene.sceneId === activeTabKey) {
+        const updatedActionList = scene.actionList.map(action => {
+          if (String(action.actionId) === String(updateAction.actionId)) {
+            return updateAction
+          }
+          return action;
+        });
+
+        
+        return {
+          ...scene,
+          actionList: updatedActionList
+        };
+      }
+      return scene;
+    });
+
+    // 调用 updateSceneList 函数更新状态
+    updateSceneList(updatedSceneList);
+  };
+
+
+
+  const handleEditSceneModalCancel = () => {
+    setIsEditSceneModalVisible(false);
+  };
+
+  const handleEditSceneModalOk = () => {
+    const scene = sceneList.find(s => s.sceneId === activeTabKey);
+    setCurrentScene(scene as SceneInfo);
+    setIsEditSceneModalVisible(false);
+  };
+
+  const handleEditSceneModalOpen = (scene: SceneInfo) => {
+    setCurrentScene(scene);
+    setIsEditSceneModalVisible(true);
+  };
+
+  const handleEditModalOk = () => {
+    const scene = sceneList.find(s => s.sceneId === activeTabKey);
+    setCurrentScene(scene as SceneInfo);
+    setIsEditModalVisible(false);
+  };
+
+  const handleAddStep = () => {
+    const scene = sceneList.find(s => s.sceneId === activeTabKey);
+    setCurrentScene(scene as SceneInfo);
+    setIsEditModalVisible(true);
+  };
+
+  useEffect(() => {
+    const scene = sceneList.find(s => s.sceneId === activeTabKey);
+    setCurrentScene(scene as SceneInfo);
+  }, [activeTabKey]);
+
+  const handleSearch = (value: string) => {
+    setSearchKey(value);
+  };
+
+  const handleTabChange = (key: string) => {
+    setActiveTabKey(key);
+  };
+
+  const handleConfigDrawerClose = () => {
+    setIsConfigDrawerVisible(false);
+  };
+
+  const handleConfigDrawerOpen = (step: ActionInfo) => {
+    setCurrentStep(step);
+    form.resetFields();
+    // form.set
+  }
 
   const columns = [
     {
@@ -85,7 +203,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     {
       title: '操作',
       key: 'action',
-      width: 250, // 指定操作列的宽度为250像素
+      width: 270, // 指定操作列的宽度为250像素
       render: (_: any, record: ActionInfo) => (
           <>
               <Tooltip title="编辑">
@@ -96,6 +214,11 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               <Tooltip title="配置依赖" >
                 <Button type='link' onClick={() => showConfigDrawer(record)} >
                     配置依赖
+                </Button>
+              </Tooltip>
+              <Tooltip title="预期结果" >
+                <Button type='link' onClick={() => showExpectDrawer(record)} >
+                    预期结果
                 </Button>
               </Tooltip>
               <Popconfirm
@@ -121,7 +244,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setCurrentStep(step);
     setIsEditModalVisible(true);
     form.setFieldsValue(step);
-    console.log(step)
   };
 
   const handleEditModalCancel = () => {
@@ -199,13 +321,19 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     });
   };
 
-  const handleConfigDrawerClose = () => {
-    setIsConfigDrawerVisible(false);
-  };
+  const showExpectDrawer = (step:ActionInfo) => {
+    setCurrentStep(step);
 
-  const handleTabChange = (key: string) => {
-    setActiveTabKey(key);
-  };
+    setIsExpectDrawerModalVisible(true);
+  }
+
+  // const handleConfigDrawerClose = () => {
+  //   setIsConfigDrawerVisible(false);
+  // };
+
+  // const handleTabChange = (key: string) => {
+  //   setActiveTabKey(key);
+  // };
  
   const onFinish = async (values: any) => {
     const value = await form.getFieldsValue()
@@ -264,7 +392,15 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                       name={[name, 'relateStep']}
                       label="场景索引"
                     >
-                      <Input />
+                       <Search
+                          readOnly
+                          onSearch={() => {
+                            setIsSelectActionModalVisible(true)
+                            setSceneIndex(name)
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        />
+
                     </Form.Item>
                   );
                 case 'basic':
@@ -274,7 +410,16 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                       name={[name, 'cacheKey']}
                       label="缓存键"
                     >
-                      <Input />
+                        <Search
+                          readOnly
+                          onSearch={() => {
+                            // setIsSelectActionModalVisible(true)
+                            // setSceneIndex(name)
+                            setIsCacheModalVisible(true)
+                            setCacheIndex(name)
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        />  
                     </Form.Item>
                   );
                 case 'custom':
@@ -332,6 +477,89 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           添加数据
         </Button>
       </Form.Item>
+      <Modal
+        title="选择关联Action"
+        open={isSelectActionModalVisible}
+        onOk={() => {
+          const formValues = form.getFieldsValue();
+          const sceneId = formValues.selectedSceneId
+          const selectedActionId = formValues.selectedActionId
+          const referenceField = formValues.referenceField
+          form.setFieldValue([dependSelectTab, sceneIndex, 'relateStep'], `${sceneId}.${selectedActionId}/${referenceField}`);
+          setIsSelectActionModalVisible(false);
+          console.log(form.getFieldsValue())
+        }}
+        onCancel={() => setIsSelectActionModalVisible(false)}
+      >
+        <>
+          <Form form={form} layout="vertical">
+            <Form.Item name="selectedSceneId" label="选择场景">
+              <Select
+                placeholder="请选择场景"
+                style={{ width: '100%', marginBottom: '10px' }}
+                onChange={(value) => {
+                  const selectedScene = sceneList.find(scene => scene.sceneId === value);
+                  setSelectScene(selectedScene);
+                  form.setFieldsValue({ selectedActionId: undefined });
+                }}
+              >
+                {sceneList.map(scene => (
+                  <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="selectedActionId" label="选择Action">
+              <Select
+                placeholder="请选择Action"
+                style={{ width: '100%', marginBottom: '10px' }}
+                disabled={!selectScene}
+              >
+                {selectScene?.actionList
+                  ?.filter((action: any) => {
+                    if (form.getFieldValue('selectedSceneId') === activeTabKey) {
+                      const currentActionIndex = currentScene.actionList.findIndex(
+                        (a: any) => a.actionId === currentStep.actionId
+                      );
+                      return currentScene.actionList.indexOf(action) < currentActionIndex;
+                    }
+                    return true;
+                  })
+                  .map((action: any) => (
+                    <Option key={action.actionId} value={action.actionId}>{action.actionName}</Option>
+                  ))
+                }
+              </Select>
+            </Form.Item>
+            <Form.Item name="referenceField" label="引用字段">
+              <Input placeholder="请输入引用字段" />
+            </Form.Item>
+          </Form>
+        </>
+      </Modal>
+
+      <Modal
+        title="选择基础数据"
+        open={isCacheModalVisible}
+        onOk={() => {
+          const formValues = form.getFieldsValue();
+          const cacheKey = formValues.cacheKey
+          const cacheFiled = formValues.cacheFiled
+          form.setFieldValue([dependSelectTab, cacheIndex, 'cacheKey'], `${cacheKey}/${cacheFiled}`);
+          setIsCacheModalVisible(false);
+        }}
+        onCancel={() => setIsCacheModalVisible(false)}
+      >
+        <>
+          <Form form={form} layout="vertical">
+            <Form.Item name="cacheKey">
+              <Input placeholder="请输入基础数据键" />
+            </Form.Item>
+            <Form.Item name="cacheFiled">
+              <Input placeholder="请输入字段名" />
+            </Form.Item>
+          </Form>
+        </>
+      </Modal>
     </>
   )
 
@@ -345,7 +573,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     if (sceneList.length > 0) {
       setActiveTabKey(sceneList[0].sceneId)
     }
-    console.log(sceneList)
   }, [sceneList])
 
   return (
@@ -413,8 +640,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                     actionDependencies: updatedActionDependencies
                   };
 
-                  console.log(updatedStep)
-
 
                   const updatedSceneList = sceneList.map(scene => 
                     scene.sceneId === activeTabKey
@@ -426,7 +651,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                         }
                       : scene
                   );
-                  console.log(updatedSceneList)
 
                   updateSceneList(updatedSceneList);
                   setIsConfigDrawerVisible(false)
@@ -488,6 +712,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               ]}
             />
           </Drawer>
+          <ActionExpect action={currentStep} setStep={setCurrentStep} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
           <Modal
             title="编辑步骤"
             open={isEditModalVisible}
@@ -598,9 +823,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             </Modal>
           )}
       </Card>
+
     </>
   );
 };
-
 export default SceneList;
-

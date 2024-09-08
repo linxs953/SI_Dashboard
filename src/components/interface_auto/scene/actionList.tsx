@@ -219,7 +219,7 @@ const ActionList: React.FC<{
                       return (
                         <Form.Item
                           {...restField}
-                          name={[name, 'relateStep']}
+                          name={[name, 'relateaction']}
                           label="场景索引"
                         >
                           <Input />

@@ -57,7 +57,17 @@ const TaskDetails = () => {
             creationTime: response.data.data.createTime,
             updateTime: response.data.data.updateTime,
           });
+          const getRelateStep = (dep:any)=> {
+            if (dep?.type != "1") return ""
+            if (dep?.dataKey != "") return `${dep.actionKey}/${dep.dataKey}`
+            if (dep?.dataKey == "") return `${dep.actionKey}`
+          }
 
+          const getCacheKey = (dep:any) => {
+            if (dep?.type != "2") return ""
+            if (dep?.dataKey != "") return `${dep.actionKey}/${dep.dataKey}`
+            if (dep?.dataKey == "") return `${dep.actionKey}`
+          }
           
           
           let sceneInfoList: SceneInfo[] = response.data.data.taskSpec.map(scene => (
@@ -89,15 +99,14 @@ const TaskDetails = () => {
                     dsType: getDataSource(dep?.type),
                     dataKey:dep?.dataKey  || '' ,
                     customValue: dep?.type === "3" ? `${dep?.dataKey}` || '' : '',
-                    cacheKey: dep?.type === "2" ? `${dep?.dataKey}` || '' : '',
-                    relateStep: dep?.type === "1" ? `${dep?.actionKey}` || '' : ''
+                    cacheKey: getCacheKey(dep),
+                    relateStep: getRelateStep(dep)
                   })),
                 ]
               })) : []
             }));
           sceneInfoList = sceneInfoList.filter(scene => scene.actionList.length > 0);
           setSceneList(sceneInfoList);
-          console.log(sceneInfoList)
       } else {
         message.error('获取任务详情失败');
       }
@@ -113,6 +122,38 @@ const TaskDetails = () => {
       if (dsName === 'basic') return '2';
       if (dsName === 'custom') return '3';
       return "4"
+    }
+
+    const getActionKey = (dep:any) =>{
+      if (dep?.dsType == "scene") {
+        if (dep?.relateStep?.includes('/')) {
+          return dep.relateStep.split('/')[0]
+        }
+        return dep?.relateStep
+      }
+      if (dep?.dsType == "basic") {
+        if (dep?.cacheKey?.includes('/')) {
+          return dep.cacheKey.split('/')[0]
+        }
+        return dep?.cacheKey
+      }
+      return ""
+    }
+
+    const getDataKey = (dep:any) =>{
+      if (dep?.dsType == "scene") {
+        if (dep?.relateStep?.includes('/')) {
+          return dep.relateStep.split('/')[1]
+        }
+        return dep?.relateStep
+      }
+      if (dep?.dsType == "basic") {
+        if (dep?.cacheKey?.includes('/')) {
+          return dep.cacheKey.split('/')[1]
+        }
+        return dep?.cacheKey
+      }
+      return ""
     }
     
     try {
@@ -148,8 +189,8 @@ const TaskDetails = () => {
             output: action.actionOutput,
             dependency: action.actionDependencies.map(dep => {
               const baseDep = {
-                actionKey: dep.relateaction,
-                dataKey: dep.dataKey?dep.dataKey: '',
+                actionKey: '',
+                dataKey: '',
                 type: getDataSourceCode(dep.dsType),
                 refer: {
                   type: dep.dependType,
@@ -159,9 +200,9 @@ const TaskDetails = () => {
               
               switch(dep.dsType) {
                 case 'scene':
-                  return { ...baseDep, actionKey: dep.relateStep };
+                  return { ...baseDep, actionKey: getActionKey(dep),dataKey: getDataKey(dep) };
                 case 'basic':
-                  return { ...baseDep, dataKey: dep.cacheKey };
+                  return { ...baseDep, actionKey: getActionKey(dep),dataKey: getDataKey(dep) };
                 case 'custom':
                   return { ...baseDep, dataKey: dep.customValue };
                 case 'event':
@@ -176,6 +217,7 @@ const TaskDetails = () => {
           }))
         }))
       };
+
 
       const response = await axios.post(`${domain}/task/update?taskId=${taskInfo.taskId}`, requestBody);
       
@@ -205,10 +247,13 @@ const TaskDetails = () => {
               </div>
           </Content>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', background: '#fff' }}>
-            <Button style={{ marginRight: '10px' }}>取消</Button>
+            <Button style={{ marginRight: '10px' }} onClick={() => {
+              navigate('/dashboard/api/task')
+            }}
+            >取消</Button>
             <Button type="primary" onClick={() => {
               updateTask(taskInfo, sceneList);
-              // navigate('/dashboard/api/task')
+              navigate('/dashboard/api/task')
             }}>保存</Button>
           </div>
           {(!taskId || taskId === "") && (

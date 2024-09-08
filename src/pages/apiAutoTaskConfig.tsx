@@ -43,7 +43,6 @@ const TaskList: React.FC = () => {
           updatedAt: task.updateAt,
         })
       })
-      console.log(data)
       setTasks(data);
     }
   };

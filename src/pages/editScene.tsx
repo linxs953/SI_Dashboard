@@ -78,7 +78,7 @@ const EditScene: React.FC = () => {
   };
 
   const fetchSceneData = async (scid: string) => {
-    const response = await axios.get(`http://${domain}/scene/get?scid=${scid}`);
+    const response = await axios.get(`${domain}/scene/get?scid=${scid}`);
     if (response.status !== 200) {
       message.error("获取场景信息失败");
       return;
@@ -137,6 +137,7 @@ const EditScene: React.FC = () => {
         }))
       }))
     };
+    
     setSceneData(data);
     form.setFieldsValue(data);
   };
@@ -186,7 +187,7 @@ const EditScene: React.FC = () => {
           }))
         }))
       }
-      const response = await axios.put(`http://${domain}/scene/update?scid=${sceneId}`, data)
+      const response = await axios.put(`${domain}/scene/update?scid=${sceneId}`, data)
       if (response.status != 200) {
         message.error("保存场景失败")
         return

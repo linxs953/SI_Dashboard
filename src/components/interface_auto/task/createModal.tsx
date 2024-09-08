@@ -119,7 +119,6 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
            "author": values.author,
            "sceneList": listData.map((item: Scene) => {return {sceneId: item.id,count: item.instanceCount}})
         }
-        console.log(payload)
         const submitTaskUrl = "http://localhost:8000/task/create"
         const response = await axios.post(submitTaskUrl,payload)
         if (response.status === 200) {

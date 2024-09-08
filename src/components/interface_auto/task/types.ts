@@ -20,12 +20,17 @@ interface ActionInfo {
     actionRetry: number
     actionMethod: string
     actionRoute: string
-    actionExpect: Object
+    actionExpect: expect
     actionOutput: Object
     actionSearchKey: string
     actionDomain: string
     actionEnvironment: string
     actionDependencies: actionDependencies[]
+}
+
+interface expect {
+    api: []
+    sql: {}
 }
 
 interface actionDependencies {

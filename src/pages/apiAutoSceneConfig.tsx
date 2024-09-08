@@ -135,7 +135,6 @@ export default function ScenConfig() {
 
   useEffect(() => {
     if (isInitialMount.current) {
-        console.log("执行 useEffect")
         if (data.length == 0) {
             fetchData(sceneListLoad.page, sceneListLoad.pageSize);
         }
