@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } from 'antd';
-import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined,DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import NewDataModal from '../components/interface_auto/task/createModal';
 import axios from 'axios';
+
+const domain = import.meta.env.VITE_API_URL
 
 interface Task {
   taskId: string;
@@ -19,6 +21,7 @@ interface Scene {
   name: string;
 }
 
+
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -28,9 +31,13 @@ const TaskList: React.FC = () => {
   // 假设这是一个获取任务列表的API调用
   const fetchTasks = async () => {
     // 这里可以替换为真实的API请求
-    const url = "http://localhost:8000/task/getList?page=1&pageSize=10"
+    const url = `${domain}/task/getList?page=1&pageSize=10`
     const response = await axios.get(url)
     if (response.status === 200) {
+      if (!response.data.data) {
+        setTasks([])
+        return
+      }
       let  data: Task[] = [
       ]
       response.data.data.map(task => {
@@ -50,6 +57,8 @@ const TaskList: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  
 
   const columns = [
     {
@@ -102,6 +111,12 @@ const TaskList: React.FC = () => {
             icon={<FilePdfFilled />}
             onClick={() => handleReport(record.taskId)}
           />
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.taskId)}
+          />
         </Space>
       ),
     },
@@ -116,11 +131,27 @@ const TaskList: React.FC = () => {
   const handleRun = async (taskId: string) => {
     // 假设这里调用一个运行任务的API
     console.log(`Running task ${taskId}`);
+    const url = `${domain}/task/run/${taskId}`
+    const response = await axios.post(url)
+    if (response.status === 200) {
+      message.success("运行成功")
+    }
   };
 
 //   查看任务报告
   const handleReport = (taskId: string) => {
     navgate(`/dashboard/api/task/reports?taskId=${taskId}`);
+  };
+
+  const handleDelete = async (taskId: string) => {
+    console.log(`Deleting task ${taskId}`);
+    const url = `${domain}/task/delete?taskId=${taskId}`
+    const response = await axios.delete(url)
+    if (response.status === 200) {
+      message.success("删除成功")
+      await fetchTasks()
+    }
+    
   };
 
 //   新增按钮触发弹窗

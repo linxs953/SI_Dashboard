@@ -165,7 +165,7 @@ export default function ScenConfig() {
             align: 'center',
             render: (_, record: Record) => (
                 <>
-                    <Button type="link" onClick={() => handleEditScene(record.sceneId)}>
+                    <Button disabled={true} type="link" onClick={() => handleEditScene(record.sceneId)}>
                         编辑
                     </Button>
                     <Button type="link" danger onClick={() => handleDeleteScene(record.sceneId)}>

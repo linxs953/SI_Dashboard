@@ -469,7 +469,10 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           form.setFieldsValue({
             [dependSelectTab]: {
               [fields.length]: {
-                dsType: 'scene'
+                dsType: 'scene',
+                dependType: dependSelectTab,
+                cacheKey: "",
+                relateStep: ""
               }
             }
           })
