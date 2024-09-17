@@ -244,18 +244,20 @@ const TaskDetails = () => {
               <div style={{ background: '#fff', padding: 24, minHeight: 360, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <TaskInfo taskDetail={taskInfo} onTaskDetailChange={setTaskInfo} />
                   <SceneList sceneList={sceneList} updateSceneList={setSceneList} />
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '5px 0', background: '#fff' }}>
+                    <Button style={{ marginRight: '10px' }} onClick={() => {
+                      navigate('/dashboard/api/task')
+                    }}
+                    >取消</Button>
+                    <Button type="primary" onClick={() => {
+                      updateTask(taskInfo, sceneList);
+                      navigate('/dashboard/api/task')
+                    }}>保存</Button>
+                  </div>
               </div>
+
           </Content>
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0', background: '#fff' }}>
-            <Button style={{ marginRight: '10px' }} onClick={() => {
-              navigate('/dashboard/api/task')
-            }}
-            >取消</Button>
-            <Button type="primary" onClick={() => {
-              updateTask(taskInfo, sceneList);
-              navigate('/dashboard/api/task')
-            }}>保存</Button>
-          </div>
+
           {(!taskId || taskId === "") && (
           <Modal
             title="警告"

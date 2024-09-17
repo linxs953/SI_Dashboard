@@ -264,14 +264,22 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
     <Modal
       title="添加接口"
       open={searchResultsVisible}
-      onOk={checkAndAddSelectedItems}
+      // onOk={checkAndAddSelectedItems}
+      onOk={() => {
+        setListData(prevListData => [...prevListData, ...selectedItems]);
+        setSearchResultsVisible(false);
+        setSelectedItems([]);
+        setSearchValue('');
+        setSearchResults([]);
+        setSelectAll(false);
+      }}
       onCancel={() => {
         setSearchResultsVisible(false);
         setSearchValue('');
         setSearchResults([]);
         setSelectedItems([]);
         setSelectAll(false);
-      } }
+      }}
       okText="加载到列表"
       cancelText="取消"
       okButtonProps={{ disabled: selectedItems.length === 0 }}

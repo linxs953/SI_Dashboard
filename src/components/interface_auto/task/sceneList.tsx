@@ -599,7 +599,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                         }))}
                         dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
                         pagination={{
-                          pageSize: 10,
+                          pageSize: 1,
                           showQuickJumper: true,
                           showTotal: (total) => `共 ${total} 条数据`,
                           position: ['bottomLeft']

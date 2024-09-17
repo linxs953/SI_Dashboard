@@ -97,22 +97,22 @@ const TaskList: React.FC = () => {
       render: (record: Task) => (
         <Space size="middle">
           <Button
-            type="primary"
+            // type="primary"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record.taskId)}
           />
           <Button
-            type="primary"
+            // type="primary"
             icon={<PlayCircleFilled />}
             onClick={() => handleRun(record.taskId)}
           />
           <Button
-            type="primary"
+            // type="primary"
             icon={<FilePdfFilled />}
             onClick={() => handleReport(record.taskId)}
           />
           <Button
-            type="primary"
+            // type="primary"
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.taskId)}
