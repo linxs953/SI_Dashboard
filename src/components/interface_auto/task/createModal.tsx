@@ -105,7 +105,8 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   const sceneEndIndex = sceneStartIndex + scenePageSize;
   const scenePaginatedData = listData.slice(sceneStartIndex, sceneEndIndex);
 
-  
+  const domain = import.meta.env.VITE_API_URL 
+
   const onFinish = async () => {
     try {
         // 触发表单验证
@@ -119,7 +120,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
            "author": values.author,
            "sceneList": listData.map((item: Scene) => {return {sceneId: item.id,count: item.instanceCount}})
         }
-        const submitTaskUrl = "http://localhost:8000/task/create"
+        const submitTaskUrl = `${domain}/task/create`
         const response = await axios.post(submitTaskUrl,payload)
         if (response.status === 200) {
           message.success("新建任务成功")
@@ -198,8 +199,8 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
 
 
   const onSearch = (value: string) => {
-    const allSceneUrl = `http://localhost:8000/scene/allScenes`
-    var reqUrl = `http://localhost:8000/scene/search?keyword=${value}`
+    const allSceneUrl = `${domain}/scene/allScenes`
+    var reqUrl = `${domain}/scene/search?keyword=${value}`
 
     if (value === '') {
         searchApi(allSceneUrl).then(data => {

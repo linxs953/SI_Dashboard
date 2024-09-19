@@ -9,6 +9,8 @@ interface AddApiModalProps {
 }
 
 const Search = Input.Search
+const domain = import.meta.env.VITE_API_URL 
+
 
 const AddApiModal: React.FC<AddApiModalProps> = ({ visible, onOk, onCancel }) => {
   const [searchValue, setSearchValue] = useState('');
@@ -23,7 +25,7 @@ const AddApiModal: React.FC<AddApiModalProps> = ({ visible, onOk, onCancel }) =>
       message.error('请输入关键词');
       return;
     }
-    const reqUrl = `http://localhost:8000/api/searchApi?keyword=${value}`;
+    const reqUrl = `${domain}/api/searchApi?keyword=${value}`;
     axios.get(reqUrl)
       .then(response => {
         if (response.data.data.length === 0) {

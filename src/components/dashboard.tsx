@@ -53,12 +53,12 @@ const MenuItemKeyMap:any = {
         "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
         "path": "/dashboard/api/task"
       },
-      {
-        "key": "api-td-manage",
-        "icon": <PieChartOutlined />,
-        "label": <Link to={'/dashboard/api/testdata/import'}>数据管理</Link>,
-        "path": "/dashboard/api/testdata/import"
-      },
+      // {
+      //   "key": "api-td-manage",
+      //   "icon": <PieChartOutlined />,
+      //   "label": <Link to={'/dashboard/api/testdata/import'}>数据管理</Link>,
+      //   "path": "/dashboard/api/testdata/import"
+      // },
     ]
   },
   

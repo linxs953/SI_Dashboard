@@ -371,8 +371,12 @@ const ReportDetail: React.FC = () => {
                             }}>
                               <span style={{width: '150px', marginRight: '15px', color: '#808080', fontSize: '18px', whiteSpace: 'nowrap' }}>执行时间: {selectedRecord.duration}ms</span>
                               <span style={{ marginRight: '15px', color: '#808080', fontSize: '18px', whiteSpace: 'nowrap' }}>
-                                执行状态: 成功
-                                <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px', fontSize: '20px' }} />
+                                  执行状态: {selectedRecord.status === '1' ? '成功' : '失败'}
+                                      {selectedRecord.status === '1' ? (
+                                        <CheckCircleOutlined style={{ color: '#52c41a', marginLeft: '8px', fontSize: '20px' }} />
+                                      ) : (
+                                        <CloseCircleOutlined style={{ color: '#ff4d4f', marginLeft: '8px', fontSize: '20px' }} />
+                                      )}
                               </span>
                               <a style={{ color: '#1890ff', cursor: 'pointer', fontSize: '18px', whiteSpace: 'nowrap' }} onClick={() => showModal(selectedRecord)}>查看详情</a>
                             </div>

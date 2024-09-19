@@ -72,6 +72,7 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
   const sceneEndIndex = sceneStartIndex + scenePageSize;
   const scenePaginatedData = listData.slice(sceneStartIndex, sceneEndIndex);
 
+  const domain = import.meta.env.VITE_API_URL 
 
   const onFinish = async () => {
     try {
@@ -93,7 +94,7 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
             key: "",
             env: "test"
         }
-        let url = 'http://localhost:8000/scene/new'
+        let url = `${domain}/scene/new`
         const response = await axios.post(url,data)
         if (response.status == 200) {
             message.success("创建场景成功")
@@ -155,7 +156,7 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
         message.error('请输入关键词');
         return
     }
-    var reqUrl = `http://localhost:8000/api/searchApi?keyword=${value}`
+    var reqUrl = `${domain}/api/searchApi?keyword=${value}`
     searchApi(reqUrl).then(data => {
         if (data.data.length === 0) {
             message.info('无搜索结果');

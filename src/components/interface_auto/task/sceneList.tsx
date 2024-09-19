@@ -268,6 +268,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
       ...form.getFieldsValue(),
     }
 
+
     const updatedActionList = upScene.actionList.map(step => 
       step.actionId === updatedStep.actionId ? updatedStep : step
     );
@@ -296,6 +297,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
   const updateSceneInfoOK = (upScene: SceneInfo) => {
     let updatedScene = {
+      ...upScene,
       "sceneId": upScene.sceneId,
       "actionList": upScene.actionList,
       ...form.getFieldsValue(),

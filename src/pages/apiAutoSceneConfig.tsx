@@ -79,6 +79,8 @@ export default function ScenConfig() {
 
   const isInitialMount = useRef(true);
 
+  const domain = import.meta.env.VITE_API_URL 
+
   const handleDeleteScene = (scid) => {
       setIsDeleteModalVisible(true)
       setSceneToDelete(scid)
@@ -90,7 +92,7 @@ export default function ScenConfig() {
 
   const deleteScene = async () => {
     try {
-      const response = await axios.delete(`http://localhost:8000/scene/delete?sceneId=${sceneToDelete}`);
+      const response = await axios.delete(`${domain}/scene/delete?sceneId=${sceneToDelete}`);
       if (response.status === 200) {
         message.success("场景删除成功");
         fetchData(initPage.page,initPage.pageSize)
@@ -118,7 +120,7 @@ export default function ScenConfig() {
  
   const fetchData = async (page = 1, pageSize = 10) => {
     try {
-      const response = await axios.get(`http://localhost:8000/scene/allScenes?page=${page}&pageSize=${pageSize}`); 
+      const response = await axios.get(`${domain}/scene/allScenes?page=${page}&pageSize=${pageSize}`); 
       if (response.data && response.data.data) {
         response.data.data = response.data.data.map((item: any, index: number) => ({
             ...item,
