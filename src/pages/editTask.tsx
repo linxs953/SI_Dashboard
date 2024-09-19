@@ -12,15 +12,19 @@ const domain = import.meta.env.VITE_API_URL
 
 const TaskDetails = () => {
   const [taskInfo, setTaskInfo] = useState<TaskDetail>({
-      taskId: '',
-      taskName: '',
-      relateSceneNum: 0,
-      description: '',
-      timeout: 0,
-      retry: 0,
-      creator: '',
-      creationTime: '',
-      updateTime: ''
+    taskId: '',
+    taskName: '',
+    relateSceneNum: 0,
+    description: '',
+    timeout: 0,
+    retry: 0,
+    creator: '',
+    creationTime: '',
+    updateTime: '',
+    taskDescription: '',
+    author: '',
+    scenesNum: 0,
+    scenes: []
   })
   
   const [sceneList, setSceneList] = useState<SceneInfo[]>([])
@@ -56,6 +60,10 @@ const TaskDetails = () => {
             creator: response.data.data.author,
             creationTime: response.data.data.createTime,
             updateTime: response.data.data.updateTime,
+            taskDescription: response.data.data.description || "无描述",
+            author: response.data.data.author,
+            scenesNum: response.data.data.taskSpec.length,
+            scenes: response.data.data.taskSpec || []
           });
           const getRelateStep = (dep:any)=> {
             if (dep?.type != "1") return ""

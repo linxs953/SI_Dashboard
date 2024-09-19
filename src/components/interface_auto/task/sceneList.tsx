@@ -1,4 +1,4 @@
-import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Table, Tabs, Tooltip } from "antd"
+import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Switch, Table, Tabs, Tooltip } from "antd"
 import { useForm } from "antd/es/form/Form"
 import Search from "antd/es/input/Search"
 import React from "react"
@@ -267,6 +267,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
       ...updatedStep,
       ...form.getFieldsValue(),
     }
+
 
 
     const updatedActionList = upScene.actionList.map(step => 
@@ -568,6 +569,81 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     </>
   )
 
+
+  const getSide = (url: string) => {
+    const urlPatterns = {
+      '管理侧': /(admin|demopsuadmin)/,
+      '平台侧': /(psu|demopsu)/,
+      '用户侧': /(psu|demopsu)/
+    };
+
+    for (const [side, pattern] of Object.entries(urlPatterns)) {
+      if (pattern.test(url)) {
+        form.setFieldsValue({
+          side: side
+        })
+        return side;
+      }
+    }
+
+    return '';
+  }
+
+  const getEnvironment = (url:string) => {
+    if (!url) {
+      return false;
+    }
+    if (url.includes('demopsuadmin') || url.includes('demopsu')) {
+      return false; // 测试环境
+    } else if (url.includes('admin.86lw.cc') || url.includes('psu.86lw.cc')) {
+      return true; // 生产环境
+    }
+    return false; // 默认返回测试环境
+  }
+
+  const getDomain = (side: string, environmentSwitch: boolean) => {
+    if (environmentSwitch !== undefined) {
+      if (environmentSwitch) {
+        // 生产环境
+        switch (side) {
+          case '管理侧':
+            return 'admin.86lw.cc';
+          case '平台侧':
+            return 'psu.86lw.cc';
+          case '用户侧':
+            return 'psu.86lw.cc';
+          // case '中台侧':
+          //   return 'https://middleware.prod.example.com';
+          // case '商家侧':
+          //   return 'https://merchant.prod.example.com';
+          // case '开放侧':
+          //   return 'https://open.prod.example.com';
+          default:
+            return '';
+        }
+      } else {
+        // 测试环境
+        switch (side) {
+          case '管理侧':
+            return 'demopsuadmin.86yfw.com';
+          case '平台侧':
+            return 'demopsu.86yfw.com';
+          case '用户侧':
+            return 'demopsu.86yfw.com';
+          // case '中台侧':
+          //   return 'https://middleware.test.example.com';
+          // case '商家侧':
+          //   return 'https://merchant.test.example.com';
+          // case '开放侧':
+          //   return 'https://open.test.example.com';
+          default:
+            return '';
+        }
+      }
+    }
+    return '';
+  }
+
   useEffect(() => {
     if (currentStep) {
       setCurrentStep(currentStep)
@@ -719,7 +795,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           </Drawer>
           <ActionExpect action={currentStep} setStep={setCurrentStep} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
           <Modal
-            title="编辑步骤"
+            title="编辑Action"
             open={isEditModalVisible}
             onCancel={handleEditModalCancel}
             width={700}
@@ -754,6 +830,53 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 </Form.Item>
                </Col>
                </Row>
+               <Row gutter={20}>
+                <Col span={20}>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item name="side" label="选择侧">
+                        <Select
+                          defaultValue={getSide(form.getFieldValue('actionDomain'))}
+                        onChange={(value) => {
+                          const environmentSwitch = form.getFieldValue('environmentSwitch');
+                          const domain = getDomain(value, environmentSwitch);
+                          form.setFieldsValue({
+                            actionDomain: domain
+                          });
+                        }}>
+                          <Option value="管理侧">管理侧</Option>
+                          <Option value="平台侧">平台侧</Option>
+                          <Option value="用户侧">用户侧</Option>
+                          {/* <Option value="中台侧">中台侧</Option>
+                          <Option value="商家侧">商家侧</Option>
+                          <Option value="开放侧">开放侧</Option> */}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="environmentSwitch" label="选择环境" valuePropName="checked">
+                        <Switch
+                          checkedChildren="生产"
+                          unCheckedChildren="测试"
+                          defaultChecked={getEnvironment(form.getFieldValue('actionDomain'))}
+                          onChange={(checked) => {
+                            const side = form.getFieldValue('side');
+                            const domain = getDomain(side, checked);
+                            console.log(domain)
+                            console.log(checked)
+                            form.setFieldsValue({
+                              actionDomain: domain
+                            });
+                          }}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Form.Item name="actionDomain" label="域名">
+                    <Input disabled />
+                  </Form.Item>
+                </Col>
+              </Row>
               <Row gutter={20}>
                 <Col span={20}>
                 <Form.Item name="description" label="步骤描述">
