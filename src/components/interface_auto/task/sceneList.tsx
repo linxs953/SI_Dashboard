@@ -103,45 +103,15 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
     // 调用 updateSceneList 函数更新状态
     updateSceneList(updatedSceneList);
-  };
 
-
-
-  const handleEditSceneModalCancel = () => {
-    setIsEditSceneModalVisible(false);
-  };
-
-  const handleEditSceneModalOk = () => {
-    const scene = sceneList.find(s => s.sceneId === activeTabKey);
-    setCurrentScene(scene as SceneInfo);
-    setIsEditSceneModalVisible(false);
-  };
-
-  const handleEditSceneModalOpen = (scene: SceneInfo) => {
-    setCurrentScene(scene);
-    setIsEditSceneModalVisible(true);
-  };
-
-  const handleEditModalOk = () => {
-    const scene = sceneList.find(s => s.sceneId === activeTabKey);
-    setCurrentScene(scene as SceneInfo);
-    setIsEditModalVisible(false);
-  };
-
-  const handleAddStep = () => {
-    const scene = sceneList.find(s => s.sceneId === activeTabKey);
-    setCurrentScene(scene as SceneInfo);
-    setIsEditModalVisible(true);
+    setActiveTabKey(activeTabKey);
+    
   };
 
   useEffect(() => {
     const scene = sceneList.find(s => s.sceneId === activeTabKey);
     setCurrentScene(scene as SceneInfo);
   }, [activeTabKey]);
-
-  const handleSearch = (value: string) => {
-    setSearchKey(value);
-  };
 
   const handleTabChange = (key: string) => {
     setActiveTabKey(key);
@@ -150,12 +120,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   const handleConfigDrawerClose = () => {
     setIsConfigDrawerVisible(false);
   };
-
-  const handleConfigDrawerOpen = (step: ActionInfo) => {
-    setCurrentStep(step);
-    form.resetFields();
-    // form.set
-  }
 
   const columns = [
     {
@@ -329,14 +293,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
     setIsExpectDrawerModalVisible(true);
   }
-
-  // const handleConfigDrawerClose = () => {
-  //   setIsConfigDrawerVisible(false);
-  // };
-
-  // const handleTabChange = (key: string) => {
-  //   setActiveTabKey(key);
-  // };
  
   const onFinish = async (values: any) => {
     const value = await form.getFieldsValue()
@@ -652,9 +608,13 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
   useEffect(() => {
     if (sceneList.length > 0) {
-      setActiveTabKey(sceneList[0].sceneId)
+      if (activeTabKey === '') {
+        setActiveTabKey(sceneList[0].sceneId)
+      }
     }
   }, [sceneList])
+
+
 
   return (
     <>

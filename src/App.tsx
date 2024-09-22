@@ -10,6 +10,7 @@ import TaskList from './pages/apiAutoTaskConfig'
 import EditTask from './pages/editTask'
 import TestDataConfig from './pages/testdataConfig'
 import ReportDetail from './components/interface_auto/task/reportDetail'
+import Reports from './pages/reports'
 
 function App() {
 
@@ -23,7 +24,8 @@ function App() {
           <Route path='/dashboard/api/scene/edit' element={<EditScene />} />
           <Route path='/dashboard/api/task' element={<TaskList />} />
           <Route path='/dashboard/api/task/edit' element={<EditTask />} />
-          <Route path='/dashboard/api/task/reports' element={<ReportDetail />} />
+          <Route path='/dashboard/api/task/reportDetail' element={<ReportDetail />} />
+          <Route path='/dashboard/api/task/reports' element={<Reports />} />
         </Route>
       </Routes>
     </Router>
