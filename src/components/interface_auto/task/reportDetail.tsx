@@ -130,6 +130,7 @@ const ReportDetail: React.FC = () => {
 
   const showModal = (sceneRecord) => {
     setSelectedSceneDetails(sceneRecord);
+    console.log(selectedSceneDetails)
     setIsModalVisible(true);
   };
 
@@ -148,15 +149,15 @@ const ReportDetail: React.FC = () => {
         <Button 
           icon={<ArrowLeftOutlined style={{ fontSize: '20px' }} />} 
           style={{ 
-            position: 'fixed',
+            // position: 'fixed',
             top: '1%',
-            left: '9%',
+            left: '2%',
             zIndex: 1000,
             backgroundColor: 'transparent',
             padding: '4px 15px',
             fontSize: '16px',
             transition: 'all 0.3s',
-            width: '100px'  // 增加按钮的宽度
+            width: '80px'  // 增加按钮的宽度
           }}
           onClick={() => {
             navigate('/dashboard/api/task/reports?taskId=' + taskId);
@@ -171,8 +172,8 @@ const ReportDetail: React.FC = () => {
                 marginLeft: '2%',
                 marginTop: '3%',
                 position: 'absolute',
-                width: '82%',
-                maxHeight: '18%',
+                width: '84%',
+                maxHeight: '16%',
                 
             }}
         >
@@ -194,8 +195,8 @@ const ReportDetail: React.FC = () => {
                                     backgroundColor: '#f5f5f5',
                                     border: 'none',
                                     color: '#333',
-                                    fontSize: '16px',
-                                    padding: '8px',
+                                    fontSize: '10px',
+                                    padding: '9px',
                                     borderRadius: '4px'
                                 }}
                             />
@@ -205,6 +206,7 @@ const ReportDetail: React.FC = () => {
             </Row>
         </Card>
         <Content style={{ 
+            maxHeight: '53%',
             padding: '24px', 
             display: 'flex', 
             flexDirection: 'column', 
@@ -212,7 +214,8 @@ const ReportDetail: React.FC = () => {
             alignItems: 'stretch', 
             margin: 'auto 0', 
             marginRight: '50px',
-            marginTop: '12%',
+            marginTop: '11%',
+            marginLeft: '1%',
             height: '74%', // 保持与 Sider 一致的高度
             overflowY: 'auto', // 支持垂直滚动
             position: 'relative' // 添加相对定位
@@ -277,7 +280,7 @@ const ReportDetail: React.FC = () => {
               {sceneRunRecord?.map((selectedRecord) => (
                 <Timeline key={selectedRecord.sceneId} pending={selectedRecord.status === 0 ? (
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: '10px', color: '#1890ff', fontSize: '18px' }}>任务进行中</span>
+                    <span style={{ marginRight: '10px', color: '#1890ff', fontSize: '8px' }}>任务进行中</span>
                     <span style={{ color: '#808080', fontSize: '18px' }}>已执行: {selectedRecord.duration}ms</span>
                     </div>
                 ) : 
@@ -290,7 +293,7 @@ const ReportDetail: React.FC = () => {
                       width: '100%',
                       alignItems: 'center',
                   }}>
-                    <h2 style={{ margin: 0, fontSize: '24px', flexShrink: 0 }}>{selectedRecord.sceneName}</h2>
+                    <h2 style={{ margin: 0, fontSize: '20px', flexShrink: 0 }}>{selectedRecord.sceneName}</h2>
                       {selectedRecord.status === 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
                             <Spin size="default" style={{ marginRight: '15px' }} />
@@ -389,8 +392,8 @@ const ReportDetail: React.FC = () => {
               <span>{selectedSceneDetails.sceneId}</span>
               
               <span style={{ fontWeight: 'bold', color: '#333' }}>状态：</span>
-              <span style={{ color: selectedSceneDetails.status === '1' ? '#52c41a' : '#1890ff' }}>
-                {selectedSceneDetails.status === '1' ? '成功' : selectedSceneDetails.status === '2' ? <span style={{ color: 'red' }}>失败</span> : '进行中'}
+              <span style={{ color: selectedSceneDetails.state === 1 ? '#52c41a' : '#1890ff' }}>
+                {selectedSceneDetails.state === 1 ? '成功' : selectedSceneDetails.state === 2 ? <span style={{ color: 'red' }}>失败</span> : '进行中'}
               </span>
               
               <span style={{ fontWeight: 'bold', color: '#333' }}>执行时间：</span>
@@ -420,8 +423,8 @@ const ReportDetail: React.FC = () => {
             <span>{selectedAction.actionId}</span>
             
             <span style={{ fontWeight: 'bold', color: '#333' }}>状态：</span>
-            <span style={{ color: selectedAction.status === '1' ? '#52c41a' : selectedAction.status === '2' ? 'red' : '#1890ff' }}>
-              {selectedAction.status === '1' ? '成功' : selectedAction.status === '2' ? '失败' : '进行中'}
+            <span style={{ color: selectedAction.state === 1 ? '#52c41a' : selectedAction.state === 2 ? 'red' : '#1890ff' }}>
+              {selectedAction.state === 1 ? '成功' : selectedAction.status === '2' ? '失败' : '进行中'}
             </span>
             
             <span style={{ fontWeight: 'bold', color: '#333' }}>执行时间：</span>
