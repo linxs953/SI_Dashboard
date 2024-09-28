@@ -32,7 +32,7 @@ function getItem(
 const MenuItemKeyMap:any = {
   "inteface": {
     icon: <TeamOutlined />,
-    label: "自动化",
+    label: "接口",
     key: "inteface",
     children: [
       {
