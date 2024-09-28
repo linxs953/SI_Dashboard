@@ -4,6 +4,7 @@ import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined,DeleteOutli
 import { useNavigate } from 'react-router-dom';
 import NewDataModal from '../components/interface_auto/task/createModal';
 import axios from 'axios';
+import createSceneListStore from 'src/store/task/taskList';
 
 const domain = import.meta.env.VITE_API_URL
 
@@ -16,17 +17,14 @@ interface Task {
   updatedAt: string;
 }
 
-interface Scene {
-  sceneId: string;
-  name: string;
-}
-
+const useTaskStore = createSceneListStore()
 
 const TaskList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [tasks, setTasks] = useState<Task[]>([]);
+  // const [isModalVisible, setIsModalVisible] = useState(false);
   const navgate = useNavigate();
-
+  const [tasks, setTasks] = useTaskStore((state) => [state.taskList,state.setSceneList])
+  const [isModalVisible,setIsModalVisible] = useTaskStore((state) => [state.isNewModalVisible,state.setNewModalVisible])
 
   // 假设这是一个获取任务列表的API调用
   const fetchTasks = async () => {
@@ -57,8 +55,6 @@ const TaskList: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
-
-  
 
   const columns = [
     {
@@ -158,7 +154,6 @@ const TaskList: React.FC = () => {
   const showModal = () => {
     setIsModalVisible(true);
   };
-
 
   const newModalOk = () => {
     setIsModalVisible(false)
