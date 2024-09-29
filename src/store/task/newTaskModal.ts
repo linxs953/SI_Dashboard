@@ -30,8 +30,8 @@ interface NewTaskModalState {
     setSelectedScenes: (data: []) => void
     setSearchCurrentPage: (page:number) => void
     setSearchCurrentPageSize: (pageSize:number) => void
-    setaddSceneCurrentPage: (page:number) => void
-    setaddSceneCurrentPageSize: (pageSize:number) => void
+    setAddSceneCurrentPage: (page:number) => void
+    setAddSceneCurrentPageSize: (pageSize:number) => void
 }
 
 interface addSceneData {

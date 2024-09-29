@@ -249,6 +249,8 @@ const ReportDetail: React.FC = () => {
                             }
                         }
                       }
+
+                      console.log(state)
                       
                       switch (state) {
                         case 0: // 运行中
