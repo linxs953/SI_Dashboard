@@ -240,11 +240,11 @@ const ReportDetail: React.FC = () => {
                       let state = 1
                       if (sceneRunRecord) {
                         for (const scene of sceneRunRecord) {
-                            if (scene.status === 2) {
+                            if (scene.state === 2) {
                                 state = 2;
                                 break;
                             }
-                            if (scene.status === 0) {
+                            if (scene.state === 0) {
                                 state = 0;
                             }
                         }
