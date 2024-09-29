@@ -2,35 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button, List, Checkbox, Pagination, Input, message, Form, InputNumber, Table } from 'antd';
 import { CloseOutlined,DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import Item from 'antd/es/list/Item';
-
-
-let  Search = Input.Search
-
-interface createNewTaskPayload {
-  taskName:string
-  taskSpec:string
-  scenes: Array<sceneDetail>
-}
-
-interface sceneDetail {
-  sceneID:string
-  sceneName:string
-  count: number
-}
-
-const searchApi = async (url: string): Promise<any> => {
-  try {
-    const response = await axios.get(url);
-    return response.data; // 成功时返回数据
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data || error.message; // 如果是 Axios 错误，抛出错误信息或响应数据
-    } else {
-      throw new Error(`Unknown error occurred: ${error}`); // 对于非 Axios 错误，抛出未知错误
-    }
-  }
-};
+import createTaskAddModalStore from 'src/store/task/newTaskModal';
 
 interface FormItemInfo {
     itemLabel:string;
@@ -47,33 +19,52 @@ interface NewSceneModalProps {
   newModalFormSpec:Array<FormItemInfo>,
   searchPlaceholder: string,
   visible: boolean;
-  // fetchData: (page?: number, pageSize?: number) => Promise<void>;
-  // closeModel: () =>(void);
   onOk: () => (void);
   onCancel: () => (void);
 }
+
+let  Search = Input.Search
+
+const searchApi = async (url: string): Promise<any> => {
+  try {
+    const response = await axios.get(url);
+    return response.data; // 成功时返回数据
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error.response?.data || error.message; // 如果是 Axios 错误，抛出错误信息或响应数据
+    } else {
+      throw new Error(`Unknown error occurred: ${error}`); // 对于非 Axios 错误，抛出未知错误
+    }
+  }
+};
+
+const  useCreateTaskStore = createTaskAddModalStore()
+const domain = import.meta.env.VITE_API_URL 
 
 const NewDataModal: React.FC<NewSceneModalProps> = ({
   visible,
   title,
   searchTitle,
-  // fetchData,
-  // closeModel,
   newModalFormSpec,
   searchPlaceholder,
   onCancel,
   onOk
 }) => {
 
+  const [form] = Form.useForm(); // 创建表单实例
+
   // state: 创建场景 Modal 的数据列表
   const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([]);
+  // const [listData, setListData] = useCreateTaskStore((state)=>[state.relateSceneList,state.setRelateSceneList])
 
   // state: 创建场景 Modal 的搜索框
-  const [searchValue, setSearchValue] = useState('');
+  // const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useCreateTaskStore((state)=>[state.searchKeyword,state.setSearchKeyword])
 
   // state: 搜索 Api Modal 的开关
-  const [searchResultsVisible, setSearchResultsVisible] = useState(false);
-
+  // const [searchResultsVisible, setSearchResultsVisible] = useState(false);
+  const [searchResultsVisible, setSearchResultsVisible] = useCreateTaskStore((state) => [state.searchModalVisible,state.setSearchModalVisible])
+  
   // state: 搜索 Api Modal 的搜索结果列表
   const [searchResults, setSearchResults] = useState<{id: number, text: string; }[]>([]);
 
@@ -81,19 +72,15 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<{ id: number; text: string }[]>([]);
 
   // state: 搜索 Api Modal 的全选,控制是否数据全选
-  const [selectAll, setSelectAll] = useState(false);
-
-  const initPage = {page:1,pageSize: 10}
+  const [selectAll, setSelectAll] = useCreateTaskStore((state)=>[state.selectAll,state.setSelectAll]);
 
   // state: 搜索 Api Modal 的页码
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useCreateTaskStore((state)=>[state.searchCurrentPage,state.setSearchCurrentPage]);
+  const [pageSize, setPageSize] = useCreateTaskStore((state)=>[state.searchCurrentPageSize,state.setSearchCurrentPageSize]);
 
   // state: 创建场景的数据列表页码
   const [sceneCurrentPage, setSceneCurrentPage] = useState(1)
   const [scenePageSize, setScenePageSize] = useState(5)
-  const [form] = Form.useForm(); // 创建表单实例
-
 
   // 计算搜索 ApiModal 的分页数据
   const startIndex = (currentPage - 1) * pageSize;
@@ -105,7 +92,6 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   const sceneEndIndex = sceneStartIndex + scenePageSize;
   const scenePaginatedData = listData.slice(sceneStartIndex, sceneEndIndex);
 
-  const domain = import.meta.env.VITE_API_URL 
 
   const onFinish = async () => {
     try {
@@ -152,7 +138,6 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
     setSearchResultsVisible(true)
   }
 
-
   const renderListItem = (item: { id: number; text: string; instanceCount: number }) => {
     return (
       <List.Item key={item.id}>
@@ -196,7 +181,6 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
       </List.Item>
     );
   };
-
 
   const onSearch = (value: string) => {
     const allSceneUrl = `${domain}/scene/allScenes`
