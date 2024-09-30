@@ -3,14 +3,6 @@ import { StoreApi, UseBoundStore } from "zustand"
 import createSelectors from "../selectors"
 import createStore from "../store"
 
-
-interface TaskListState {
-    taskList: []
-    isNewModalVisible:boolean
-    setSceneList: (data:[]) => void
-    setNewModalVisible: (visible:boolean) => void
-}
-
 interface NewTaskModalState {
     relateSceneList: addSceneData[]
     searchKeyword: string
@@ -22,28 +14,18 @@ interface NewTaskModalState {
     searchCurrentPageSize: number
     addSceneCurrentPage: number
     addSceneCurrentPageSize: number
-    setRelateSceneList: (data: []) => void
+    setRelateSceneList: (data: addSceneData[]) => void
     setSearchKeyword: (keyword: string) => void
     setSearchModalVisible: (visible:boolean) => void
     setSelectAll: (visible:boolean) => void
-    setSearchResult: (data:[]) => void
-    setSelectedScenes: (data: []) => void
+    setSearchResult: (data:searchSceneItem[]) => void
+    setSelectedScenes: (data: searchSceneItem[]) => void
     setSearchCurrentPage: (page:number) => void
     setSearchCurrentPageSize: (pageSize:number) => void
     setAddSceneCurrentPage: (page:number) => void
     setAddSceneCurrentPageSize: (pageSize:number) => void
 }
 
-interface addSceneData {
-    id: number
-    text: string
-    instanceCount: number
-}
-
-interface searchSceneItem {
-    id: number
-    text: string
-}
 
 const createTaskAddModalStore = (): UseBoundStore<StoreApi<NewTaskModalState>> => {
     const initialState = {

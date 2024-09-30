@@ -54,8 +54,8 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   const [form] = Form.useForm(); // 创建表单实例
 
   // state: 创建场景 Modal 的数据列表
-  const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([]);
-  // const [listData, setListData] = useCreateTaskStore((state)=>[state.relateSceneList,state.setRelateSceneList])
+  // const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([]);
+  const [listData, setListData] = useCreateTaskStore((state)=>[state.relateSceneList,state.setRelateSceneList])
 
   // state: 创建场景 Modal 的搜索框
   // const [searchValue, setSearchValue] = useState('');
@@ -67,12 +67,12 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   
   // state: 搜索 Api Modal 的搜索结果列表
   
-  const [searchResults, setSearchResults] = useState<{id: number, text: string; }[]>([]);
-    // const [searchResults, setSearchResults] = useCreateTaskStore((state)=>[state.searchResult,state.setSearchResult])
+  // const [searchResults, setSearchResults] = useState<{id: number, text: string; }[]>([]);
+    const [searchResults, setSearchResults] = useCreateTaskStore((state)=>[state.searchResult,state.setSearchResult])
 
   // state: 搜索 Api Modal 的选中数据
-  const [selectedItems, setSelectedItems] = useState<{ id: number; text: string }[]>([]);
-  //  const [selectedItems, setSelectedItems] = useCreateTaskStore((state)=>[state.selectedScenes,state.setSelectedScenes])
+  // const [selectedItems, setSelectedItems] = useState<{ id: number; text: string }[]>([]);
+   const [selectedItems, setSelectedItems] = useCreateTaskStore((state)=>[state.selectedScenes,state.setSelectedScenes])
 
   // state: 搜索 Api Modal 的全选,控制是否数据全选
   const [selectAll, setSelectAll] = useCreateTaskStore((state)=>[state.selectAll,state.setSelectAll]);
@@ -107,7 +107,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
         let payload = {
            "taskName": values.taskName,
            "author": values.author,
-           "sceneList": listData.map((item: Scene) => {return {sceneId: item.id,count: item.instanceCount}})
+           "sceneList": listData.map((item: addSceneData) => {return {sceneId: item.id,count: item.instanceCount}})
         }
         const submitTaskUrl = `${domain}/task/create`
         const response = await axios.post(submitTaskUrl,payload)
@@ -227,7 +227,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   };
 
   const checkAndAddSelectedItems = () => {
-    let newItems = selectedItems.map((item) => ({ ...item, instanceCount: 1 }));
+    let newItems:addSceneData[] = selectedItems.map((item) => ({ ...item, instanceCount: 1 }));
     newItems = newItems.filter(item => !listData.some(listItem => listItem.id === item.id))
 
     if (newItems.length < selectedItems.length) {
@@ -235,7 +235,9 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
     }
   
     if (newItems.length > 0) {
-      setListData(prevListData => [...prevListData, ...newItems]);
+      // 把newitems和listData合并
+      newItems = listData.concat(newItems)
+      setListData(newItems);    
     }
   
     setSearchResultsVisible(false);
@@ -246,25 +248,25 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
   };
 
   const onDelete = (id: number) => {
-    setListData(prevData => prevData.filter(item => item.id !== id));
+    // 根据item.id !== id 过滤数据ListData
+    const newItems = listData.filter((item: addSceneData) => item.id !== id)
+    setListData(newItems);
   };
 
   const handleTextChange = (value: string, id: number) => {
-    setListData(prevData =>
-      prevData.map(item =>
-        item.id === id ? { ...item, text: value } : item
-      )
+    const newItems = listData.map((item: addSceneData) =>
+      item.id === id ? { ...item, text: value } : item
     );
+    setListData(newItems);
   };
 
   // 更新实例数
   const handleInstanceCountChange = (value: number, id: number) => {
     console.log(value)
-    setListData(prevData =>
-      prevData.map(item =>
-        item.id === id ? { ...item, instanceCount: value } : item
-      )
+    const newItems = listData.map((item: addSceneData) =>
+      item.id === id ? { ...item, instanceCount: value } : item
     );
+    setListData(newItems);
     
   };
 
@@ -310,7 +312,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
     },
   ];
 
-  const renderSearchResultItem = (item: { id: number; text: string }) => {
+  const renderSearchResultItem = (item:searchSceneItem) => {
     return (
       <List.Item key={item.id}>
         <div
