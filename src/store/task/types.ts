@@ -35,7 +35,7 @@ interface ActionRecord {
     request: Object;
     response: Object;
     duration: number;
-    status: string;
+    status: number;
     error: Object;
 }
 
@@ -50,3 +50,14 @@ interface TaskRunRecord {
   status: number;
 }
 
+
+
+// 任务列表状态
+interface TaskInfo {
+    taskId: string
+    taskName: string
+    scenes: number
+    author: string
+    createdAt: string
+    updatedAt: string
+}

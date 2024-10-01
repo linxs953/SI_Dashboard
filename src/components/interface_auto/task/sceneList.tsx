@@ -4,82 +4,71 @@ import Search from "antd/es/input/Search"
 import React from "react"
 import { useEffect, useState } from "react"
 import ActionExpect from "../scene/actionExpect";
+import createTaskSceneListStore from "src/store/task/taskSceneList"
+import { ColumnType } from "antd/es/table"
 
 const {Option} = Select
 
+const store = createTaskSceneListStore()
+
 const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
-  const [activeTabKey, setActiveTabKey] = useState(sceneList[0]?.sceneId || '');
   const [form] = useForm()
-  const [isConfigDrawerVisible, setIsConfigDrawerVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isEditSceneModalVisible, setIsEditSceneModalVisible] = useState(false); 
-  const [dependSelectTab, setDependSelectTab] = useState('headers');
-  const [currentStep, setCurrentStep] = useState<ActionInfo>({
-    actionId: '',
-    actionName: '',
-    actionDescription: '',
-    actionTimeout: 0,
-    actionRetry: 0,
-    actionMethod: '',
-    actionRoute: '',
-    actionDependencies: [],
-    relateId: '',
-    actionExpect: {api: [], sql: []},
-    actionOutput: '',
-    actionSearchKey: '',
-    actionDomain: '',
-    actionEnvironment: '',
-  });
-  const [currentScene, setCurrentScene] = useState<SceneInfo>({
-    sceneId: '',
-    sceneName: '',
-    sceneDescription: '',
-    sceneTimeout: 0,
-    sceneRetries: 0,
-    actionList: [],
-    searchKey: '',
-    environment: ''
-  });
 
-  const [selectScene, setSelectScene] = useState<SceneInfo>({
-    sceneId: '',
-    sceneName: '',
-    sceneDescription: '',
-    sceneTimeout: 0,
-    sceneRetries: 0,
-    actionList: [],
-    searchKey: '',
-    environment: ''
-  });
-
-  const [searchKey, setSearchKey] = useState('');
-
-  const [isSelectActionModalVisible, setIsSelectActionModalVisible] = useState(false)
-
-  const [isCacheModalVisible, setIsCacheModalVisible] = useState(false)
-
-
-  // 设置场景依赖时,具体的记录
-  const [sceneIndex, setSceneIndex] = useState(0);
-
-  // 设置缓存依赖时,具体的记录
-  const [cacheIndex, setCacheIndex] = useState(0);
-
-
-  const [isExpectDrawerModalVisible,setIsExpectDrawerModalVisible] = useState(false)
-
-
-  useEffect(() => {
-    // form.setFieldsValue({
-    //   sceneName: selectScene.sceneName,
-    //   sceneDescription: selectScene.sceneDescription,
-    //   sceneTimeout: selectScene.sceneTimeout,
-    //   sceneRetries: selectScene.sceneRetries,
-    //   searchKey: selectScene.searchKey,
-    //   environment: selectScene.environment,
-    // });
-  }, [selectScene]);
-
+  const {
+    activeTabKey,
+    isConfigDrawerVisible,
+    isEditModalVisible,
+    isEditSceneModalVisible,
+    dependSelectTab,
+    currentStep,
+    currentScene,
+    selectScene,
+    isSelectActionModalVisible,
+    isCacheModalVisible,
+    isExpectDrawerModalVisible,
+    sceneIndex,
+    cacheIndex,
+    setActiveTabKey,
+    setIsConfigDrawerVisible,
+    setIsEditActionModalVisible,
+    setIsEditSceneModalVisible,
+    setDependSelectTab,
+    setCurrentAction,
+    setCurrentScene,
+    setSelectScene,
+    setIsSelectActionModalVisible,
+    setIsCacheModalVisible,
+    setIsExpectDrawerModalVisible,
+    setSceneIndex,
+    setCacheIndex,
+  } = store((state) => ({
+    activeTabKey: state.activeTabKey,
+    isConfigDrawerVisible: state.isDependDrawerVisible,
+    isEditModalVisible: state.isEditActionModalVisible,
+    isEditSceneModalVisible: state.isEditSceneModalVisible,
+    dependSelectTab: state.dependSelectTab,
+    currentStep: state.currentAction,
+    currentScene: state.currentScene,
+    selectScene: state.selectScene,
+    isSelectActionModalVisible: state.isSelectActionModalVisible,
+    isCacheModalVisible: state.isBasicDataModalVisible,
+    isExpectDrawerModalVisible: state.isExpectDrawerModalVisible,
+    sceneIndex: state.sceneIndex,
+    cacheIndex: state.formBasicDataIndex,
+    setActiveTabKey: state.setActiveTabKey,
+    setIsConfigDrawerVisible: state.setIsDependDrawerVisible,
+    setIsEditActionModalVisible: state.setIsEditActionModalVisible,
+    setIsEditSceneModalVisible: state.setIsEditSceneModalVisible,
+    setDependSelectTab: state.setDependSelectTab,
+    setCurrentAction: state.setCurrentAction,
+    setCurrentScene: state.setCurrentScene,
+    setSelectScene: state.setSelectScene,
+    setIsSelectActionModalVisible: state.setIsSelectActionModalVisible,
+    setIsCacheModalVisible: state.setIsBasicDataModalVisible,
+    setIsExpectDrawerModalVisible: state.setIsExpectDrawerModalVisible,
+    setSceneIndex: state.setSceneIndex,
+    setCacheIndex: state.setFormBasicDataIndex,
+  }))
 
   const updateCurrentStepExpect = (updateAction: ActionInfo) => {
     // 更新 sceneList
@@ -205,13 +194,13 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   const showEditModal = (step: ActionInfo) => {
     const scene = sceneList.find(s => s.sceneId === activeTabKey);
     setCurrentScene(scene as SceneInfo);
-    setCurrentStep(step);
-    setIsEditModalVisible(true);
+    setCurrentAction(step);
+    setIsEditActionModalVisible(true);
     form.setFieldsValue(step);
   };
 
   const handleEditModalCancel = () => {
-    setIsEditModalVisible(false);
+    setIsEditActionModalVisible(false);
   };
 
   const handleDelete = (sceneId: string, stepId: string) => {
@@ -227,12 +216,15 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
     let upScene: SceneInfo = sceneList.find(s => s.sceneId === activeTabKey) as SceneInfo;
     // 更新 upScene 中的 step
+    const formValues = form.getFieldsValue()
     updatedStep = {
       ...updatedStep,
-      ...form.getFieldsValue(),
+      ...formValues,
+      timeout: formValues.timeout,
+      retry: formValues.retry,
+      actionTimeout: formValues.timeout,
+      actionRetry: formValues.retry,
     }
-
-
 
     const updatedActionList = upScene.actionList.map(step => 
       step.actionId === updatedStep.actionId ? updatedStep : step
@@ -247,9 +239,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     updateSceneList(updatedSceneList as SceneInfo[]);
     setActiveTabKey(upScene.sceneId);
     message.success('场景更新成功');
-    setIsEditModalVisible(false);
-
-
+    setIsEditActionModalVisible(false);
   };
 
   // 编辑场景
@@ -277,7 +267,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
   const showConfigDrawer = (step: ActionInfo) => {
-    setCurrentStep({ ...step });
+    setCurrentAction({ ...step });
     setIsConfigDrawerVisible(true);
     form.resetFields();
     form.setFieldsValue({
@@ -289,7 +279,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
   const showExpectDrawer = (step:ActionInfo) => {
-    setCurrentStep(step);
+    setCurrentAction({ ...step });
 
     setIsExpectDrawerModalVisible(true);
   }
@@ -461,7 +451,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 style={{ width: '100%', marginBottom: '10px' }}
                 onChange={(value) => {
                   const selectedScene = sceneList.find(scene => scene.sceneId === value);
-                  setSelectScene(selectedScene);
+                  setSelectScene(selectScene);
                   form.setFieldsValue({ selectedActionId: undefined });
                 }}
               >
@@ -568,12 +558,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             return 'psu.86lw.cc';
           case '用户侧':
             return 'psu.86lw.cc';
-          // case '中台侧':
-          //   return 'https://middleware.prod.example.com';
-          // case '商家侧':
-          //   return 'https://merchant.prod.example.com';
-          // case '开放侧':
-          //   return 'https://open.prod.example.com';
           default:
             return '';
         }
@@ -586,12 +570,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             return 'demopsu.86yfw.com';
           case '用户侧':
             return 'demopsu.86yfw.com';
-          // case '中台侧':
-          //   return 'https://middleware.test.example.com';
-          // case '商家侧':
-          //   return 'https://merchant.test.example.com';
-          // case '开放侧':
-          //   return 'https://open.test.example.com';
           default:
             return '';
         }
@@ -600,9 +578,184 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     return '';
   }
 
+
+  const saveDepend = () => {
+    console.log(form.getFieldsValue());
+    const updatedDependencies = form.getFieldsValue();
+    const updatedActionDependencies = [
+      ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.dependType)),
+      ...updatedDependencies.headers || [],
+      ...updatedDependencies.path || [],
+      ...updatedDependencies.params || [],
+      ...updatedDependencies.payload || []
+    ];
+
+
+    const updatedStep = {
+      ...currentStep,
+      actionDependencies: updatedActionDependencies
+    };
+
+
+    const updatedSceneList = sceneList.map(scene => 
+      scene.sceneId === activeTabKey
+        ? {
+            ...scene,
+            actionList: scene.actionList.map(step => 
+              step.actionId === updatedStep.actionId ? updatedStep : step
+            )
+          }
+        : scene
+    );
+
+    updateSceneList(updatedSceneList);
+    setIsConfigDrawerVisible(false)
+  }
+
+
+  const editSceneModalForm = () => {
+    return (
+      <>
+        <Row justify="center">
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={currentScene}
+          >
+            <Row gutter={20}>
+              <Col span={8}>
+                <Form.Item
+                  label="场景名称"
+                  name="sceneName"
+                  rules={[{ required: true, message: '请输入场景名称!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6} offset={0.5}>
+                <Form.Item
+                  label="重试次数"
+                  name="sceneRetries"
+                  rules={[{ required: true, message: '请输入重试次数!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={6} offset={0.5}>
+                <Form.Item
+                  label="超时时间"
+                  name="sceneTimeout"
+                  rules={[{ required: true, message: '请输入超时时间!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={20}>
+              <Col span={20}>
+                <Form.Item
+                  label="场景描述"
+                  name="sceneDescription"
+                  rules={[{ required: true, message: '请输入场景描述!' }]}
+                >
+                  <Input.TextArea rows={4} />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Row>
+      </>
+    )
+  }
+
+  const editActionModalForm = () => {
+    return (
+      <>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={currentStep}
+        >
+          <Row gutter={20}>
+            <Col span={8}>
+              <Form.Item name="actionName" label="步骤名称">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={6} offset={0.5}>
+              <Form.Item name="timeout" label="超时时间">
+                <InputNumber />
+              </Form.Item>
+            </Col>
+            <Col span={6} offset={0.5}>
+              <Form.Item name="retry" label="重试次数">
+                <InputNumber />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={20}>
+            <Col span={20}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="side" label="选择侧">
+                    <Select
+                      defaultValue={getSide(form.getFieldValue('actionDomain'))}
+                      onChange={(value) => {
+                        const environmentSwitch = form.getFieldValue('environmentSwitch');
+                        const domain = getDomain(value, environmentSwitch);
+                        form.setFieldsValue({
+                          actionDomain: domain
+                        });
+                      }}
+                    >
+                      <Option value="管理侧">管理侧</Option>
+                      <Option value="平台侧">平台侧</Option>
+                      <Option value="用户侧">用户侧</Option>
+                      {/* <Option value="中台侧">中台侧</Option>
+                      <Option value="商家侧">商家侧</Option>
+                      <Option value="开放侧">开放侧</Option> */}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="environmentSwitch" label="选择环境" valuePropName="checked">
+                    <Switch
+                      checkedChildren="生产"
+                      unCheckedChildren="测试"
+                      defaultChecked={getEnvironment(form.getFieldValue('actionDomain'))}
+                      onChange={(checked) => {
+                        const side = form.getFieldValue('side');
+                        const domain = getDomain(side, checked);
+                        console.log(domain)
+                        console.log(checked)
+                        form.setFieldsValue({
+                          actionDomain: domain
+                        });
+                      }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item name="actionDomain" label="域名">
+                <Input disabled />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={20}>
+            <Col span={20}>
+              <Form.Item name="description" label="步骤描述">
+                <Input.TextArea disabled rows={4} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </>
+    )
+  }
+
   useEffect(() => {
     if (currentStep) {
-      setCurrentStep(currentStep)
+      setCurrentAction(currentStep)
     }
   }, [currentStep])
 
@@ -634,7 +787,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                         columns={columns.map((column, index) => ({
                           ...column,
                           title: <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
-                        }))}
+                        })) as ColumnType<ActionInfo>[]}
                         dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
                         pagination={{
                           pageSize: 1,
@@ -664,38 +817,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 <Button onClick={handleConfigDrawerClose} style={{ marginRight: 20 }}>
                   取消
                 </Button>
-                <Button type="primary" onClick={() => {
-                  console.log(form.getFieldsValue());
-                  const updatedDependencies = form.getFieldsValue();
-                  const updatedActionDependencies = [
-                    ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.dependType)),
-                    ...updatedDependencies.headers || [],
-                    ...updatedDependencies.path || [],
-                    ...updatedDependencies.params || [],
-                    ...updatedDependencies.payload || []
-                  ];
-
-
-                  const updatedStep = {
-                    ...currentStep,
-                    actionDependencies: updatedActionDependencies
-                  };
-
-
-                  const updatedSceneList = sceneList.map(scene => 
-                    scene.sceneId === activeTabKey
-                      ? {
-                          ...scene,
-                          actionList: scene.actionList.map(step => 
-                            step.actionId === updatedStep.actionId ? updatedStep : step
-                          )
-                        }
-                      : scene
-                  );
-
-                  updateSceneList(updatedSceneList);
-                  setIsConfigDrawerVisible(false)
-                }}>
+                <Button type="primary" onClick={saveDepend}>
                   保存
                 </Button>
               </div>
@@ -753,7 +875,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               ]}
             />
           </Drawer>
-          <ActionExpect action={currentStep} setStep={setCurrentStep} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
+          <ActionExpect action={currentStep} setStep={setCurrentAction} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
           <Modal
             title="编辑Action"
             open={isEditModalVisible}
@@ -768,83 +890,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               </Button>,
             ]}
           >
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={currentStep}
-            >
-               <Row gutter={20}>
-               <Col span={8}>
-                <Form.Item name="actionName" label="步骤名称">
-                  <Input />
-                </Form.Item>
-               </Col>
-               <Col span={6} offset={0.5}>
-                <Form.Item name="timeout" label="超时时间">
-                  <InputNumber />
-                </Form.Item>
-               </Col>
-               <Col span={6} offset={0.5}>
-                <Form.Item name="retry" label="重试次数">
-                  <InputNumber />
-                </Form.Item>
-               </Col>
-               </Row>
-               <Row gutter={20}>
-                <Col span={20}>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item name="side" label="选择侧">
-                        <Select
-                          defaultValue={getSide(form.getFieldValue('actionDomain'))}
-                        onChange={(value) => {
-                          const environmentSwitch = form.getFieldValue('environmentSwitch');
-                          const domain = getDomain(value, environmentSwitch);
-                          form.setFieldsValue({
-                            actionDomain: domain
-                          });
-                        }}>
-                          <Option value="管理侧">管理侧</Option>
-                          <Option value="平台侧">平台侧</Option>
-                          <Option value="用户侧">用户侧</Option>
-                          {/* <Option value="中台侧">中台侧</Option>
-                          <Option value="商家侧">商家侧</Option>
-                          <Option value="开放侧">开放侧</Option> */}
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="environmentSwitch" label="选择环境" valuePropName="checked">
-                        <Switch
-                          checkedChildren="生产"
-                          unCheckedChildren="测试"
-                          defaultChecked={getEnvironment(form.getFieldValue('actionDomain'))}
-                          onChange={(checked) => {
-                            const side = form.getFieldValue('side');
-                            const domain = getDomain(side, checked);
-                            console.log(domain)
-                            console.log(checked)
-                            form.setFieldsValue({
-                              actionDomain: domain
-                            });
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item name="actionDomain" label="域名">
-                    <Input disabled />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={20}>
-                <Col span={20}>
-                <Form.Item name="description" label="步骤描述">
-                  <Input.TextArea disabled rows={4} />
-                </Form.Item>
-                </Col>
-              </Row>
-            </Form>
+            {editActionModalForm()}
           </Modal>
           {isEditSceneModalVisible && (
             <Modal
@@ -860,54 +906,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                 </Button>,
               ]}
             >
-                <Row justify={"center"}>
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={currentScene}
-                  >
-                    <Row gutter={20}>
-                      <Col span={8}>
-                        <Form.Item
-                        label="场景名称"
-                        name="sceneName"
-                        rules={[{ required: true, message: '请输入场景名称!' }]}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                      <Col span={6} offset={0.5}>
-                      <Form.Item
-                          label="重试次数"
-                          name="sceneRetries"
-                          rules={[{ required: true, message: '请输入重试次数!' }]}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                      <Col span={6} offset={0.5}>
-                      <Form.Item
-                          label="超时时间"
-                          name="sceneTimeout"
-                          rules={[{ required: true, message: '请输入超时时间!' }]}
-                        >
-                          <Input  />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={20}>
-                      <Col span={20}>
-                        <Form.Item
-                            label="场景描述"
-                            name="sceneDescription"
-                            rules={[{ required: true, message: '请输入场景描述!' }]}
-                            >
-                              <Input.TextArea rows={4} />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </Form>
-                </Row>
+                {editSceneModalForm()}
             </Modal>
           )}
       </Card>

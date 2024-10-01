@@ -4,11 +4,10 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import React from 'react'
 import Dashboard from './components/dashboard'
 import ApiSyncList from './pages/apiSyncList'
-import ScenConfig from './pages/apiAutoSceneConfig'
+import ScenConfig from './pages/sceneList'
 import EditScene from './pages/editScene'
-import TaskList from './pages/apiAutoTaskConfig'
+import TaskList from './pages/taskList'
 import EditTask from './pages/editTask'
-import TestDataConfig from './pages/testdataConfig'
 import ReportDetail from './components/interface_auto/task/reportDetail'
 import Reports from './pages/reports'
 

@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useEffect, useState } from 'react';
 import { Table, message, Modal, Button } from 'antd';
 import axios from 'axios';
@@ -20,19 +17,23 @@ interface ReportData {
 
 const domain = import.meta.env.VITE_API_URL;
 
-
 const Reports: React.FC = () => {
-  const [data, setData] = useState<ReportData[]>([]);
   const params = new URLSearchParams(window.location.search);
   const taskId = params.get('taskId');
   const navigate = useNavigate();
+
+  const [data, setData] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
 
     // 在这里可以添加获取报告数据的逻辑
-    const fetchReportData = async () => {
+  const fetchReportData = async () => {
     try {
         setLoading(true)
-        const response = await axios.get(`${domain}/task/getAllTaskRunRecord?taskId=${taskId}`);
+        const response = await axios.get(`${domain}/task/getAllTaskRunRecord?taskId=${taskId}&pageNum=${currentPage}&pageSize=${pageSize}`);
         if (response.status != 200) {
             message.error('获取报告数据失败');
             return;
@@ -54,12 +55,14 @@ const Reports: React.FC = () => {
         }));
         setData(formattedData);
         setLoading(false)
+        setTotal(response.data.totalNum);
+        setTotalPage(response.data.totalPage);
     } catch (error) {
         setLoading(false)
         console.log(error)
         message.error('获取报告数据失败');
     }
-    };
+  };
   useEffect(() => {
     if (!taskId) {
       Modal.warning({
@@ -72,10 +75,8 @@ const Reports: React.FC = () => {
       });
       return;
     }
-
-
     fetchReportData();
-  }, [taskId]);
+  }, [taskId, currentPage, pageSize]);
 
   const columns = [
     {
@@ -167,9 +168,19 @@ const Reports: React.FC = () => {
             showSizeChanger: false,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条`,
-            pageSize: 10
+            pageSize: pageSize,
+            current: currentPage,
+            total: total,
+            onChange: (page, pageSize) => {
+              setPageSize(pageSize);
+              setCurrentPage(page);
+              if (page <= totalPage) {
+                fetchReportData();
+              }
+            }
           }}
           loading={loading}
+
         />
       </div>
     </div>

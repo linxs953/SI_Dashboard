@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button, List, Checkbox, Pagination, Input, message, Form } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import createSceneStore from 'src/store/scene/createScene';
 
 
 let  Search = Input.Search
@@ -19,46 +20,56 @@ const searchApi = async (url: string): Promise<any> => {
   }
 };
 
-interface NewSceneModalProps {
-  title: string;
-  visible: boolean;
-  fetchData: (page?: number, pageSize?: number) => Promise<void>;
-  closeModel: () =>(void);
-}
+
+
+const store = createSceneStore()
 
 const NewSceneModal: React.FC<NewSceneModalProps> = ({
   visible,
   fetchData,
   closeModel
 }) => {
+  const { 
+    listData, searchValue, searchResultsVisible,
+    searchResults, selectedItems, selectAll,
+    currentPage, pageSize, sceneCurrentPage,
+    scenePageSize, setListData, setSearchValue,
+    setSearchResultsVisible, setSearchResults, 
+    setSelectedItems, setSelectAll, setCurrentPage,
+    setPageSize, setSceneCurrentPage, setScenePageSize 
+  } = store((state) =>({
+    listData: state.addedApiList,
+    setListData: state.setAddedApi,
 
-  // state: 创建场景 Modal 的数据列表
-  const [listData, setListData] = useState<{id:number, text: string }[]>([]);
+    searchValue: state.searchApiSearchKey,
+    setSearchValue: state.setSearchKey,
 
-  // state: 创建场景 Modal 的搜索框
-  const [searchValue, setSearchValue] = useState('');
+    searchResultsVisible: state.isAddApiModalVisible,
+    setSearchResultsVisible: state.setIsAddApiModalVisible,
 
-  // state: 搜索 Api Modal 的开关
-  const [searchResultsVisible, setSearchResultsVisible] = useState(false);
+    searchResults: state.apiSearchList,
+    setSearchResults: state.setApiSearchList,
 
-  // state: 搜索 Api Modal 的搜索结果列表
-  const [searchResults, setSearchResults] = useState<{id: number, text: string; }[]>([]);
+    selectedItems: state.selecetdApiList,
+    setSelectedItems: state.setSelectedApiList,
 
-  // state: 搜索 Api Modal 的选中数据
-  const [selectedItems, setSelectedItems] = useState<{id: number, text: string}[]>([]);
+    selectAll: state.isSelectedAll,
+    setSelectAll: state.setIsSelectdAll,
 
-  // state: 搜索 Api Modal 的全选,控制是否数据全选
-  const [selectAll, setSelectAll] = useState(false);
+    currentPage: state.searchListPageination.pageNum,
+    pageSize: state.searchListPageination.pageSize,
+    setCurrentPage: state.setSearchListPageination,
+    setPageSize: state.setSearchListPageination,
+
+    sceneCurrentPage: state.addedListPageination.pageNum,
+    scenePageSize: state.addedListPageination.pageSize,
+    setSceneCurrentPage: state.setAddedListPageination,
+    setScenePageSize: state.setAddedListPageination,
+
+  }))
+
 
   const initPage = {page:1,pageSize: 10}
-
-  // state: 搜索 Api Modal 的页码
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // state: 创建场景的数据列表页码
-  const [sceneCurrentPage, setSceneCurrentPage] = useState(1)
-  const [scenePageSize, setScenePageSize] = useState(5)
   const [form] = Form.useForm(); // 创建表单实例
 
 
@@ -103,6 +114,7 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
             message.error("创建场景失败")
         }
         form.resetFields()
+        setListData([])
         closeModel()
     } catch (errorInfo) {
         message.error("请求发送失败")
@@ -177,28 +189,28 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
   };
 
 
-  const checkAndAddSelectedItems = () => {
-    const newItems = selectedItems.filter(item => !listData.some(listItem => listItem.id === item.id));
+  // const checkAndAddSelectedItems = () => {
+  //   const newItems = selectedItems.filter(item => !listData.some(listItem => listItem.id === item.id));
   
-    if (newItems.length < selectedItems.length) {
-      message.warning('当前已存在记录');
-    }
+  //   if (newItems.length < selectedItems.length) {
+  //     message.warning('当前已存在记录');
+  //   }
   
-    if (newItems.length > 0) {
-      setListData(prevListData => [...prevListData, ...newItems]);
-    }
+  //   if (newItems.length > 0) {
+  //     setListData(prevListData => [...prevListData, ...newItems]);
+  //   }
   
-    setSearchResultsVisible(false);
-    setSelectedItems([]);
-    setSearchValue('')
-    setSearchResults([])
-    setSelectAll(false)
-  };
-
+  //   setSearchResultsVisible(false);
+  //   setSelectedItems([]);
+  //   setSearchValue('')
+  //   setSearchResults([])
+  //   setSelectAll(false)
+  // };
+  
   const onDelete = (id: number) => {
-    setListData(prevData => prevData.filter(item => item.id !== id));
+    const newData = listData.filter((item: any) => item.id !== id);
+    setListData(newData);
   };
-
 
   return (
       <>
@@ -256,8 +268,8 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
             pageSize={scenePageSize}
             total={listData.length}
             onChange={(page, pageSize) => {
-              setSceneCurrentPage(page);
-              setScenePageSize(pageSize);
+              setSceneCurrentPage({pageNum: page, pageSize: pageSize, total: listData.length});
+              setScenePageSize({pageNum: page, pageSize: pageSize, total: listData.length});
             } } />
         </div>
       )}
@@ -265,9 +277,9 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
     <Modal
       title="添加接口"
       open={searchResultsVisible}
-      // onOk={checkAndAddSelectedItems}
       onOk={() => {
-        setListData(prevListData => [...prevListData, ...selectedItems]);
+        const newData = listData.concat(selectedItems);
+        setListData(newData);
         setSearchResultsVisible(false);
         setSelectedItems([]);
         setSearchValue('');
@@ -333,8 +345,8 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
               pageSize={pageSize}
               total={searchResults.length}
               onChange={(page, pageSize) => {
-                setCurrentPage(page);
-                setPageSize(pageSize);
+                setCurrentPage({pageNum: page, pageSize: pageSize, total: searchResults.length});
+                setPageSize({pageNum: page, pageSize: pageSize, total: searchResults.length});
               } } />
           </div>
         )}

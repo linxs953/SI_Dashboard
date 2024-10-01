@@ -53,38 +53,40 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
 
   const [form] = Form.useForm(); // 创建表单实例
 
-  // state: 创建场景 Modal 的数据列表
-  // const [listData, setListData] = useState<{id:number, text: string,instanceCount:number }[]>([]);
-  const [listData, setListData] = useCreateTaskStore((state)=>[state.relateSceneList,state.setRelateSceneList])
 
-  // state: 创建场景 Modal 的搜索框
-  // const [searchValue, setSearchValue] = useState('');
-  const [searchValue, setSearchValue] = useCreateTaskStore((state)=>[state.searchKeyword,state.setSearchKeyword])
-
-  // state: 搜索 Api Modal 的开关
-  // const [searchResultsVisible, setSearchResultsVisible] = useState(false);
-  const [searchResultsVisible, setSearchResultsVisible] = useCreateTaskStore((state) => [state.searchModalVisible,state.setSearchModalVisible])
-  
-  // state: 搜索 Api Modal 的搜索结果列表
-  
-  // const [searchResults, setSearchResults] = useState<{id: number, text: string; }[]>([]);
-    const [searchResults, setSearchResults] = useCreateTaskStore((state)=>[state.searchResult,state.setSearchResult])
-
-  // state: 搜索 Api Modal 的选中数据
-  // const [selectedItems, setSelectedItems] = useState<{ id: number; text: string }[]>([]);
-   const [selectedItems, setSelectedItems] = useCreateTaskStore((state)=>[state.selectedScenes,state.setSelectedScenes])
-
-  // state: 搜索 Api Modal 的全选,控制是否数据全选
-  const [selectAll, setSelectAll] = useCreateTaskStore((state)=>[state.selectAll,state.setSelectAll]);
-
-  // state: 搜索 Api Modal 的页码
-  const [currentPage, setCurrentPage] = useCreateTaskStore((state)=>[state.searchCurrentPage,state.setSearchCurrentPage]);
-  const [pageSize, setPageSize] = useCreateTaskStore((state)=>[state.searchCurrentPageSize,state.setSearchCurrentPageSize]);
-
-  // state: 创建场景的数据列表页码
-  const [sceneCurrentPage, setSceneCurrentPage] = useCreateTaskStore((state) => [state.addSceneCurrentPage,state.setAddSceneCurrentPage])
-  const [scenePageSize, setScenePageSize] = useCreateTaskStore((state) => [state.addSceneCurrentPageSize,state.setAddSceneCurrentPageSize])
-
+  const {
+    listData, setListData,
+    searchValue, setSearchValue,
+    searchResultsVisible, setSearchResultsVisible,
+    searchResults, setSearchResults,
+    selectedItems, setSelectedItems,
+    selectAll, setSelectAll,
+    currentPage, setCurrentPage,
+    pageSize, setPageSize,
+    sceneCurrentPage, setSceneCurrentPage,
+    scenePageSize, setScenePageSize
+  } = useCreateTaskStore((state) => ({
+    listData: state.relateSceneList,
+    setListData: state.setRelateSceneList,
+    searchValue: state.searchKeyword,
+    setSearchValue: state.setSearchKeyword,
+    searchResultsVisible: state.searchModalVisible,
+    setSearchResultsVisible: state.setSearchModalVisible,
+    searchResults: state.searchResult,
+    setSearchResults: state.setSearchResult,
+    selectedItems: state.selectedScenes,
+    setSelectedItems: state.setSelectedScenes,
+    selectAll: state.selectAll,
+    setSelectAll: state.setSelectAll,
+    currentPage: state.searchCurrentPage,
+    setCurrentPage: state.setSearchCurrentPage,
+    pageSize: state.searchCurrentPageSize,
+    setPageSize: state.setSearchCurrentPageSize,
+    sceneCurrentPage: state.addSceneCurrentPage,
+    setSceneCurrentPage: state.setAddSceneCurrentPage,
+    scenePageSize: state.addSceneCurrentPageSize,
+    setScenePageSize: state.setAddSceneCurrentPageSize
+  }))
   // 计算搜索 ApiModal 的分页数据
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;

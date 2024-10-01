@@ -78,7 +78,7 @@ const TaskDetails = () => {
           }
           
           
-          let sceneInfoList: SceneInfo[] = response.data.data.taskSpec.map(scene => (
+          let sceneInfoList: SceneInfo[] = response.data.data.taskSpec.map((scene: any) => (
 
             {
               sceneId: scene.sceneId,
@@ -88,7 +88,7 @@ const TaskDetails = () => {
               sceneRetries: scene.retry || 0,
               searchKey: scene.searchKey,
               environment: scene.envKey,
-              actionList: scene.actions ? scene.actions.map(action => ({
+              actionList: scene.actions ? scene.actions.map((action: any) => ({
                 ...action,
                 actionMethod: action.actionMethod,
                 relateId: action.relateId,
@@ -101,7 +101,7 @@ const TaskDetails = () => {
                 actionExpect: action.expect,
                 actionOutput: action.output,
                 actionDependencies: [
-                  ...(action.dependency || []).map(dep => ({
+                  ...(action.dependency || []).map((dep: any) => ({
                     dependType: dep?.refer?.type || '',
                     targetField: processString(dep.refer?.target),
                     dsType: getDataSource(dep?.type),

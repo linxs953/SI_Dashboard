@@ -8,21 +8,26 @@ interface Pageination {
     total: number
 }
 
+interface SearchApiResult {
+    id: number
+    text: string
+}
+
 
 interface NewSceneState {
-    addedApiList: []
+    addedApiList: SearchApiResult[]
     searchApiSearchKey: string
     isAddApiModalVisible: boolean
-    apiSearchList: []
-    selecetdApiList: []
+    apiSearchList: SearchApiResult[]
+    selecetdApiList: SearchApiResult[]
     isSelectedAll: boolean
     searchListPageination: Pageination
     addedListPageination: Pageination
-    setAddedApi: (data:[]) => void
+    setAddedApi: (data:SearchApiResult[]) => void
     setSearchKey: (search:string) => void
     setIsAddApiModalVisible: (visible:boolean) => void
-    setApiSearchList: (data:[]) => void
-    setSelectedApiList: (data:[]) => void
+    setApiSearchList: (data:SearchApiResult[]) => void
+    setSelectedApiList: (data:SearchApiResult[]) => void
     setIsSelectdAll: (selectAll: boolean) => void
     setSearchListPageination: (pageination: Pageination) => void
     setAddedListPageination: (pageination: Pageination) => void
@@ -48,7 +53,7 @@ const createSceneStore = ():UseBoundStore<StoreApi<NewSceneState>> =>{
         },
     }
     const actions = (set:any) => ({
-        setAddedApi: (data:[]) => {
+        setAddedApi: (data:SearchApiResult[]) => {
             set((state:any) => ({
                 addedApiList: data
             }))
@@ -63,12 +68,12 @@ const createSceneStore = ():UseBoundStore<StoreApi<NewSceneState>> =>{
                 isAddApiModalVisible: visible
             }))
         },
-        setApiSearchList: (data:[]) => {
+        setApiSearchList: (data:SearchApiResult[]) => {
             set((state:any) => ({
                 apiSearchList: data
             }))
         },
-        setSelectedApiList: (data:[]) => {
+        setSelectedApiList: (data:SearchApiResult[]) => {
             set((state:any) => ({
                 selecetdApiList: data
             }))

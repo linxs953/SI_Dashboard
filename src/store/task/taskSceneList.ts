@@ -63,11 +63,44 @@ const createTaskSceneListStore = (): UseBoundStore<StoreApi<TaskSceneListState>>
     
         formBasicDataIndex: 0,
         
-        currentAction: {} as ActionInfo,
+        currentAction: {
+              actionId: '',
+              actionName: '',
+              actionDescription: '',
+              actionTimeout: 0,
+              actionRetry: 0,
+              actionMethod: '',
+              actionRoute: '',
+              actionDependencies: [],
+              relateId: '',
+              actionExpect: {api: [], sql: []},
+              actionOutput: '',
+              actionSearchKey: '',
+              actionDomain: '',
+              actionEnvironment: '',
+        },
         
-        currentScene: {} as SceneInfo,
+        currentScene: {
+              sceneId: '',
+              sceneName: '',
+              sceneDescription: '',
+              sceneTimeout: 0,
+              sceneRetries: 0,
+              actionList: [],
+              searchKey: '',
+              environment: ''
+        },
     
-        selectScene: {} as SceneInfo,
+        selectScene: {
+              sceneId: '',
+              sceneName: '',
+              sceneDescription: '',
+              sceneTimeout: 0,
+              sceneRetries: 0,
+              actionList: [],
+              searchKey: '',
+              environment: ''
+        },
     
         isSelectActionModalVisible: false,
     

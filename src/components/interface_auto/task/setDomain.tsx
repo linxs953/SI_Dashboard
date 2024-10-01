@@ -19,12 +19,12 @@ const SetEnvironModal = () => {
         setVisible(false);
     };
 
-    const handleEnvironmentChange = (value) => {
+    const handleEnvironmentChange = (value:string) => {
         setEnvironment(value);
         setSide(''); // 清空侧边选择
     };
 
-    const handleSideChange = (value) => {
+    const handleSideChange = (value:string) => {
         setSide(value);
     };
 

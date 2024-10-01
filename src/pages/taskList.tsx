@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import NewDataModal from '../components/interface_auto/task/createModal';
 import axios from 'axios';
 import createSceneListStore from 'src/store/task/taskList';
+import useFetchApi from 'src/hooks/fetchApi';
 
 const domain = import.meta.env.VITE_API_URL
 
@@ -20,41 +21,59 @@ interface Task {
 const useTaskStore = createSceneListStore()
 
 const TaskList: React.FC = () => {
-  // const [tasks, setTasks] = useState<Task[]>([]);
-  // const [isModalVisible, setIsModalVisible] = useState(false);
+
   const navgate = useNavigate();
-  const [tasks, setTasks] = useTaskStore((state) => [state.taskList,state.setSceneList])
-  const [isModalVisible,setIsModalVisible] = useTaskStore((state) => [state.isNewModalVisible,state.setNewModalVisible])
+
+  const {
+    tasks, setTasks, isModalVisible, setIsModalVisible,
+    total, currentPage, totalPage, pageSize,
+    setTotal, setTotalPage, setCurrentPage, setPageSize
+  } = useTaskStore((state) => ({
+    tasks: state.taskList,
+    setTasks: state.setTaskList,
+    isModalVisible: state.isNewModalVisible,
+    setIsModalVisible: state.setNewModalVisible,
+    total: state.total,
+    totalPage: state.totalPage,
+    currentPage: state.currentPage,
+    setTotal: state.setTotal,
+    setTotalPage: state.setTotalPage,
+    setCurrentPage: state.setCurrentPage,
+    pageSize: state.pageSize,
+    setPageSize: state.setPageSize
+  }))
+  const [refetch,setRefetch] = useState(0)
+
+  const {data,isLoading,error} = useFetchApi(domain,`/task/getList?page=${currentPage}&pageSize=${pageSize}`,{},refetch)
 
   // 假设这是一个获取任务列表的API调用
-  const fetchTasks = async () => {
-    // 这里可以替换为真实的API请求
-    const url = `${domain}/task/getList?page=1&pageSize=10`
-    const response = await axios.get(url)
-    if (response.status === 200) {
-      if (!response.data.data) {
-        setTasks([])
-        return
-      }
-      let  data: Task[] = [
+  const setTaskList = async (data: any) => {
+ 
+      let taskList: TaskInfo[] = [
       ]
-      response.data.data.map(task => {
-        data.push({
+      data.data.map((task: any) => {
+        taskList.push({
           taskId: task.taskId,
-          name: task.taskName,
+          taskName: task.taskName,
           scenes: task.scenes.length,
-          creator: task.author,
+          author: task.author,
           createdAt: task.createAt,
           updatedAt: task.updateAt,
         })
       })
-      setTasks(data);
-    }
+      setTasks(taskList)
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (error) {
+      message.error("获取任务列表失败");
+    } else if (data) {
+      setTaskList(data);
+      const respData = data as {totalNum: number, totalPage: number}
+      setTotal(respData.totalNum)
+      setTotalPage(respData.totalPage)
+    }
+  }, [data,isLoading,error]);
 
   const columns = [
     {
@@ -64,8 +83,8 @@ const TaskList: React.FC = () => {
     },
     {
       title: '任务名称',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'taskName',
+      key: 'taskName',
     },
     {
       title: '场景数',
@@ -74,8 +93,8 @@ const TaskList: React.FC = () => {
     },
     {
       title: '创建人',
-      dataIndex: 'creator',
-      key: 'creator',
+      dataIndex: 'author',
+      key: 'author',
     },
     {
       title: '创建时间',
@@ -145,7 +164,7 @@ const TaskList: React.FC = () => {
     const response = await axios.delete(url)
     if (response.status === 200) {
       message.success("删除成功")
-      await fetchTasks()
+      setRefetch(refetch+1)
     }
     
   };
@@ -157,7 +176,7 @@ const TaskList: React.FC = () => {
 
   const newModalOk = () => {
     setIsModalVisible(false)
-    fetchTasks()
+    setRefetch(refetch+1)
   }
 
   const newModalCancel = () => {
@@ -172,7 +191,28 @@ const TaskList: React.FC = () => {
         </Button>
       </div>
       <div style={{ flex: 1 }}>
-        <Table columns={columns} dataSource={tasks} rowKey="taskId" style={{ width: '100%' }} />
+        <Table 
+          columns={columns} 
+          dataSource={tasks} 
+          rowKey="taskId" 
+          style={{ width: '100%' }}
+          pagination={{
+            total: total,
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize)
+              if (page < totalPage) {
+                setRefetch(refetch+1)
+              }
+            },
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条数据`,
+            style: { justifyContent: 'center' }
+          }}
+        />
       </div>
       <NewDataModal
         visible={isModalVisible}
@@ -180,7 +220,7 @@ const TaskList: React.FC = () => {
         searchTitle={"搜索场景"}
         onOk={newModalOk}
         onCancel={newModalCancel}
-        // fetchData={fetchTasks}
+        // fetchData={setTaskList}
         // closeModel={handleNewTaskCancel}
         newModalFormSpec={[
           {

@@ -71,7 +71,7 @@ export default function ApiSyncList() {
 const [selectedMethod, setSelectedMethod] = useState('GET');
 
 // 定义Select组件的onChange处理函数
-const handleChange = (value) => {
+const handleChange = (value: string) => {
   setSelectedMethod(value);
 };
 
@@ -85,7 +85,7 @@ const handleChange = (value) => {
       const response = await axios.get(url); 
       console.log(response.data)
       // 给 data 的每个元素加上一个 state 属性
-      const newData = response.data.data.map(item => ({
+      const newData = response.data.data.map((item: any) => ({
         ...item,
         State: '已同步',
         key: item.ApiId,
@@ -108,14 +108,14 @@ const handleChange = (value) => {
     
   }, []);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     setPagination({ ...pagination, current: page });
     fetchData(page); // 请求新页的数据
   };
 
 
   // 处理搜索输入变化的函数
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 

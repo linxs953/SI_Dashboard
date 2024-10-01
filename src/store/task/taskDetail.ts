@@ -89,9 +89,9 @@ const createTaskRunDetailStore = (): UseBoundStore<StoreApi<TaskRunDetailState>>
         
     })
 
-    const useNewTaskModalStore:any = createStore(initialState,actions)
+    const useTaskDetailStore:any = createStore(initialState,actions)
 
-    return createSelectors(useNewTaskModalStore)
+    return createSelectors(useTaskDetailStore)
 }
 
 
