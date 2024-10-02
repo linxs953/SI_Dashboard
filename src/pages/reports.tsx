@@ -63,6 +63,22 @@ const Reports: React.FC = () => {
         message.error('获取报告数据失败');
     }
   };
+
+  const deleteRecord = async (execId: string) => {
+    try {
+        const response = await axios.delete(`${domain}/task/deleteRecord?execId=${execId}`);
+        if (response.status != 200) {
+            message.error('删除报告失败');
+            return;
+        }
+        message.success('删除报告成功');
+        fetchReportData();
+    } catch (error) {
+        console.log(error)
+        message.error('删除报告失败');
+    }
+  }
+
   useEffect(() => {
     if (!taskId) {
       Modal.warning({
@@ -128,11 +144,21 @@ const Reports: React.FC = () => {
       title: '操作',
       key: 'action',
       render: (_: any, record: ReportData) => (
-        <Button onClick={() => {
-            navigate(`/dashboard/api/task/reportDetail?taskId=${taskId}&execId=${record.execId}`)
-        }}>
+        <><Button onClick={() => {
+          navigate(`/dashboard/api/task/reportDetail?taskId=${taskId}&execId=${record.execId}`);
+        } }>
           查看
         </Button>
+        <Button
+          danger
+          style={{ marginLeft: '8px' }}
+          onClick={() => {
+            deleteRecord(record.execId);
+          }}
+        >
+          删除
+        </Button>
+        </>
       ),
     },
   ];
