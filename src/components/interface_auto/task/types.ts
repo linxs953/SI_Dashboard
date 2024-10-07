@@ -58,7 +58,7 @@ interface ActionInfo {
     actionSearchKey: string
     actionDomain: string
     actionEnvironment: string
-    actionDependencies: actionDependencies[]
+    actionDependencies: DependInfo[]
 }
 
 interface expect {
@@ -74,6 +74,35 @@ interface actionDependencies {
     relateaction?: string // 当dependType为scene时，relateaction为必填
     customValue?: string // 当dependType为custom时，targetValue为必填
     cacheKey?: string // 当dependType为basic时，cacheKey为必填
+
+}
+
+interface DependInfo {
+    output: {
+        type: string
+        value: any
+    }
+    dataSource: DataSource[]
+    dsSpec: []
+    extra: string
+    isMultDs: boolean
+    mode: string
+    refer: {
+        type: string
+        target: string
+        dataType: string
+    }
+    
+}
+
+interface DataSource {
+    name: any;
+    dependType: string
+    dataKey: string
+    actionKey: string
+    dependId: string
+    dsType: string
+    searchCond: []
 }
 
 interface TaskDetail {

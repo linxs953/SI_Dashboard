@@ -10,6 +10,7 @@ import TaskList from './pages/taskList'
 import EditTask from './pages/editTask'
 import ReportDetail from './components/interface_auto/task/reportDetail'
 import Reports from './pages/reports'
+import MultiDataSourceModal from './components/interface_auto/task/multiDataSourceModal'
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
           <Route path='/dashboard/api/task/edit' element={<EditTask />} />
           <Route path='/dashboard/api/task/reportDetail' element={<ReportDetail />} />
           <Route path='/dashboard/api/task/reports' element={<Reports />} />
+          {/* <Route path='/dashboard/api/task/multiDataSource' element={<MultiDataSourceModal />} /> */}
         </Route>
       </Routes>
     </Router>

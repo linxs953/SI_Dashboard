@@ -6,6 +6,8 @@ import { useEffect, useState } from "react"
 import ActionExpect from "../scene/actionExpect";
 import createTaskSceneListStore from "src/store/task/taskSceneList"
 import { ColumnType } from "antd/es/table"
+import { SettingOutlined, DeleteOutlined } from '@ant-design/icons';
+import MultiDataSourceModal from "./multiDataSourceModal"
 
 const {Option} = Select
 
@@ -13,6 +15,24 @@ const store = createTaskSceneListStore()
 
 const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
   const [form] = useForm()
+  const [isMultiDataSourceModalVisible, setIsMultiDataSourceModalVisible] = useState(false);
+
+  const [currentActionDepend, setCurrentActionDepend] = useState<DependInfo>({
+    output: {
+      type: "",
+      value: "",
+    },
+    dataSource: [],
+    dsSpec: [],
+    extra: "",
+    isMultDs: false,
+    mode: "",
+    refer: {
+        type: "",
+        target: "",
+        dataType: "",
+    }
+  });
 
   const {
     activeTabKey,
@@ -190,11 +210,24 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   ];
 
 
+
+  const updateActionDepend = (depend:DependInfo) => {
+    let newDepend: ActionInfo = currentStep
+    newDepend.actionDependencies = currentStep.actionDependencies.map(de => {
+        if (de.refer.target === depend.refer.target) {
+          return depend
+        }
+        return de
+    })
+    setCurrentAction(newDepend)
+    setIsMultiDataSourceModalVisible(false)
+  }
+
   // 编辑步骤
   const showEditModal = (step: ActionInfo) => {
     const scene = sceneList.find(s => s.sceneId === activeTabKey);
     setCurrentScene(scene as SceneInfo);
-    setCurrentAction(step);
+    setCurrentAction(step as ActionInfo);
     setIsEditActionModalVisible(true);
     form.setFieldsValue(step);
   };
@@ -254,8 +287,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     let updatedScene = {
       ...upScene,
       "sceneId": upScene.sceneId,
-      "actionList": upScene.actionList,
-      ...form.getFieldsValue(),
+      "actionList": upScene.actionList.map(action => {
+        action.actionId === currentStep.actionId ? currentStep : action
+      }),      
     }
     const updatedSceneList = sceneList.map(scene => 
       scene.sceneId === upScene.sceneId ? updatedScene : scene
@@ -267,15 +301,17 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
   const showConfigDrawer = (step: ActionInfo) => {
-    setCurrentAction({ ...step });
+    console.log(step)
+    setCurrentAction(step);
     setIsConfigDrawerVisible(true);
     form.resetFields();
     form.setFieldsValue({
-      headers: step.actionDependencies.filter(dep => dep.dependType === 'headers'),
-      path: step.actionDependencies.filter(dep => dep.dependType === 'path'),
-      params: step.actionDependencies.filter(dep => dep.dependType === 'params'),
-      payload: step.actionDependencies.filter(dep => dep.dependType === 'payload')
+      headers: step.actionDependencies.filter(dep => dep.refer.type === 'headers'),
+      path: step.actionDependencies.filter(dep => dep.refer.type === 'path'),
+      params: step.actionDependencies.filter(dep => dep.refer.type === 'params'),
+      payload: step.actionDependencies.filter(dep => dep.refer.type === 'payload')
     });
+    console.log(form.getFieldsValue())
   };
 
   const showExpectDrawer = (step:ActionInfo) => {
@@ -289,6 +325,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     console.log('Form values:', value);
     // 处理提交逻辑
   };
+
 
   const dependForm = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
     <>
@@ -515,6 +552,191 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     </>
   )
 
+  const dependForm2 = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
+    <>
+      {fields.map(({ key, name, ...restField }) => (
+        <Row key={key} gutter={20}>
+          <Col span={8}>
+            <Form.Item
+              {...restField}
+              name={[name, 'refer', 'target']}
+              label="目标字段"
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              {...restField}
+              name={[name, 'output', 'type']}
+              label="输出字段类型"
+            >
+              <Select placeholder="请选择数据类型">
+                <Option value="string">字符串</Option>
+                <Option value="number">数字</Option>
+                <Option value="boolean">布尔值</Option>
+                <Option value="object">对象</Option>
+                <Option value="array">数组</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={2} style={{ paddingLeft: '4px', paddingRight: '4px' }}>
+            <Tooltip title="配置数据">
+              <Button
+                icon={<SettingOutlined />}
+                style={{ padding: '0 8px', marginRight: '8px'}}
+                onClick={() => {
+                  console.log(form.getFieldValue([dependSelectTab, name]))
+                  const formValue = form.getFieldValue([dependSelectTab, name])
+                  console.log(formValue.dataSource)
+                  const depend: DependInfo = currentStep.actionDependencies.find(item => item.refer.target === formValue.refer.target) as DependInfo
+                  
+                  console.log(depend)
+                  setCurrentActionDepend(depend)
+                  setIsMultiDataSourceModalVisible(true);
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="删除">
+              <Button 
+                icon={<DeleteOutlined />} 
+                onClick={() => remove(name)} 
+                type="link" 
+                danger
+              />
+            </Tooltip>
+          </Col>
+        </Row>
+      ))}
+      <Form.Item>
+        <Button type="dashed" onClick={() => {
+          // add()
+          // form.setFieldsValue({
+          //   [dependSelectTab]: {
+          //     [fields.length]: {
+          //       name: "",
+          //       dependType: 'scene',
+          //       dsType: '1',
+          //       dependId: "",
+          //       dataKey: "",
+          //       actionKey: "",
+          //       searchCond: []
+          //     }
+          //   }
+          // })
+          setCurrentAction({
+            ...currentStep,
+            actionDependencies: [
+              ...currentStep.actionDependencies,
+              {
+                name: "",
+                dependType: 'scene',
+                dsType: '1',
+                dependId: "",
+                dataKey: "",
+                actionKey: "",
+                searchCond: []
+              }
+            ]
+          })
+          
+        }} block>
+          添加数据
+        </Button>
+      </Form.Item>
+      <Modal
+        title="选择关联Action"
+        open={isSelectActionModalVisible}
+        onOk={() => {
+          const formValues = form.getFieldsValue();
+          const sceneId = formValues.selectedSceneId
+          const selectedActionId = formValues.selectedActionId
+          const referenceField = formValues.referenceField
+          form.setFieldValue([dependSelectTab, sceneIndex, 'relateStep'], `${sceneId}.${selectedActionId}/${referenceField}`);
+          setIsSelectActionModalVisible(false);
+          console.log(form.getFieldsValue())
+        }}
+        onCancel={() => setIsSelectActionModalVisible(false)}
+      >
+        <>
+          <Form form={form} layout="vertical">
+            <Form.Item name="selectedSceneId" label="选择场景">
+              <Select
+                placeholder="请选择场景"
+                style={{ width: '100%', marginBottom: '10px' }}
+                onChange={(value) => {
+                  const selectedScene = sceneList.find(scene => scene.sceneId === value);
+                  setSelectScene(selectScene);
+                  form.setFieldsValue({ selectedActionId: undefined });
+                }}
+              >
+                {sceneList.map(scene => (
+                  <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="selectedActionId" label="选择Action">
+              <Select
+                placeholder="请选择Action"
+                style={{ width: '100%', marginBottom: '10px' }}
+                disabled={!selectScene}
+              >
+                {selectScene?.actionList
+                  ?.filter((action: any) => {
+                    if (form.getFieldValue('selectedSceneId') === activeTabKey) {
+                      const currentActionIndex = currentScene.actionList.findIndex(
+                        (a: any) => a.actionId === currentStep.actionId
+                      );
+                      return currentScene.actionList.indexOf(action) < currentActionIndex;
+                    }
+                    return true;
+                  })
+                  .map((action: any) => (
+                    <Option key={action.actionId} value={action.actionId}>{action.actionName}</Option>
+                  ))
+                }
+              </Select>
+            </Form.Item>
+            <Form.Item name="referenceField" label="引用字段">
+              <Input placeholder="请输入引用字段" />
+            </Form.Item>
+          </Form>
+        </>
+      </Modal>
+
+      <Modal
+        title="选择基础数据"
+        open={isCacheModalVisible}
+        onOk={() => {
+          const formValues = form.getFieldsValue();
+          const cacheKey = formValues.cacheKey
+          const cacheFiled = formValues.cacheFiled
+          form.setFieldValue([dependSelectTab, cacheIndex, 'cacheKey'], `${cacheKey}/${cacheFiled}`);
+          setIsCacheModalVisible(false);
+        }}
+        onCancel={() => setIsCacheModalVisible(false)}
+      >
+        <>
+          <Form form={form} layout="vertical">
+            <Form.Item name="cacheKey">
+              <Input placeholder="请输入基础数据键" />
+            </Form.Item>
+            <Form.Item name="cacheFiled">
+              <Input placeholder="请输入字段名" />
+            </Form.Item>
+          </Form>
+        </>
+      </Modal>
+      <MultiDataSourceModal 
+        visible={isMultiDataSourceModalVisible}
+        actionDependency={currentActionDepend}
+        sceneList={sceneList}
+        currentAction={currentStep.actionId}
+        updateFn={updateActionDepend}
+        onCancel={() => setIsMultiDataSourceModalVisible(false)}
+      />
+    </>
+  )
 
   const getSide = (url: string) => {
     const urlPatterns = {
@@ -583,14 +805,12 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     console.log(form.getFieldsValue());
     const updatedDependencies = form.getFieldsValue();
     const updatedActionDependencies = [
-      ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.dependType)),
-      ...updatedDependencies.headers || [],
-      ...updatedDependencies.path || [],
-      ...updatedDependencies.params || [],
-      ...updatedDependencies.payload || []
+      ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.refer.type)),
+      // ...updatedDependencies.headers || [],
+      // ...updatedDependencies.path || [],
+      // ...updatedDependencies.params || [],
+      // ...updatedDependencies.payload || []
     ];
-
-
     const updatedStep = {
       ...currentStep,
       actionDependencies: updatedActionDependencies
@@ -602,7 +822,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         ? {
             ...scene,
             actionList: scene.actionList.map(step => 
-              step.actionId === updatedStep.actionId ? updatedStep : step
+              step.actionId === currentStep.actionId ? currentStep : step
             )
           }
         : scene
@@ -768,6 +988,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }, [sceneList])
 
 
+  useEffect(() => {
+    console.log(sceneList)
+  }, [])
 
   return (
     <>
@@ -832,9 +1055,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'headers',
                   label: '请求头',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ headers: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'headers') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ headers: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'headers') }}>
                       <Form.List name="headers">
-                          {(fields, { add, remove }) => dependForm(fields, { add, remove })}
+                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
                       </Form.List>
                     </Form>
                   ),
@@ -843,9 +1066,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'path',
                   label: '请求路径',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ path: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'path') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ path: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'path') }}>
                       <Form.List name="path">
-                          {(fields, { add, remove }) => dependForm(fields, { add, remove })}
+                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
                       </Form.List>
                     </Form>
                   ),
@@ -854,9 +1077,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'params',
                   label: '请求参数',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ params: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'params') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ params: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'params') }}>
                       <Form.List name="params">
-                          {(fields, { add, remove }) => dependForm(fields, { add, remove })}
+                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
                       </Form.List>
                     </Form>
                   ),              
@@ -865,9 +1088,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                   key: 'payload',
                   label: '请求体',
                   children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ payload: currentStep?.actionDependencies?.filter(dep => dep.dependType === 'payload') }}>
+                    <Form form={form} onFinish={onFinish} initialValues={{ payload: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'payload') }}>
                       <Form.List name="payload">
-                          {(fields, { add, remove }) => dependForm(fields, { add, remove })}
+                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
                       </Form.List>
                     </Form>
                   ),              

@@ -102,19 +102,37 @@ const TaskDetails = () => {
                 actionOutput: action.output,
                 actionDependencies: [
                   ...(action.dependency || []).map((dep: any) => ({
-                    dependType: dep?.refer?.type || '',
-                    targetField: processString(dep.refer?.target),
-                    dsType: getDataSource(dep?.type),
-                    dataKey:dep?.dataKey  || '' ,
-                    customValue: dep?.type === "3" ? `${dep?.dataKey}` || '' : '',
-                    cacheKey: getCacheKey(dep),
-                    relateStep: getRelateStep(dep)
-                  })),
-                ]
+                    dataSource: dep.DataSource.map((ds: any) => {
+                      return {
+                        name: "",
+                        dependType: ds.Type === "1" ? "scene" : ds.Type === "2" ? "basic" : ds.Type === "3" ? "custom" : "event",
+                        dataKey: ds.DataKey,
+                        actionKey: ds.ActionKey,
+                        dependId: ds.DependId,
+                        searchCond: ds.SearchCondArr,
+                        dsType: ds.Type
+                      }
+                    }),
+                    dsSpec: dep.DsSpec,
+                    extra: dep.Extra,
+                    isMultDs: dep.IsMultiDs,
+                    mode: dep.Mode,
+                    refer:{
+                      type: dep.refer.type,
+                      target: dep.refer.target,
+                      dataType: dep.refer.dataType
+                    },
+                    output: {
+                      type: dep.Output.Type,
+                      value: dep.Output.Value
+                    }
+                  }))
+                ],
               })) : []
             }));
           sceneInfoList = sceneInfoList.filter(scene => scene.actionList.length > 0);
           setSceneList(sceneInfoList);
+          console.log(sceneInfoList)
       } else {
         message.error('获取任务详情失败');
       }
@@ -125,6 +143,7 @@ const TaskDetails = () => {
   };
 
   const updateTask = async(taskInfo:TaskDetail, scenes:SceneInfo[]) => {
+    console.log(scenes)
     const getDataSourceCode = (dsName:string) => {
       if (dsName === 'scene') return '1';
       if (dsName === 'basic') return '2';
@@ -169,9 +188,6 @@ const TaskDetails = () => {
         taskId: taskInfo.taskId,
         taskName: taskInfo.taskName,
         author: taskInfo.creator,
-        // description: taskInfo.description,
-        // timeout: taskInfo.timeout,
-        // retry: taskInfo.retry,
         taskType: 'autoapi',
         taskSpec: scenes.map(scene => ({
           sceneId: scene.sceneId,
@@ -195,38 +211,43 @@ const TaskDetails = () => {
             searchKey: action.actionSearchKey,
             expect: action.actionExpect,
             output: action.actionOutput,
-            dependency: action.actionDependencies.map(dep => {
+            dependency: action.actionDependencies.map((dep:any) => {
               const baseDep = {
-                actionKey: '',
-                dataKey: '',
-                type: getDataSourceCode(dep.dsType),
+                actionKey: "",
+                dataKey: "",
+                type: getDataSourceCode(dep.refer.type),
+                Output: {
+                  Type: dep.output.type,
+                  Value: dep.output.value
+                },
                 refer: {
-                  type: dep.dependType,
-                  target: dep.targetField
-                }
+                  type: dep.refer.type,
+                  target: dep.refer.target,
+                  dataType: dep.refer.dataType
+                },
+                Mode: dep.mode,
+                Extra: dep.extra,
+                IsMultDs: dep.isMultDs,
+                DsSpec: dep.dsSpec,
+                DataSource: dep.dataSource.map((ds:any) => {
+                  return {
+                    ActionKey: ds.actionKey,
+                    DataKey: ds.dataKey,
+                    Type: ds.dsType,
+                    DependId: ds.dependId,
+                    SearchCondArr: ds.searchCond
+                  }
+                })
               };
-              
-              switch(dep.dsType) {
-                case 'scene':
-                  return { ...baseDep, actionKey: getActionKey(dep),dataKey: getDataKey(dep) };
-                case 'basic':
-                  return { ...baseDep, actionKey: getActionKey(dep),dataKey: getDataKey(dep) };
-                case 'custom':
-                  return { ...baseDep, dataKey: dep.customValue };
-                case 'event':
-                  return { ...baseDep, dataKey: dep.eventKey };
-                default:
-                  return baseDep;
-              }
-            }),
+              return baseDep
+            }), 
             headers: action.actionDependencies
-              .filter(dep => dep.dependType === 'headers')
-              .reduce((acc, dep) => ({...acc, [dep.targetField]: dep.customValue}), {})
+              .filter(dep => dep.refer.type === 'headers')
+              .reduce((acc, dep) => ({...acc, [dep.refer.target]: dep.output.value}), {})
           }))
         }))
       };
-
-
+      console.log(requestBody)
       const response = await axios.post(`${domain}/task/update?taskId=${taskInfo.taskId}`, requestBody);
       
       if (response.data && response.data.code === 0) {
