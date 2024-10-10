@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { Drawer, List, Typography, Button, Tabs, Form, Input, Select, Modal, message, Row, Col } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons'; 
+import Options from 'src/components/basic/options';
+import FormItemCol from 'src/components/basic/formItemCol';
 const { Text } = Typography;
 
 interface ExpectProps {
@@ -14,11 +16,106 @@ interface ExpectProps {
   onClose: () => void;
 }
 
+const compareOptions = [
+  {value: 'equal', label: '等于'},
+  {value: 'notEqual', label: '不等于'},
+  {value: 'contain', label: '包含'},
+  {value: 'notContain', label: '不包含'},
+  {value: 'gt', label: '大于'},
+  {value: 'lt', label: '小于'},
+  {value: 'gte', label: '大于等于'},
+  {value: 'lte', label: '小于等于'}
+]
+
+const dataTypeOptions = [
+  {value: 'string', label: '字符串'},
+  {value: 'integer', label: '数字'},
+  {value: 'boolean', label: '布尔值'},
+  {value: 'object', label: '对象'},
+  {value: 'array', label: '数组'}
+]
+
 
 
 const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visible, onClose }) => {
     useEffect(() => {
     }, [action]);
+
+
+    
+    const fieldNameOnchange = (value:any) => {
+        const newName = value.target.value;
+        setStep({
+            ...action,
+            actionExpect: {
+                ...action.actionExpect,
+            api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                if (apiIndex === index) {
+                    return { ...apiItem, data: { ...apiItem.data, name: newName } };
+                }
+                return apiItem;
+                })
+            }
+        });
+    }
+
+    const desireOnchange = (value:any) => {
+        setStep({
+            ...action,
+            actionExpect: {
+                ...action.actionExpect,
+                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                    if (apiIndex === index) {   
+                        return {...apiItem, data: {...apiItem.data, desire: value.target.value}}
+                    }
+                    return apiItem;
+                })
+            }
+        });
+    }
+
+    const operationOnchange = (value:any) => {
+        setStep({
+            ...action,
+            actionExpect: {
+                ...action.actionExpect,
+                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                    if (apiIndex === index) {
+                        return {...apiItem, data: {...apiItem.data, operation: value}}
+                    }
+                    return apiItem;
+                })
+            }
+        });
+    }
+
+    const typeOnchange = (value:any) => {
+        setStep({
+            ...action,
+            actionExpect: {
+                ...action.actionExpect,
+                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                    if (apiIndex === index) {
+                        return {...apiItem, data: {...apiItem.data, type: value}}
+                    }
+                    return apiItem;
+                })
+            }
+        });
+    }
+
+    const deleteOnclick = (index:any) => {
+        let newExpectApi = action.actionExpect.api.filter((apiItem, apiIndex) => {
+            return apiIndex !== index;
+        })
+        setStep({
+            ...action,
+            actionExpect: {
+                ...action.actionExpect,
+                api: newExpectApi
+            }
+        })
+    }
 
 
     return (
@@ -56,153 +153,34 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
                             renderItem={(item, index) => (
                             <List.Item>
                                 <Form layout="inline">
-                                <Row gutter={[8, 8]}>
-                                    <Col span={6}>
-                                        <Form.Item  
-                                            label="字段名"
-                                            labelCol={{ span: 8 }}
-                                            wrapperCol={{ span: 20 }}
+                                <Row gutter={[46, 40]}>
+                                    <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
+                                        <Input value={item.data?.name} onChange={fieldNameOnchange} />
+                                    </FormItemCol>
+                                    <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
+                                        <Input style={{ width: '6em' }} value={item.data?.desire} onChange={desireOnchange}/>
+                                    </FormItemCol>
+                                    <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
+                                        <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={operationOnchange} 
+                                        />
+                                    </FormItemCol>
+                                    <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
+                                        <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
+                                                onChange={typeOnchange} 
+                                        />
+                                    </FormItemCol>
+                                    <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
+                                        <Button 
+                                            type="link" 
+                                            danger 
+                                            icon={<DeleteOutlined />} 
+                                            onClick={() => {
+                                                deleteOnclick(index)
+                                            }}
                                         >
-                                            <Input value={item.data?.name} onChange={
-                                                (value) => {
-                                                    const newName = value.target.value;
-                                                    setStep({
-                                                      ...action,
-                                                      actionExpect: {
-                                                        ...action.actionExpect,
-                                                        api: action.actionExpect.api.map((apiItem, apiIndex) => {
-                                                          if (apiIndex === index) {
-                                                            return { ...apiItem, data: { ...apiItem.data, name: newName } };
-                                                          }
-                                                          return apiItem;
-                                                        })
-                                                      }
-                                                    });
-                                                }
-                                            } />
-                                        </Form.Item>  
-                                    </Col>     
-                                    <Col span={6} >
-                                        <Form.Item 
-                                            label="预期值"
-                                            labelCol={{ span: 8,offset:3 }}
-                                            wrapperCol={{ span: 20 }}
-                                        >
-                                            <Input 
-                                                style={{ width: '6em' }}
-                                                value={item.data?.desire} onChange={(value:any) => {
-                                            setStep({
-                                                ...action,
-                                                actionExpect: {
-                                                    ...action.actionExpect,
-                                                    api: action.actionExpect.api.map((apiItem, apiIndex) => {
-                                                        if (apiIndex === index) {
-                                                            return {...apiItem, data: {...apiItem.data, desire: value.target.value}}
-                                                        }
-                                                        return apiItem;
-                                                    })
-                                                }
-                                            });
-                                                
-                                            }}/>
-                                        </Form.Item>
-                                    </Col>    
-                                    <Col span={5}>
-                                        <Form.Item 
-                                                label="比较"
-                                                labelCol={{ span: 8 }}
-                                                wrapperCol={{ span: 20 }}
-                                        >
-                                            <Select
-                                                style={{ width: '6em' }}
-                                                value={item.data?.operation}
-                                                onChange={(value) => {
-                                                setStep({
-                                                    ...action,
-                                                    actionExpect: {
-                                                        ...action.actionExpect,
-                                                        api: action.actionExpect.api.map((apiItem, apiIndex) => {
-                                                            if (apiIndex === index) {
-                                                                return {...apiItem, data: {...apiItem.data, operation: value}}
-                                                            }
-                                                            return apiItem;
-                                                        })
-                                                    }
-                                                });
-                                                }}
-                                            >
-                                                <Select.Option value="equal">等于</Select.Option>
-                                                <Select.Option value="notEqual">不等于</Select.Option>
-                                                <Select.Option value="contain">包含</Select.Option>
-                                                <Select.Option value="notContain">不包含</Select.Option>
-                                                <Select.Option value="gt">大于</Select.Option>
-                                                <Select.Option value="lt">小于</Select.Option>
-                                                <Select.Option value="gte">大于等于</Select.Option>
-                                                <Select.Option value="lte">小于等于</Select.Option>
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={5}>
-                                        <Form.Item 
-                                            label="数据类型"
-                                            labelCol={{ span: 12 }}
-                                            wrapperCol={{ span: 20 }}
-                                            >
-                                            <Select
-                                                value={item.data?.type}
-                                                style={{ width: '6em' }}
-                                                onChange={(value) => {
-                                                    setStep({
-                                                        ...action,
-                                                        actionExpect: {
-                                                            ...action.actionExpect,
-                                                            api: action.actionExpect.api.map((apiItem, apiIndex) => {
-                                                                if (apiIndex === index) {
-                                                                    return {...apiItem, data: {...apiItem.data, type: value}}
-                                                                }
-                                                                return apiItem;
-                                                            })
-                                                        }
-                                                    });
-                                                }}
-                                            >
-                                                <Select.Option value="string">字符串</Select.Option>
-                                                <Select.Option value="integer">数字</Select.Option>
-                                                <Select.Option value="boolean">布尔值</Select.Option>
-                                                <Select.Option value="object">对象</Select.Option>
-                                                <Select.Option value="array">数组</Select.Option>
-                                            </Select>
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={2}>
-                                        <Form.Item>
-                                            <Button 
-                                                type="link" 
-                                                danger 
-                                                icon={<DeleteOutlined />} 
-                                                onClick={() => {
-                                                    let newExpectApi = action.actionExpect.api.filter((apiItem, apiIndex) => {
-                                                        return apiIndex !== index;
-                                                    })
-                                                    setStep({
-                                                        ...action,
-                                                        actionExpect: {
-                                                            ...action.actionExpect,
-                                                            api: newExpectApi
-                                                        }
-                                                    })
-                                                    // setaction({
-                                                    //     ...action,
-                                                    //     api: newExpectApi
-                                                    // })
-                                                }}
-                                            >
-                                                
-                                            </Button>
-                                        </Form.Item>
-                                    </Col>
+                                        </Button>
+                                    </FormItemCol>
                                 </Row>
-                                    
                                 </Form>
                             </List.Item>
                             )}
@@ -212,7 +190,6 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
                     ]}
                 />
             </Drawer>
-
         </>
   );
 };
