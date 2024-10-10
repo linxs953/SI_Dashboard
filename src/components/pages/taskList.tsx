@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Modal, Form, Input, List, Popconfirm, message } from 'antd';
 import { EditOutlined, PlayCircleFilled, FilePdfFilled, PlusOutlined,DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import NewDataModal from '../components/interface_auto/task/createModal';
+import NewDataModal from '../models/interface_auto/task/createModal';
 import axios from 'axios';
 import createSceneListStore from 'src/store/task/taskList';
 import useFetchApi from 'src/hooks/fetchApi';

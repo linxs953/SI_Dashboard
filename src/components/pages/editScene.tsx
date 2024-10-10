@@ -2,9 +2,9 @@ import React, { act, useEffect, useRef, useState } from 'react';
 import { Form, Input, Button, Modal, Table, Tooltip, message, InputNumber, Row, Col, FormInstance, Tabs, Select, Space, Layout } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import SceneInfo from '../components/interface_auto/scene/sceneInfo';
+import SceneInfo from '../models/interface_auto/scene/sceneInfo';
 import { Content } from 'antd/es/layout/layout';
-import ActionList from '../components/interface_auto/scene/actionList';
+import ActionList from '../models/interface_auto/scene/actionList';
 
 interface SceneData {
   sceneId: string;

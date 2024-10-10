@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Button, Modal, Result, message } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 // import "../../../node_modules/antd/dist/reset.css"
-import SceneList from '../components/interface_auto/task/sceneList';
-import TaskInfo from '../components/interface_auto/task/taskInfo';
+import SceneList from '../models/interface_auto/task/sceneList';
+import TaskInfo from '../models/interface_auto/task/taskInfo';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
