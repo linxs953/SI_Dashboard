@@ -43,7 +43,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
 
     
-    const fieldNameOnchange = (value:any) => {
+    const fieldNameOnchange = (value:any, index:number) => {
         const newName = value.target.value;
         setStep({
             ...action,
@@ -59,7 +59,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         });
     }
 
-    const desireOnchange = (value:any) => {
+    const desireOnchange = (value:any, index:number) => {
         setStep({
             ...action,
             actionExpect: {
@@ -74,7 +74,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         });
     }
 
-    const operationOnchange = (value:any) => {
+    const operationOnchange = (value:any, index:number) => {
         setStep({
             ...action,
             actionExpect: {
@@ -89,7 +89,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         });
     }
 
-    const typeOnchange = (value:any) => {
+    const typeOnchange = (value:any, index:number) => {
         setStep({
             ...action,
             actionExpect: {
@@ -117,6 +117,54 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         })
     }
 
+    const renderFieldAssertion = () => (
+        <List
+            dataSource={action.actionExpect.api}
+            renderItem={(item, index) => (
+            <List.Item>
+                <Form layout="inline">
+                    <Row gutter={[46, 40]}>
+                        <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
+                            <Input value={item.data?.name} onChange={(e) => fieldNameOnchange(e, index)} />
+                        </FormItemCol>
+                        <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
+                            <Input style={{ width: '6em' }} value={item.data?.desire} onChange={(e) => desireOnchange(e, index)}/>
+                        </FormItemCol>
+                        <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
+                            <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={(e) => operationOnchange(e, index)} 
+                            />
+                        </FormItemCol>
+                        <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
+                            <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
+                                    onChange={(e) => typeOnchange(e, index)} 
+                            />
+                        </FormItemCol>
+                        <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
+                            <Button 
+                                type="link" 
+                                danger 
+                                icon={<DeleteOutlined />} 
+                                onClick={() => {
+                                    deleteOnclick(index)
+                                }}
+                            >
+                            </Button>
+                        </FormItemCol>
+                    </Row>
+                </Form>
+            </List.Item>
+            )}
+        />
+    );
+
+    const tabItems = [
+        {
+            key: '1',
+            label: '字段断言',
+            children: renderFieldAssertion()
+        },
+    ];
+
 
     return (
         <>
@@ -143,51 +191,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
             >
                 <Tabs 
                     defaultActiveKey="1"
-                    items={[
-                    {
-                        key: '1',
-                        label: '字段断言',
-                        children: (
-                        <List
-                            dataSource={action.actionExpect.api}
-                            renderItem={(item, index) => (
-                            <List.Item>
-                                <Form layout="inline">
-                                <Row gutter={[46, 40]}>
-                                    <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
-                                        <Input value={item.data?.name} onChange={fieldNameOnchange} />
-                                    </FormItemCol>
-                                    <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
-                                        <Input style={{ width: '6em' }} value={item.data?.desire} onChange={desireOnchange}/>
-                                    </FormItemCol>
-                                    <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
-                                        <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={operationOnchange} 
-                                        />
-                                    </FormItemCol>
-                                    <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
-                                        <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
-                                                onChange={typeOnchange} 
-                                        />
-                                    </FormItemCol>
-                                    <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
-                                        <Button 
-                                            type="link" 
-                                            danger 
-                                            icon={<DeleteOutlined />} 
-                                            onClick={() => {
-                                                deleteOnclick(index)
-                                            }}
-                                        >
-                                        </Button>
-                                    </FormItemCol>
-                                </Row>
-                                </Form>
-                            </List.Item>
-                            )}
-                        />
-                        ),
-                    },
-                    ]}
+                    items={tabItems}
                 />
             </Drawer>
         </>

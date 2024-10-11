@@ -3,6 +3,7 @@ import { Modal, Button, List, Checkbox, Pagination, Input, message, Form } from 
 import { CloseOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import createSceneStore from 'src/store/scene/createScene';
+import FormItemWithoutCol from 'src/components/basic/formItem';
 
 
 let  Search = Input.Search
@@ -187,171 +188,249 @@ const NewSceneModal: React.FC<NewSceneModalProps> = ({
         return
     })
   };
-
-
-  // const checkAndAddSelectedItems = () => {
-  //   const newItems = selectedItems.filter(item => !listData.some(listItem => listItem.id === item.id));
-  
-  //   if (newItems.length < selectedItems.length) {
-  //     message.warning('当前已存在记录');
-  //   }
-  
-  //   if (newItems.length > 0) {
-  //     setListData(prevListData => [...prevListData, ...newItems]);
-  //   }
-  
-  //   setSearchResultsVisible(false);
-  //   setSelectedItems([]);
-  //   setSearchValue('')
-  //   setSearchResults([])
-  //   setSelectAll(false)
-  // };
   
   const onDelete = (id: number) => {
     const newData = listData.filter((item: any) => item.id !== id);
     setListData(newData);
   };
 
+  const onAddApiOk = () => {
+    const newData = listData.concat(selectedItems);
+    setListData(newData);
+    setSearchResultsVisible(false);
+    setSelectedItems([]);
+    setSearchValue('');
+    setSearchResults([]);
+    setSelectAll(false);
+  }
+
+  const onAddApiCancel = () => {
+    setSearchResultsVisible(false);
+    setSearchValue('');
+    setSearchResults([]);
+    setSelectedItems([]);
+    setSelectAll(false);
+  }
+
+  const renderCheckbox = (item: { id: number; text: string; }, index: number) => {
+    return (
+      <Checkbox
+        key={item.id}
+        checked={selectedItems.some(selectedItem => selectedItem.id === item.id)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setSelectedItems([...selectedItems, item]);
+          } else {
+            setSelectedItems(selectedItems.filter(selectedItem => selectedItem.id !== item.id));
+          }
+        } }
+      >
+        {item.text}
+      </Checkbox>
+    )
+  }
+
+  const renderPagination = () => {
+    if (listData.length == 0) {
+      return (
+        <>
+        </>
+      )
+    }
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+        <Pagination
+          current={sceneCurrentPage}
+          pageSize={scenePageSize}
+          total={listData.length}
+          onChange={(page, pageSize) => {
+            setSceneCurrentPage({pageNum: page, pageSize: pageSize, total: listData.length});
+            setScenePageSize({pageNum: page, pageSize: pageSize, total: listData.length});
+          } } />
+      </div>
+    )
+  }
+
+  const renderAddtoSceneSelectAll = () => {
+    if (searchResults.length > 0) {
+      return (
+        <div>
+        <Button
+          type="primary"
+          onClick={() => {
+            if (selectAll) {
+              setSelectedItems([]);
+              setSelectAll(false);
+            } else {
+              setSelectedItems(searchResults);
+              setSelectAll(true);
+            }
+          } }
+        >
+          {selectAll ? '取消全选' : '全选'}
+        </Button>
+      </div>
+      )
+    } else {
+      return (<></>)
+    }
+  }
+
+  const renderAddtoScenePagination = () => {
+    if (searchResults.length > 0) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={searchResults.length}
+          onChange={(page, pageSize) => {
+            setCurrentPage({pageNum: page, pageSize: pageSize, total: searchResults.length});
+            setPageSize({pageNum: page, pageSize: pageSize, total: searchResults.length});
+          } } />
+        </div>
+      )
+    } else {
+      return (<></>)
+    }
+  }
+
   return (
       <>
       <Modal
-      title="新增测试场景"
-      open={visible}
-      onCancel={handleCancel}
-      onOk={onFinish}
-      okText="提交"
-      cancelText="取消"
-    >
-      <Form
-        form={form}
-        name="basic"
-        initialValues={{ remember: true }}
-        autoComplete="off"
-        layout='inline'
+        title="新增测试场景"
+        open={visible}
+        onCancel={handleCancel}
+        onOk={onFinish}
+        okText="提交"
+        cancelText="取消"
       >
-        <Form.Item
-          label="场景名称"
-          name="scenename"
-          rules={[{ required: true, message: '请输入场景名称!' }]}
-          style={{ width: '450px', marginBottom: '16px' }}
+        <Form
+          form={form}
+          name="basic"
+          initialValues={{ remember: true }}
+          autoComplete="off"
+          layout='inline'
         >
-          <Input />
-        </Form.Item>
+          <FormItemWithoutCol label="场景名称" name="scenename" style={{ width: '450px', marginBottom: '16px' }} rules={[{ required: true, message: '请输入场景名称!' }]}>
+              <Input />
+          </FormItemWithoutCol>
 
-        <Form.Item
-          label="场景描述"
-          name="description"
-          rules={[{ required: true, message: '请输入场景描述!' }]}
-          style={{ width: '450px', marginBottom: '16px' }}
-        >
-          <Input.TextArea />
-        </Form.Item>
+          <FormItemWithoutCol  label="场景描述" name="description" rules={[{ required: true, message: '请输入场景描述!' }]} style={{ width: '450px', marginBottom: '16px' }}>
+            <Input.TextArea />
+          </FormItemWithoutCol>
 
-        <Form.Item
-          label="创建人"
-          name="author"
-          rules={[{ required: true, message: '请输入创建人!' }]}
-          style={{ width: '440px', marginBottom: '16px', marginLeft: '16px' }}
-        >
-          <Input />
-        </Form.Item>
-      </Form>
-      <Button type="primary" onClick={showSearchModal}>添加</Button>
-      <List
-        itemLayout="horizontal"
-        dataSource={scenePaginatedData}
-        renderItem={(item: { id: number; text: string; }, index: number) => renderListItem(item)} />
-      {listData.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
-          <Pagination
-            current={sceneCurrentPage}
-            pageSize={scenePageSize}
-            total={listData.length}
-            onChange={(page, pageSize) => {
-              setSceneCurrentPage({pageNum: page, pageSize: pageSize, total: listData.length});
-              setScenePageSize({pageNum: page, pageSize: pageSize, total: listData.length});
-            } } />
-        </div>
-      )}
-    </Modal>
-    <Modal
-      title="添加接口"
-      open={searchResultsVisible}
-      onOk={() => {
-        const newData = listData.concat(selectedItems);
-        setListData(newData);
-        setSearchResultsVisible(false);
-        setSelectedItems([]);
-        setSearchValue('');
-        setSearchResults([]);
-        setSelectAll(false);
-      }}
-      onCancel={() => {
-        setSearchResultsVisible(false);
-        setSearchValue('');
-        setSearchResults([]);
-        setSelectedItems([]);
-        setSelectAll(false);
-      }}
-      okText="加载到列表"
-      cancelText="取消"
-      okButtonProps={{ disabled: selectedItems.length === 0 }}
-    >
-        <Search placeholder="搜索api接口"
-          onSearch={onSearch}
-          value={searchValue}
-          onChange={e => setSearchValue(e.target.value)}
-          style={{ marginBottom: 16 }} />
-        {searchResults.length > 0 &&
-          <div>
-            <Button
-              type="primary"
-              onClick={() => {
-                if (selectAll) {
-                  setSelectedItems([]);
-                  setSelectAll(false);
-                } else {
-                  setSelectedItems(searchResults);
-                  setSelectAll(true);
-                }
-              } }
-            >
-              {selectAll ? '取消全选' : '全选'}
-            </Button>
-          </div>}
-        <List
-          style={{ marginTop: 20 }}
-          itemLayout="horizontal"
-          dataSource={paginatedData}
-          renderItem={(item: { id: number; text: string; }, index: number) => (
-            <Checkbox
-              key={item.id}
-              checked={selectedItems.some(selectedItem => selectedItem.id === item.id)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setSelectedItems([...selectedItems, item]);
-                } else {
-                  setSelectedItems(selectedItems.filter(selectedItem => selectedItem.id !== item.id));
-                }
-              } }
-            >
-              {item.text}
-            </Checkbox>
-          )} />
-        {searchResults.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              total={searchResults.length}
-              onChange={(page, pageSize) => {
-                setCurrentPage({pageNum: page, pageSize: pageSize, total: searchResults.length});
-                setPageSize({pageNum: page, pageSize: pageSize, total: searchResults.length});
-              } } />
-          </div>
-        )}
-      </Modal></>
+          <FormItemWithoutCol label="创建人" name="author" rules={[{ required: true, message: '请输入创建人!' }]} style={{ width: '440px', marginBottom: '16px', marginLeft: '16px' }}>
+            <Input />
+          </FormItemWithoutCol>
+          
+        </Form>
+        <Button type="primary" onClick={showSearchModal}>添加</Button>
+        <List itemLayout="horizontal" dataSource={scenePaginatedData}
+              renderItem={(item: { id: number; text: string; }, index: number) => renderListItem(item)} 
+        />
+        {renderPagination()}
+      </Modal>
+      <Modal
+        title="添加接口"
+        open={searchResultsVisible}
+        onOk={onAddApiOk}
+        onCancel={onAddApiCancel}
+        okText="加载到列表"
+        cancelText="取消"
+        okButtonProps={{ disabled: selectedItems.length === 0 }}
+      >
+          <Search placeholder="搜索api接口"
+            onSearch={onSearch}
+            value={searchValue}
+            onChange={e => setSearchValue(e.target.value)}
+            style={{ marginBottom: 16 }} />
+            {renderAddtoSceneSelectAll()}
+          <List
+            style={{ marginTop: 20 }}
+            itemLayout="horizontal"
+            dataSource={paginatedData}
+            renderItem={renderCheckbox} />
+            {renderAddtoScenePagination()}
+      </Modal>
+    </>
   );
 };
 
 export default NewSceneModal;
+
+
+// {searchResults.length > 0 &&
+//   <div>
+//     <Button
+//       type="primary"
+//       onClick={() => {
+//         if (selectAll) {
+//           setSelectedItems([]);
+//           setSelectAll(false);
+//         } else {
+//           setSelectedItems(searchResults);
+//           setSelectAll(true);
+//         }
+//       } }
+//     >
+//       {selectAll ? '取消全选' : '全选'}
+//     </Button>
+//   </div>}
+
+// {searchResults.length > 0 && (
+//   <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+//     <Pagination
+//       current={currentPage}
+//       pageSize={pageSize}
+//       total={searchResults.length}
+//       onChange={(page, pageSize) => {
+//         setCurrentPage({pageNum: page, pageSize: pageSize, total: searchResults.length});
+//         setPageSize({pageNum: page, pageSize: pageSize, total: searchResults.length});
+//       } } />
+//   </div>
+// )}
+
+{/* <Form.Item
+  label="场景名称"
+  name="scenename"
+  rules={[{ required: true, message: '请输入场景名称!' }]}
+  style={{ width: '450px', marginBottom: '16px' }}
+>
+  <Input />
+</Form.Item> */}
+
+{/* <Form.Item
+    label="创建人"
+    name="author"
+    rules={[{ required: true, message: '请输入创建人!' }]}
+    style={{ width: '440px', marginBottom: '16px', marginLeft: '16px' }}
+  >
+    <Input />
+  </Form.Item> */}
+
+
+{/* <Form.Item
+  label="场景描述"
+  name="description"
+  rules={[{ required: true, message: '请输入场景描述!' }]}
+  style={{ width: '450px', marginBottom: '16px' }}
+>
+  <Input.TextArea />
+</Form.Item> */}
+
+//   (item: { id: number; text: string; }, index: number) => (
+//   <Checkbox
+//     key={item.id}
+//     checked={selectedItems.some(selectedItem => selectedItem.id === item.id)}
+//     onChange={(e) => {
+//       if (e.target.checked) {
+//         setSelectedItems([...selectedItems, item]);
+//       } else {
+//         setSelectedItems(selectedItems.filter(selectedItem => selectedItem.id !== item.id));
+//       }
+//     } }
+//   >
+//     {item.text}
+//   </Checkbox>
+// )
