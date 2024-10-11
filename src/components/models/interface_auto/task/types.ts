@@ -62,7 +62,7 @@ interface ActionInfo {
 }
 
 interface expect {
-    api: []
+    api: any[]
     sql: {}
 }
 

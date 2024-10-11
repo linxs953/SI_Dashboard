@@ -38,6 +38,8 @@ const dataTypeOptions = [
 
 
 const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visible, onClose }) => {
+
+    const [internalAction, setInternalAction] = useState(action);
     useEffect(() => {
     }, [action]);
 
@@ -45,22 +47,22 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
     
     const fieldNameOnchange = (value:any, index:number) => {
         const newName = value.target.value;
-        setStep({
+        setInternalAction({
             ...action,
             actionExpect: {
                 ...action.actionExpect,
-            api: action.actionExpect.api.map((apiItem, apiIndex) => {
-                if (apiIndex === index) {
-                    return { ...apiItem, data: { ...apiItem.data, name: newName } };
-                }
-                return apiItem;
+                api: action.actionExpect.api.map((apiItem:any, apiIndex:number) => {
+                    if (apiIndex === index) {
+                        return { ...apiItem, data: { ...apiItem.data, name: newName } };
+                    }
+                    return apiItem;
                 })
             }
         });
     }
 
     const desireOnchange = (value:any, index:number) => {
-        setStep({
+        setInternalAction({
             ...action,
             actionExpect: {
                 ...action.actionExpect,
@@ -75,7 +77,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
     }
 
     const operationOnchange = (value:any, index:number) => {
-        setStep({
+        setInternalAction({
             ...action,
             actionExpect: {
                 ...action.actionExpect,
@@ -90,7 +92,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
     }
 
     const typeOnchange = (value:any, index:number) => {
-        setStep({
+        setInternalAction({
             ...action,
             actionExpect: {
                 ...action.actionExpect,
@@ -108,7 +110,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         let newExpectApi = action.actionExpect.api.filter((apiItem, apiIndex) => {
             return apiIndex !== index;
         })
-        setStep({
+        setInternalAction({
             ...action,
             actionExpect: {
                 ...action.actionExpect,
@@ -119,8 +121,8 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const renderFieldAssertion = () => (
         <List
-            dataSource={action.actionExpect.api}
-            renderItem={(item, index) => (
+            dataSource={internalAction.actionExpect.api}
+            renderItem={(item:any, index:number) => (
             <List.Item>
                 <Form layout="inline">
                     <Row gutter={[46, 40]}>
@@ -180,6 +182,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
                   取消
                 </Button>
                 <Button key="save" type="primary" onClick={() => {
+                  setStep(internalAction)
                   setSceneList(action)
                   message.success("保存成功")
                   onClose();
