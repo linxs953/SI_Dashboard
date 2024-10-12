@@ -1,6 +1,5 @@
 import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Switch, Table, Tabs, Tooltip } from "antd"
 import { useForm } from "antd/es/form/Form"
-import Search from "antd/es/input/Search"
 import React from "react"
 import { useEffect, useState } from "react"
 import ActionExpect from "../scene/actionExpect";
@@ -8,10 +7,97 @@ import createTaskSceneListStore from "src/store/task/taskSceneList"
 import { ColumnType } from "antd/es/table"
 import { SettingOutlined, DeleteOutlined } from '@ant-design/icons';
 import MultiDataSourceModal from "./multiDataSourceModal"
-
-const {Option} = Select
+import Options from "src/components/basic/options"
+import FormItemCol from "src/components/basic/formItemCol"
 
 const store = createTaskSceneListStore()
+
+const dataTypeOptions = [
+  { value: 'string', label: '字符串' },
+  { value: 'number', label: '数字' },
+  { value: 'boolean', label: '布尔值' },
+  { value: 'object', label: '对象' },
+  { value: 'array', label: '数组' }
+]
+
+const sideOptions = [
+  { label: '管理侧', value: '管理侧' },
+  { label: '平台侧', value: '平台侧' },
+  { label: '用户侧', value: '用户侧' },
+]
+
+
+const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void, columns: ColumnType<ActionInfo>[]) => {
+  return sceneList.map(scene => ({
+    key: scene.sceneId,
+    label: scene.sceneName,
+    children: (
+      <>
+        <div style={{marginBottom: 10}}>
+          <Button type='primary' onClick={() => showEditSceneModal()}>编辑场景</Button>
+        </div>
+        <Table
+            columns={columns.map((column, index) => ({
+              ...column,
+              title: typeof column.title === 'function' ? column.title : <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
+            })) as ColumnType<ActionInfo>[]}
+            dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
+            pagination={{
+              pageSize: 1,
+              showQuickJumper: true,
+              showTotal: (total) => `共 ${total} 条数据`,
+              position: ['bottomLeft']
+            }}
+            bordered
+        />
+      </>
+    )
+  }));
+};
+
+const getEnvironment = (url:string) => {
+  if (!url) {
+    return false;
+  }
+  if (url.includes('demopsuadmin') || url.includes('demopsu')) {
+    return false; // 测试环境
+  } else if (url.includes('admin.86lw.cc') || url.includes('psu.86lw.cc')) {
+    return true; // 生产环境
+  }
+  return false; // 默认返回测试环境
+}
+
+const getDomain = (side: string, environmentSwitch: boolean) => {
+  if (environmentSwitch !== undefined) {
+    if (environmentSwitch) {
+      // 生产环境
+      switch (side) {
+        case '管理侧':
+          return 'admin.86lw.cc';
+        case '平台侧':
+          return 'psu.86lw.cc';
+        case '用户侧':
+          return 'psu.86lw.cc';
+        default:
+          return '';
+      }
+    } else {
+      // 测试环境
+      switch (side) {
+        case '管理侧':
+          return 'demopsuadmin.86yfw.com';
+        case '平台侧':
+          return 'demopsu.86yfw.com';
+        case '用户侧':
+          return 'demopsu.86yfw.com';
+        default:
+          return '';
+      }
+    }
+  }
+  return '';
+}
+
 
 const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
   const [form] = useForm()
@@ -117,11 +203,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     
   };
 
-  useEffect(() => {
-    const scene = sceneList.find(s => s.sceneId === activeTabKey);
-    setCurrentScene(scene as SceneInfo);
-  }, [activeTabKey]);
-
   const handleTabChange = (key: string) => {
     setActiveTabKey(key);
   };
@@ -130,7 +211,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setIsConfigDrawerVisible(false);
   };
 
-  const columns = [
+  const columns:ColumnType<ActionInfo>[] = [
     {
         title: '步骤ID',
         dataIndex: 'actionId',
@@ -208,8 +289,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
       )
     }
   ];
-
-
 
   const updateActionDepend = (depend:DependInfo) => {
     let newDepend: ActionInfo = currentStep
@@ -326,425 +405,13 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     // 处理提交逻辑
   };
 
-
-  const dependForm = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
-    <>
-      {fields.map(({ key, name, ...restField }) => (
-        <Row key={key} gutter={20}>
-          <Col span={6}>
-            <Form.Item
-              {...restField}
-              name={[name, 'dsType']}
-              label="数据源类型"
-            >
-              <Select 
-                value={form.getFieldValue([dependSelectTab, name, 'dsType'])}
-                onChange={(value) => {
-                  const currentField = form.getFieldValue([dependSelectTab, name]);
-                  const updatedField = {
-                    ...currentField,
-                    dsType: value
-                  };
-                  
-                  // 清除其他类型特有的字段
-                  delete updatedField.relateStep;
-                  delete updatedField.cacheKey;
-                  delete updatedField.customValue;
-                  delete updatedField.eventKey;
-                  
-                  // 只更新当前记录
-                  form.setFieldsValue({
-                    [dependSelectTab]: {
-                      [name]: updatedField
-                    }
-                  });
-                }}
-              >
-                <Option value="scene">场景</Option>
-                <Option value="basic">基础数据</Option>
-                <Option value="custom">自定义数据</Option>
-                <Option value="event">基于事件生成</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            {(() => {
-              const dsType = form.getFieldValue([dependSelectTab, name, 'dsType']);
-              switch (dsType) {
-                case 'scene':
-                  return (
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'relateStep']}
-                      label="场景索引"
-                    >
-                       <Search
-                          readOnly
-                          onSearch={() => {
-                            setIsSelectActionModalVisible(true)
-                            setSceneIndex(name)
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        />
-
-                    </Form.Item>
-                  );
-                case 'basic':
-                  return (
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'cacheKey']}
-                      label="缓存键"
-                    >
-                        <Search
-                          readOnly
-                          onSearch={() => {
-                            // setIsSelectActionModalVisible(true)
-                            // setSceneIndex(name)
-                            setIsCacheModalVisible(true)
-                            setCacheIndex(name)
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        />  
-                    </Form.Item>
-                  );
-                case 'custom':
-                  return (
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'customValue']}
-                      label="自定义值"
-                    >
-                      <Input />
-                    </Form.Item>
-                  );
-                case 'event':
-                  return (
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'eventKey']}
-                      label="事件键"
-                    >
-                      <Input />
-                    </Form.Item>
-                  );
-                default:
-                  return null;
-              }
-            })()}
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              {...restField}
-              name={[name, 'targetField']}
-              label="目标字段"
-            >
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={2}>
-            <Button onClick={() => remove(name)} type="link" danger>
-              删除
-            </Button>
-          </Col>
-        </Row>
-      ))}
-      <Form.Item>
-        <Button type="dashed" onClick={() => {
-          add()
-          form.setFieldsValue({
-            [dependSelectTab]: {
-              [fields.length]: {
-                dsType: 'scene',
-                dependType: dependSelectTab,
-                cacheKey: "",
-                relateStep: ""
-              }
-            }
-          })
-        }} block>
-          添加数据
-        </Button>
-      </Form.Item>
-      <Modal
-        title="选择关联Action"
-        open={isSelectActionModalVisible}
-        onOk={() => {
-          const formValues = form.getFieldsValue();
-          const sceneId = formValues.selectedSceneId
-          const selectedActionId = formValues.selectedActionId
-          const referenceField = formValues.referenceField
-          form.setFieldValue([dependSelectTab, sceneIndex, 'relateStep'], `${sceneId}.${selectedActionId}/${referenceField}`);
-          setIsSelectActionModalVisible(false);
-          console.log(form.getFieldsValue())
-        }}
-        onCancel={() => setIsSelectActionModalVisible(false)}
-      >
-        <>
-          <Form form={form} layout="vertical">
-            <Form.Item name="selectedSceneId" label="选择场景">
-              <Select
-                placeholder="请选择场景"
-                style={{ width: '100%', marginBottom: '10px' }}
-                onChange={(value) => {
-                  const selectedScene = sceneList.find(scene => scene.sceneId === value);
-                  setSelectScene(selectScene);
-                  form.setFieldsValue({ selectedActionId: undefined });
-                }}
-              >
-                {sceneList.map(scene => (
-                  <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="selectedActionId" label="选择Action">
-              <Select
-                placeholder="请选择Action"
-                style={{ width: '100%', marginBottom: '10px' }}
-                disabled={!selectScene}
-              >
-                {selectScene?.actionList
-                  ?.filter((action: any) => {
-                    if (form.getFieldValue('selectedSceneId') === activeTabKey) {
-                      const currentActionIndex = currentScene.actionList.findIndex(
-                        (a: any) => a.actionId === currentStep.actionId
-                      );
-                      return currentScene.actionList.indexOf(action) < currentActionIndex;
-                    }
-                    return true;
-                  })
-                  .map((action: any) => (
-                    <Option key={action.actionId} value={action.actionId}>{action.actionName}</Option>
-                  ))
-                }
-              </Select>
-            </Form.Item>
-            <Form.Item name="referenceField" label="引用字段">
-              <Input placeholder="请输入引用字段" />
-            </Form.Item>
-          </Form>
-        </>
-      </Modal>
-
-      <Modal
-        title="选择基础数据"
-        open={isCacheModalVisible}
-        onOk={() => {
-          const formValues = form.getFieldsValue();
-          const cacheKey = formValues.cacheKey
-          const cacheFiled = formValues.cacheFiled
-          form.setFieldValue([dependSelectTab, cacheIndex, 'cacheKey'], `${cacheKey}/${cacheFiled}`);
-          setIsCacheModalVisible(false);
-        }}
-        onCancel={() => setIsCacheModalVisible(false)}
-      >
-        <>
-          <Form form={form} layout="vertical">
-            <Form.Item name="cacheKey">
-              <Input placeholder="请输入基础数据键" />
-            </Form.Item>
-            <Form.Item name="cacheFiled">
-              <Input placeholder="请输入字段名" />
-            </Form.Item>
-          </Form>
-        </>
-      </Modal>
-    </>
-  )
-
-  const dependForm2 = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
-    <>
-      {fields.map(({ key, name, ...restField }) => (
-        <Row key={key} gutter={20}>
-          <Col span={8}>
-            <Form.Item
-              {...restField}
-              name={[name, 'refer', 'target']}
-              label="目标字段"
-            >
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              {...restField}
-              name={[name, 'output', 'type']}
-              label="输出字段类型"
-            >
-              <Select placeholder="请选择数据类型">
-                <Option value="string">字符串</Option>
-                <Option value="number">数字</Option>
-                <Option value="boolean">布尔值</Option>
-                <Option value="object">对象</Option>
-                <Option value="array">数组</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={2} style={{ paddingLeft: '4px', paddingRight: '4px' }}>
-            <Tooltip title="配置数据">
-              <Button
-                icon={<SettingOutlined />}
-                style={{ padding: '0 8px', marginRight: '8px'}}
-                onClick={() => {
-                  console.log(form.getFieldValue([dependSelectTab, name]))
-                  const formValue = form.getFieldValue([dependSelectTab, name])
-                  console.log(formValue.dataSource)
-                  const depend: DependInfo = currentStep.actionDependencies.find(item => item.refer.target === formValue.refer.target) as DependInfo
-                  
-                  console.log(depend)
-                  setCurrentActionDepend(depend)
-                  setIsMultiDataSourceModalVisible(true);
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="删除">
-              <Button 
-                icon={<DeleteOutlined />} 
-                onClick={() => remove(name)} 
-                type="link" 
-                danger
-              />
-            </Tooltip>
-          </Col>
-        </Row>
-      ))}
-      <Form.Item>
-        <Button type="dashed" onClick={() => {
-          // add()
-          // form.setFieldsValue({
-          //   [dependSelectTab]: {
-          //     [fields.length]: {
-          //       name: "",
-          //       dependType: 'scene',
-          //       dsType: '1',
-          //       dependId: "",
-          //       dataKey: "",
-          //       actionKey: "",
-          //       searchCond: []
-          //     }
-          //   }
-          // })
-          setCurrentAction({
-            ...currentStep,
-            actionDependencies: [
-              ...currentStep.actionDependencies,
-              {
-                name: "",
-                dependType: 'scene',
-                dsType: '1',
-                dependId: "",
-                dataKey: "",
-                actionKey: "",
-                searchCond: []
-              }
-            ]
-          })
-          
-        }} block>
-          添加数据
-        </Button>
-      </Form.Item>
-      <Modal
-        title="选择关联Action"
-        open={isSelectActionModalVisible}
-        onOk={() => {
-          const formValues = form.getFieldsValue();
-          const sceneId = formValues.selectedSceneId
-          const selectedActionId = formValues.selectedActionId
-          const referenceField = formValues.referenceField
-          form.setFieldValue([dependSelectTab, sceneIndex, 'relateStep'], `${sceneId}.${selectedActionId}/${referenceField}`);
-          setIsSelectActionModalVisible(false);
-          console.log(form.getFieldsValue())
-        }}
-        onCancel={() => setIsSelectActionModalVisible(false)}
-      >
-        <>
-          <Form form={form} layout="vertical">
-            <Form.Item name="selectedSceneId" label="选择场景">
-              <Select
-                placeholder="请选择场景"
-                style={{ width: '100%', marginBottom: '10px' }}
-                onChange={(value) => {
-                  const selectedScene = sceneList.find(scene => scene.sceneId === value);
-                  setSelectScene(selectScene);
-                  form.setFieldsValue({ selectedActionId: undefined });
-                }}
-              >
-                {sceneList.map(scene => (
-                  <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="selectedActionId" label="选择Action">
-              <Select
-                placeholder="请选择Action"
-                style={{ width: '100%', marginBottom: '10px' }}
-                disabled={!selectScene}
-              >
-                {selectScene?.actionList
-                  ?.filter((action: any) => {
-                    if (form.getFieldValue('selectedSceneId') === activeTabKey) {
-                      const currentActionIndex = currentScene.actionList.findIndex(
-                        (a: any) => a.actionId === currentStep.actionId
-                      );
-                      return currentScene.actionList.indexOf(action) < currentActionIndex;
-                    }
-                    return true;
-                  })
-                  .map((action: any) => (
-                    <Option key={action.actionId} value={action.actionId}>{action.actionName}</Option>
-                  ))
-                }
-              </Select>
-            </Form.Item>
-            <Form.Item name="referenceField" label="引用字段">
-              <Input placeholder="请输入引用字段" />
-            </Form.Item>
-          </Form>
-        </>
-      </Modal>
-
-      <Modal
-        title="选择基础数据"
-        open={isCacheModalVisible}
-        onOk={() => {
-          const formValues = form.getFieldsValue();
-          const cacheKey = formValues.cacheKey
-          const cacheFiled = formValues.cacheFiled
-          form.setFieldValue([dependSelectTab, cacheIndex, 'cacheKey'], `${cacheKey}/${cacheFiled}`);
-          setIsCacheModalVisible(false);
-        }}
-        onCancel={() => setIsCacheModalVisible(false)}
-      >
-        <>
-          <Form form={form} layout="vertical">
-            <Form.Item name="cacheKey">
-              <Input placeholder="请输入基础数据键" />
-            </Form.Item>
-            <Form.Item name="cacheFiled">
-              <Input placeholder="请输入字段名" />
-            </Form.Item>
-          </Form>
-        </>
-      </Modal>
-      <MultiDataSourceModal 
-        visible={isMultiDataSourceModalVisible}
-        actionDependency={currentActionDepend}
-        sceneList={sceneList}
-        currentAction={currentStep.actionId}
-        updateFn={updateActionDepend}
-        onCancel={() => setIsMultiDataSourceModalVisible(false)}
-      />
-    </>
-  )
-
   const getSide = (url: string) => {
     const urlPatterns = {
       '管理侧': /(admin|demopsuadmin)/,
       '平台侧': /(psu|demopsu)/,
       '用户侧': /(psu|demopsu)/
     };
-
+  
     for (const [side, pattern] of Object.entries(urlPatterns)) {
       if (pattern.test(url)) {
         form.setFieldsValue({
@@ -753,53 +420,9 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         return side;
       }
     }
-
+  
     return '';
   }
-
-  const getEnvironment = (url:string) => {
-    if (!url) {
-      return false;
-    }
-    if (url.includes('demopsuadmin') || url.includes('demopsu')) {
-      return false; // 测试环境
-    } else if (url.includes('admin.86lw.cc') || url.includes('psu.86lw.cc')) {
-      return true; // 生产环境
-    }
-    return false; // 默认返回测试环境
-  }
-
-  const getDomain = (side: string, environmentSwitch: boolean) => {
-    if (environmentSwitch !== undefined) {
-      if (environmentSwitch) {
-        // 生产环境
-        switch (side) {
-          case '管理侧':
-            return 'admin.86lw.cc';
-          case '平台侧':
-            return 'psu.86lw.cc';
-          case '用户侧':
-            return 'psu.86lw.cc';
-          default:
-            return '';
-        }
-      } else {
-        // 测试环境
-        switch (side) {
-          case '管理侧':
-            return 'demopsuadmin.86yfw.com';
-          case '平台侧':
-            return 'demopsu.86yfw.com';
-          case '用户侧':
-            return 'demopsu.86yfw.com';
-          default:
-            return '';
-        }
-      }
-    }
-    return '';
-  }
-
 
   const saveDepend = () => {
     console.log(form.getFieldsValue());
@@ -832,7 +455,24 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setIsConfigDrawerVisible(false)
   }
 
+  const handleSideChange = (value: string) => {
+    const environmentSwitch = form.getFieldValue('environmentSwitch');
+    const domain = getDomain(value, environmentSwitch);
+    form.setFieldsValue({
+      actionDomain: domain
+    });
+  }
 
+  const handleEnvironmentChange = (checked: boolean) => {
+    const side = form.getFieldValue('side');
+    const domain = getDomain(side, checked);
+    form.setFieldsValue({
+      actionDomain: domain
+    });
+  };
+
+
+  // 渲染组件方法
   const editSceneModalForm = () => {
     return (
       <>
@@ -843,44 +483,24 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             initialValues={currentScene}
           >
             <Row gutter={20}>
-              <Col span={8}>
-                <Form.Item
-                  label="场景名称"
-                  name="sceneName"
-                  rules={[{ required: true, message: '请输入场景名称!' }]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6} offset={0.5}>
-                <Form.Item
-                  label="重试次数"
-                  name="sceneRetries"
-                  rules={[{ required: true, message: '请输入重试次数!' }]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={6} offset={0.5}>
-                <Form.Item
-                  label="超时时间"
-                  name="sceneTimeout"
-                  rules={[{ required: true, message: '请输入超时时间!' }]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
+              <FormItemCol span={8} label="场景名称" name="sceneName" rules={[{ required: true, message: '请输入场景名称!' }]}>
+                <Input />
+              </FormItemCol>
+
+              <FormItemCol span={6} offset={0.5} label="重试次数" name="sceneRetries" rules={[{ required: true, message: '请输入重试次数!' }]}>
+                <Input />
+              </FormItemCol>
+
+              <FormItemCol span={6} offset={0.5} label="超时时间" name="sceneTimeout" rules={[{ required: true, message: '请输入超时时间!' }]}>
+                <Input />
+              </FormItemCol>
+
             </Row>
             <Row gutter={20}>
-              <Col span={20}>
-                <Form.Item
-                  label="场景描述"
-                  name="sceneDescription"
-                  rules={[{ required: true, message: '请输入场景描述!' }]}
-                >
-                  <Input.TextArea rows={4} />
-                </Form.Item>
-              </Col>
+              <FormItemCol span={20} label="场景描述" name="sceneDescription" rules={[{ required: true, message: '请输入场景描述!' }]}>
+                <Input.TextArea rows={4} />
+              </FormItemCol>
+
             </Row>
           </Form>
         </Row>
@@ -897,64 +517,34 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           initialValues={currentStep}
         >
           <Row gutter={20}>
-            <Col span={8}>
-              <Form.Item name="actionName" label="步骤名称">
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={6} offset={0.5}>
-              <Form.Item name="timeout" label="超时时间">
-                <InputNumber />
-              </Form.Item>
-            </Col>
-            <Col span={6} offset={0.5}>
-              <Form.Item name="retry" label="重试次数">
-                <InputNumber />
-              </Form.Item>
-            </Col>
+            <FormItemCol label="步骤名称" name="actionName">
+              <Input />
+            </FormItemCol>
+            <FormItemCol label="超时时间" name="timeout" span={6} offset={0.5}>
+              <InputNumber />
+            </FormItemCol>
+            <FormItemCol label="重试次数" name="retry" span={6} offset={0.5}>
+              <InputNumber />
+            </FormItemCol>
           </Row>
           <Row gutter={20}>
             <Col span={20}>
               <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="side" label="选择侧">
-                    <Select
-                      defaultValue={getSide(form.getFieldValue('actionDomain'))}
-                      onChange={(value) => {
-                        const environmentSwitch = form.getFieldValue('environmentSwitch');
-                        const domain = getDomain(value, environmentSwitch);
-                        form.setFieldsValue({
-                          actionDomain: domain
-                        });
-                      }}
-                    >
-                      <Option value="管理侧">管理侧</Option>
-                      <Option value="平台侧">平台侧</Option>
-                      <Option value="用户侧">用户侧</Option>
-                      {/* <Option value="中台侧">中台侧</Option>
-                      <Option value="商家侧">商家侧</Option>
-                      <Option value="开放侧">开放侧</Option> */}
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="environmentSwitch" label="选择环境" valuePropName="checked">
+                <FormItemCol span={12} name="side" label="选择侧">
+                  <Options
+                    value={getSide(form.getFieldValue('actionDomain'))}
+                    onChange={(value) => handleSideChange(value as string)}
+                    data={sideOptions}
+                  />
+                </FormItemCol>
+                <FormItemCol span={12} name="environmentSwitch" label="选择环境" valuePropName="checked">
                     <Switch
                       checkedChildren="生产"
                       unCheckedChildren="测试"
                       defaultChecked={getEnvironment(form.getFieldValue('actionDomain'))}
-                      onChange={(checked) => {
-                        const side = form.getFieldValue('side');
-                        const domain = getDomain(side, checked);
-                        console.log(domain)
-                        console.log(checked)
-                        form.setFieldsValue({
-                          actionDomain: domain
-                        });
-                      }}
+                      onChange={(checked) => handleEnvironmentChange(checked)}
                     />
-                  </Form.Item>
-                </Col>
+                </FormItemCol>
               </Row>
               <Form.Item name="actionDomain" label="域名">
                 <Input disabled />
@@ -962,16 +552,110 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             </Col>
           </Row>
           <Row gutter={20}>
-            <Col span={20}>
-              <Form.Item name="description" label="步骤描述">
-                <Input.TextArea disabled rows={4} />
-              </Form.Item>
-            </Col>
+            <FormItemCol span={20} name="description" label="步骤描述">
+              <Input.TextArea disabled rows={4} />
+            </FormItemCol>
           </Row>
         </Form>
       </>
     )
   }
+
+  const renderDependencyForms = () => {
+    const dependencyTypes = ['headers', 'path', 'params', 'payload'];
+    const labels = {
+      'headers': '请求头',
+      'path': '请求路径', 
+      'params': '请求参数',
+      'payload': '请求体'
+    };
+
+    return dependencyTypes.map(type => ({
+      key: type,
+      label: labels[type as keyof typeof labels],
+      children: (
+        <Form 
+          form={form} 
+          onFinish={onFinish} 
+          initialValues={{ [type]: currentStep?.actionDependencies?.filter(dep => dep.refer.type === type) }}
+        >
+          <Form.List name={type}>
+            {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
+          </Form.List>
+        </Form>
+      ),
+    }));
+  };
+
+  const dependForm2 = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
+    <>
+      {fields.map(({ key, name, ...restField }) => (
+        <Row key={key} gutter={20}>
+          <Col span={8}>
+            <Form.Item {...restField} name={[name, 'refer', 'target']} label="目标字段">
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item {...restField} name={[name, 'output', 'type']} label="输出字段类型">
+              <Options data={dataTypeOptions} />
+            </Form.Item>
+          </Col>
+          <Col span={2} style={{ paddingLeft: '4px', paddingRight: '4px' }}>
+            <Tooltip title="配置数据">
+              <Button icon={<SettingOutlined />} style={{ padding: '0 8px', marginRight: '8px'}}
+                      onClick={() => {
+                        console.log(form.getFieldValue([dependSelectTab, name]))
+                        const formValue = form.getFieldValue([dependSelectTab, name])
+                        console.log(formValue.dataSource)
+                        const depend: DependInfo = currentStep.actionDependencies.find(item => item.refer.target === formValue.refer.target) as DependInfo
+                        
+                        console.log(depend)
+                        setCurrentActionDepend(depend)
+                        setIsMultiDataSourceModalVisible(true);
+                      }}
+              />
+            </Tooltip>
+            <Tooltip title="删除">
+              <Button icon={<DeleteOutlined />} onClick={() => remove(name)} type="link" danger />
+            </Tooltip>
+          </Col>
+        </Row>
+      ))}
+      <Form.Item>
+        <Button type="dashed" onClick={() => {
+          setCurrentAction({
+            ...currentStep,
+            actionDependencies: [
+              ...currentStep.actionDependencies,
+              {
+                name: "",
+                dependType: 'scene',
+                dsType: '1',
+                dependId: "",
+                dataKey: "",
+                actionKey: "",
+                searchCond: []
+              }
+            ]
+          })
+          
+        }} block>
+          添加数据
+        </Button>
+      </Form.Item>
+
+      <MultiDataSourceModal 
+        visible={isMultiDataSourceModalVisible}
+        actionDependency={currentActionDepend}
+        sceneList={sceneList}
+        currentAction={currentStep.actionId}
+        updateFn={updateActionDepend}
+        onCancel={() => setIsMultiDataSourceModalVisible(false)}
+      />
+    </>
+  )
+
 
   useEffect(() => {
     if (currentStep) {
@@ -987,10 +671,12 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }
   }, [sceneList])
 
-
   useEffect(() => {
-    console.log(sceneList)
-  }, [])
+    const scene = sceneList.find(s => s.sceneId === activeTabKey);
+    setCurrentScene(scene as SceneInfo);
+  }, [activeTabKey]);
+
+
 
   return (
     <>
@@ -998,31 +684,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           <Tabs 
               activeKey={activeTabKey} 
               onChange={handleTabChange} 
-              items={sceneList.map(scene => ({
-                key: scene.sceneId,
-                label: scene.sceneName,
-                children: (
-                  <>
-                    <div style={{marginBottom: 10}}>
-                      <Button type='primary' onClick={() => showEditSceneModal()}>编辑场景</Button>
-                    </div>
-                    <Table
-                        columns={columns.map((column, index) => ({
-                          ...column,
-                          title: <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
-                        })) as ColumnType<ActionInfo>[]}
-                        dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
-                        pagination={{
-                          pageSize: 1,
-                          showQuickJumper: true,
-                          showTotal: (total) => `共 ${total} 条数据`,
-                          position: ['bottomLeft']
-                        }}
-                        bordered
-                    />
-                  </>
-                )
-              }))}
+              items={renderSceneList(sceneList, showEditSceneModal, columns)}
           />
           <Drawer
             title="配置依赖"
@@ -1050,52 +712,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
               onChange={(key) => {
                 setDependSelectTab(key)
               }}
-              items={[
-                {
-                  key: 'headers',
-                  label: '请求头',
-                  children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ headers: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'headers') }}>
-                      <Form.List name="headers">
-                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
-                      </Form.List>
-                    </Form>
-                  ),
-                },
-                {
-                  key: 'path',
-                  label: '请求路径',
-                  children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ path: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'path') }}>
-                      <Form.List name="path">
-                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
-                      </Form.List>
-                    </Form>
-                  ),
-                },
-                {
-                  key: 'params',
-                  label: '请求参数',
-                  children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ params: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'params') }}>
-                      <Form.List name="params">
-                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
-                      </Form.List>
-                    </Form>
-                  ),              
-                },
-                {
-                  key: 'payload',
-                  label: '请求体',
-                  children: (
-                    <Form form={form} onFinish={onFinish} initialValues={{ payload: currentStep?.actionDependencies?.filter(dep => dep.refer.type === 'payload') }}>
-                      <Form.List name="payload">
-                          {(fields, { add, remove }) => dependForm2(fields, { add, remove })}
-                      </Form.List>
-                    </Form>
-                  ),              
-                },
-              ]}
+              items={renderDependencyForms()}
             />
           </Drawer>
           <ActionExpect action={currentStep} setStep={setCurrentAction} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
@@ -1138,3 +755,291 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   );
 };
 export default SceneList;
+
+
+// const dependForm = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
+//   <>
+//     {fields.map(({ key, name, ...restField }) => (
+//       <Row key={key} gutter={20}>
+//         <Col span={6}>
+//           <Form.Item
+//             {...restField}
+//             name={[name, 'dsType']}
+//             label="数据源类型"
+//           >
+//             <Select 
+//               value={form.getFieldValue([dependSelectTab, name, 'dsType'])}
+//               onChange={(value) => {
+//                 const currentField = form.getFieldValue([dependSelectTab, name]);
+//                 const updatedField = {
+//                   ...currentField,
+//                   dsType: value
+//                 };
+                
+//                 // 清除其他类型特有的字段
+//                 delete updatedField.relateStep;
+//                 delete updatedField.cacheKey;
+//                 delete updatedField.customValue;
+//                 delete updatedField.eventKey;
+                
+//                 // 只更新当前记录
+//                 form.setFieldsValue({
+//                   [dependSelectTab]: {
+//                     [name]: updatedField
+//                   }
+//                 });
+//               }}
+//             >
+//               <Option value="scene">场景</Option>
+//               <Option value="basic">基础数据</Option>
+//               <Option value="custom">自定义数据</Option>
+//               <Option value="event">基于事件生成</Option>
+//             </Select>
+//           </Form.Item>
+//         </Col>
+//         <Col span={8}>
+//           {(() => {
+//             const dsType = form.getFieldValue([dependSelectTab, name, 'dsType']);
+//             switch (dsType) {
+//               case 'scene':
+//                 return (
+//                   <Form.Item
+//                     {...restField}
+//                     name={[name, 'relateStep']}
+//                     label="场景索引"
+//                   >
+//                      <Search
+//                         readOnly
+//                         onSearch={() => {
+//                           setIsSelectActionModalVisible(true)
+//                           setSceneIndex(name)
+//                         }}
+//                         style={{ cursor: 'pointer' }}
+//                       />
+
+//                   </Form.Item>
+//                 );
+//               case 'basic':
+//                 return (
+//                   <Form.Item
+//                     {...restField}
+//                     name={[name, 'cacheKey']}
+//                     label="缓存键"
+//                   >
+//                       <Search
+//                         readOnly
+//                         onSearch={() => {
+//                           // setIsSelectActionModalVisible(true)
+//                           // setSceneIndex(name)
+//                           setIsCacheModalVisible(true)
+//                           setCacheIndex(name)
+//                         }}
+//                         style={{ cursor: 'pointer' }}
+//                       />  
+//                   </Form.Item>
+//                 );
+//               case 'custom':
+//                 return (
+//                   <Form.Item
+//                     {...restField}
+//                     name={[name, 'customValue']}
+//                     label="自定义值"
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 );
+//               case 'event':
+//                 return (
+//                   <Form.Item
+//                     {...restField}
+//                     name={[name, 'eventKey']}
+//                     label="事件键"
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 );
+//               default:
+//                 return null;
+//             }
+//           })()}
+//         </Col>
+//         <Col span={8}>
+//           <Form.Item
+//             {...restField}
+//             name={[name, 'targetField']}
+//             label="目标字段"
+//           >
+//             <Input />
+//           </Form.Item>
+//         </Col>
+//         <Col span={2}>
+//           <Button onClick={() => remove(name)} type="link" danger>
+//             删除
+//           </Button>
+//         </Col>
+//       </Row>
+//     ))}
+//     <Form.Item>
+//       <Button type="dashed" onClick={() => {
+//         add()
+//         form.setFieldsValue({
+//           [dependSelectTab]: {
+//             [fields.length]: {
+//               dsType: 'scene',
+//               dependType: dependSelectTab,
+//               cacheKey: "",
+//               relateStep: ""
+//             }
+//           }
+//         })
+//       }} block>
+//         添加数据
+//       </Button>
+//     </Form.Item>
+//     <Modal
+//       title="选择关联Action"
+//       open={isSelectActionModalVisible}
+//       onOk={() => {
+//         const formValues = form.getFieldsValue();
+//         const sceneId = formValues.selectedSceneId
+//         const selectedActionId = formValues.selectedActionId
+//         const referenceField = formValues.referenceField
+//         form.setFieldValue([dependSelectTab, sceneIndex, 'relateStep'], `${sceneId}.${selectedActionId}/${referenceField}`);
+//         setIsSelectActionModalVisible(false);
+//         console.log(form.getFieldsValue())
+//       }}
+//       onCancel={() => setIsSelectActionModalVisible(false)}
+//     >
+//       <>
+//         <Form form={form} layout="vertical">
+//           <Form.Item name="selectedSceneId" label="选择场景">
+//             <Select
+//               placeholder="请选择场景"
+//               style={{ width: '100%', marginBottom: '10px' }}
+//               onChange={(value) => {
+//                 const selectedScene = sceneList.find(scene => scene.sceneId === value);
+//                 setSelectScene(selectScene);
+//                 form.setFieldsValue({ selectedActionId: undefined });
+//               }}
+//             >
+//               {sceneList.map(scene => (
+//                 <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
+//               ))}
+//             </Select>
+//           </Form.Item>
+//           <Form.Item name="selectedActionId" label="选择Action">
+//             <Select
+//               placeholder="请选择Action"
+//               style={{ width: '100%', marginBottom: '10px' }}
+//               disabled={!selectScene}
+//             >
+//               {selectScene?.actionList
+//                 ?.filter((action: any) => {
+//                   if (form.getFieldValue('selectedSceneId') === activeTabKey) {
+//                     const currentActionIndex = currentScene.actionList.findIndex(
+//                       (a: any) => a.actionId === currentStep.actionId
+//                     );
+//                     return currentScene.actionList.indexOf(action) < currentActionIndex;
+//                   }
+//                   return true;
+//                 })
+//                 .map((action: any) => (
+//                   <Option key={action.actionId} value={action.actionId}>{action.actionName}</Option>
+//                 ))
+//               }
+//             </Select>
+//           </Form.Item>
+//           <Form.Item name="referenceField" label="引用字段">
+//             <Input placeholder="请输入引用字段" />
+//           </Form.Item>
+//         </Form>
+//       </>
+//     </Modal>
+
+//     <Modal
+//       title="选择基础数据"
+//       open={isCacheModalVisible}
+//       onOk={() => {
+//         const formValues = form.getFieldsValue();
+//         const cacheKey = formValues.cacheKey
+//         const cacheFiled = formValues.cacheFiled
+//         form.setFieldValue([dependSelectTab, cacheIndex, 'cacheKey'], `${cacheKey}/${cacheFiled}`);
+//         setIsCacheModalVisible(false);
+//       }}
+//       onCancel={() => setIsCacheModalVisible(false)}
+//     >
+//       <>
+//         <Form form={form} layout="vertical">
+//           <Form.Item name="cacheKey">
+//             <Input placeholder="请输入基础数据键" />
+//           </Form.Item>
+//           <Form.Item name="cacheFiled">
+//             <Input placeholder="请输入字段名" />
+//           </Form.Item>
+//         </Form>
+//       </>
+//     </Modal>
+//   </>
+// )
+
+
+{/* <Col span={8}>
+              <Form.Item name="actionName" label="步骤名称">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={6} offset={0.5}>
+              <Form.Item name="timeout" label="超时时间">
+                <InputNumber />
+              </Form.Item>
+            </Col>
+            <Col span={6} offset={0.5}>
+              <Form.Item name="retry" label="重试次数">
+                <InputNumber />
+              </Form.Item>
+            </Col> */}
+
+{/* <Col span={8}>
+  <Form.Item name="actionName" label="步骤名称">
+    <Input />
+  </Form.Item>
+</Col>
+<Col span={6} offset={0.5}>
+  <Form.Item name="timeout" label="超时时间">
+    <InputNumber />
+  </Form.Item>
+</Col>
+<Col span={6} offset={0.5}>
+  <Form.Item name="retry" label="重试次数">
+    <InputNumber />
+  </Form.Item>
+</Col> */}
+
+
+{/* <Col span={12}>
+  <Form.Item name="side" label="选择侧">
+    <Options
+      value={getSide(form.getFieldValue('actionDomain'))}
+      onChange={(value) => handleSideChange(value as string)}
+      data={sideOptions}
+    />
+  </Form.Item>
+</Col> */}
+
+{/* <Col span={12}>
+  <Form.Item name="environmentSwitch" label="选择环境" valuePropName="checked">
+    <Switch
+      checkedChildren="生产"
+      unCheckedChildren="测试"
+      defaultChecked={getEnvironment(form.getFieldValue('actionDomain'))}
+      onChange={(checked) => handleEnvironmentChange(checked)}
+    />
+  </Form.Item>
+</Col> */}
+
+
+{/* <Col span={20}>
+<Form.Item name="description" label="步骤描述">
+  <Input.TextArea disabled rows={4} />
+</Form.Item>
+</Col> */}
