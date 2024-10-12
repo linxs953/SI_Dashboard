@@ -5,6 +5,7 @@ import { CheckCircleOutlined, CloseCircleOutlined,SyncOutlined,ArrowLeftOutlined
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import createTaskRunDetailStore from 'src/store/task/taskDetail';
 import useFetchApi from 'src/hooks/fetchApi';
+import FormItemCol from 'src/components/basic/formItemCol';
 
 
 const { Content } = Layout;
@@ -322,6 +323,69 @@ const ReportDetail: React.FC = () => {
     )
   }
 
+  const formColumns = [
+    { name: 'taskId', label: '任务ID', value: taskRunRecord?.taskId },
+    { name: 'taskName', label: '任务名称', value: taskRunRecord?.taskName },
+    { name: 'author', label: '创建人', value: taskRunRecord?.author },
+    { name: 'sceneCount', label: '场景数', value: taskRunRecord?.scenesRecords?.length },
+    { name: 'createAt', label: '创建时间', value: taskRunRecord?.createAt },
+    { name: 'updateAt', label: '修改时间', value: taskRunRecord?.updateAt },
+  ]
+
+  const renderFormColumns = () => {
+    return formColumns.map((item, index) => (
+      <FormItemCol span={8} label={item.label} colKey={index}>
+        <Input 
+          readOnly
+          value={item.value || '暂无数据'}
+          style={{ 
+              backgroundColor: '#f5f5f5',
+              border: 'none',
+              color: '#333',
+              fontSize: '10px',
+              padding: '9px',
+              borderRadius: '4px'
+          }}
+        />
+      </FormItemCol>
+    ))
+  }
+
+
+  const renderContent = () => {
+    if (loading) {
+      return <Spin size="large" />;
+    }
+    
+    if (!execId) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', fontSize: '18px', color: '#808080' }}>
+          请从左侧选择一个场景
+        </div>
+      );
+    }
+    
+    return (
+      <div style={{ height: '100%', borderRadius: '10px', backgroundColor: '#f0f0f0', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflowY: 'auto', paddingBottom: '60px' }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'flex-start', 
+          justifyContent: 'flex-start', 
+          marginLeft: '20px', 
+          padding: '20px', 
+          fontSize: '16px' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px', marginTop: '20px' }}>
+            {getTaskRunStateElement()}
+          </div>
+          {renderAllSceneRunDetailComponent()}
+        </div>
+      </div>
+    );
+  };
+
+
   useEffect(() => {
     if (isLoading) {
       setLoading(true);
@@ -368,31 +432,7 @@ const ReportDetail: React.FC = () => {
             }}
         >
             <Row gutter={[16, 16]}>
-                {[
-                    { name: 'taskId', label: '任务ID', value: taskRunRecord?.taskId },
-                    { name: 'taskName', label: '任务名称', value: taskRunRecord?.taskName },
-                    { name: 'author', label: '创建人', value: taskRunRecord?.author },
-                    { name: 'sceneCount', label: '场景数', value: taskRunRecord?.scenesRecords?.length },
-                    { name: 'createAt', label: '创建时间', value: taskRunRecord?.createAt },
-                    { name: 'updateAt', label: '修改时间', value: taskRunRecord?.updateAt },
-                ].map((item, index) => (
-                    <Col span={8} key={index}>
-                        <Form.Item label={item.label}>
-                            <Input 
-                                readOnly
-                                value={item.value || '暂无数据'}
-                                style={{ 
-                                    backgroundColor: '#f5f5f5',
-                                    border: 'none',
-                                    color: '#333',
-                                    fontSize: '10px',
-                                    padding: '9px',
-                                    borderRadius: '4px'
-                                }}
-                            />
-                        </Form.Item>
-                    </Col>
-                ))}
+                {renderFormColumns()}
             </Row>
         </Card>
         <Content style={{ 
@@ -410,31 +450,9 @@ const ReportDetail: React.FC = () => {
             overflowY: 'auto', // 支持垂直滚动
             position: 'relative' // 添加相对定位
         }}>
-        {loading ? (
-          <Spin size="large" />
-        ) : execId ? (
-        <div style={{ height: '100%', borderRadius: '10px', backgroundColor: '#f0f0f0', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflowY: 'auto', paddingBottom: '60px' }}>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'flex-start', 
-              justifyContent: 'flex-start', 
-              marginLeft: '20px', 
-              padding: '20px', 
-              fontSize: '16px' 
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px', marginTop: '20px' }}>
-                    {getTaskRunStateElement()}
-                </div>
-              {renderAllSceneRunDetailComponent()}
-            </div>
-        </div>
-        ) : (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', fontSize: '18px', color: '#808080' }}>请从左侧选择一个场景</div>
-        )}
 
+        {renderContent()}
         </Content>
- 
         <Modal
             title="场景运行详情"
             open={isSceneModalVisible}
@@ -467,3 +485,56 @@ const ReportDetail: React.FC = () => {
 };
 
 export default ReportDetail;
+
+
+
+{/* {[
+    { name: 'taskId', label: '任务ID', value: taskRunRecord?.taskId },
+    { name: 'taskName', label: '任务名称', value: taskRunRecord?.taskName },
+    { name: 'author', label: '创建人', value: taskRunRecord?.author },
+    { name: 'sceneCount', label: '场景数', value: taskRunRecord?.scenesRecords?.length },
+    { name: 'createAt', label: '创建时间', value: taskRunRecord?.createAt },
+    { name: 'updateAt', label: '修改时间', value: taskRunRecord?.updateAt },
+].map((item, index) => (
+    <Col span={8} key={index}>
+        <Form.Item label={item.label}>
+            <Input 
+                readOnly
+                value={item.value || '暂无数据'}
+                style={{ 
+                    backgroundColor: '#f5f5f5',
+                    border: 'none',
+                    color: '#333',
+                    fontSize: '10px',
+                    padding: '9px',
+                    borderRadius: '4px'
+                }}
+            />
+        </Form.Item>
+    </Col>
+))} */}
+
+{/* {loading ? (
+  <Spin size="large" />
+) : execId ? (
+<div style={{ height: '100%', borderRadius: '10px', backgroundColor: '#f0f0f0', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', overflowY: 'auto', paddingBottom: '60px' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'flex-start', 
+      justifyContent: 'flex-start', 
+      marginLeft: '20px', 
+      padding: '20px', 
+      fontSize: '16px' 
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px', marginTop: '20px' }}>
+            {getTaskRunStateElement()}
+        </div>
+      {renderAllSceneRunDetailComponent()}
+    </div>
+</div>
+) : (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', fontSize: '18px', color: '#808080' }}>请从左侧选择一个场景</div>
+)} */}
+
+

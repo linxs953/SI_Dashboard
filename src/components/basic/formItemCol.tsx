@@ -13,11 +13,12 @@ interface FormItemColProps {
   wrapperCol?: ColProps;
   offset?: number;
   style?: React.CSSProperties;
+  colKey?: number;
 }
 
-const FormItemCol: React.FC<FormItemColProps> = ({ offset,label, name,style, children, rules, span = 24, labelCol, wrapperCol }) => {
+const FormItemCol: React.FC<FormItemColProps> = ({ colKey, offset,label, name,style, children, rules, span = 24, labelCol, wrapperCol }) => {
   return (
-    <Col span={span} offset={offset} style={style}>
+    <Col span={span} key={colKey} offset={offset} style={style}>
       <Form.Item
         name={name}
         label={label}
