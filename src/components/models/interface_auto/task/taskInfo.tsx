@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Card, Col, Form, Input, Row } from 'antd';
+import FormItemCol from 'src/components/basic/formItemCol';
 
 
 const TaskInfo: React.FC<{ taskDetail: TaskDetail; onTaskDetailChange: (updatedTaskDetail: TaskDetail) => void }> = ({ taskDetail, onTaskDetailChange }) => {
@@ -18,53 +19,35 @@ const TaskInfo: React.FC<{ taskDetail: TaskDetail; onTaskDetailChange: (updatedT
     <Card title="任务详情" style={{ width: '100%' }}>
       <Form form={form} layout="vertical" onValuesChange={handleFormChange}>
         <Row gutter={20}>
-          <Col span={5}>
-            <Form.Item label="任务ID" name="taskId">
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="创建人" name="creator">
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="创建时间" name="creationTime">
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="修改时间" name="updateTime">
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="任务名称" name="taskName">
-              <Input  />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="场景数" name="relateSceneNum">
-              <Input disabled />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="超时时间" name="timeout">
-              <Input  />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item label="重试次数" name="retry">
-              <Input  />
-            </Form.Item>
-          </Col>
+          <FormItemCol span={5} label="任务ID" name="taskId">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="创建人" name="creator">
+            <Input disabled />
+          </FormItemCol> 
+          <FormItemCol span={5} label="创建时间" name="creationTime">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="修改时间" name="updateTime">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="任务名称" name="taskName">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="场景数" name="relateSceneNum">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="超时时间" name="timeout">
+            <Input disabled />
+          </FormItemCol>  
+          <FormItemCol span={5} label="重试次数" name="retry">
+            <Input disabled />
+          </FormItemCol>  
         </Row>
         <Row gutter={20}>
-          <Col span={20}>
-            <Form.Item label="任务描述" name="description">
-              <Input.TextArea rows={4}  />
-            </Form.Item>
-          </Col>
+          <FormItemCol span={20} label="任务描述" name="description">
+            <Input.TextArea rows={4}  />
+          </FormItemCol>  
         </Row>
       </Form>
     </Card>

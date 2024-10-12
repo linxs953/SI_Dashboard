@@ -2,9 +2,23 @@
 
 import React, { useState } from 'react';
 import { Modal, Button, Form, Select } from 'antd';
+import Options from 'src/components/basic/options';
 
 const { Option } = Select;
 
+
+const options = [
+    {label: 'Test', value: 'test'},
+    {label: 'Prod', value: 'prod'},
+]
+
+const sideOptions = [
+    {label: '用户侧', value: '用户侧'},
+    {label: '商家侧', value: '商家侧'},
+    {label: '平台侧', value: '平台侧'},
+    {label: '总控侧', value: '总控侧'},
+    {label: '中台侧', value: '中台侧'},
+]
 
 const SetEnvironModal = () => {
     const [visible, setVisible] = useState(false);
@@ -32,34 +46,27 @@ const SetEnvironModal = () => {
         <>
             <Modal
                 title="选择执行环境"
-                visible={visible}
+                open={visible}
                 onOk={handleClose}
                 onCancel={handleClose}
                 okText="保存更改"
                 cancelText="取消"
             >
-                <Select
+                <Options
                     placeholder="请选择环境"
                     value={environment}
-                    onChange={handleEnvironmentChange}
+                    onChange={handleEnvironmentChange as any}
                     style={{ width: '100%', marginBottom: 16 }}
-                >
-                    <Option value="test">Test</Option>
-                    <Option value="prod">Prod</Option>
-                </Select>
+                    data={options}
+                />
 
-                <Select
-                    placeholder="请选择域名"
+                <Options
+                    placeholder="请选择侧边"
                     value={side}
-                    onChange={handleSideChange}
+                    onChange={handleSideChange as any}
                     style={{ width: '100%' }}
-                >
-                    <Option value="用户侧">用户侧</Option>
-                    <Option value="商家侧">商家侧</Option>
-                    <Option value="平台侧">平台侧</Option>
-                    <Option value="总控侧">总控侧</Option>
-                    <Option value="中台侧">中台侧</Option>
-                </Select>
+                    data={sideOptions}
+                />
             </Modal>
         </>
     );
