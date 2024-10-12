@@ -1,12 +1,8 @@
-
-
-
 import React, { useEffect, useState } from 'react';
-import { Drawer, List, Typography, Button, Tabs, Form, Input, Select, Modal, message, Row, Col } from 'antd';
+import { Drawer, List, Button, Tabs, Form, Input, message, Row } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons'; 
 import Options from 'src/components/basic/options';
 import FormItemCol from 'src/components/basic/formItemCol';
-const { Text } = Typography;
 
 interface ExpectProps {
   action: ActionInfo;
@@ -123,38 +119,30 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         <List
             dataSource={internalAction.actionExpect.api}
             renderItem={(item:any, index:number) => (
-            <List.Item>
-                <Form layout="inline">
-                    <Row gutter={[46, 40]}>
-                        <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
-                            <Input value={item.data?.name} onChange={(e) => fieldNameOnchange(e, index)} />
-                        </FormItemCol>
-                        <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
-                            <Input style={{ width: '6em' }} value={item.data?.desire} onChange={(e) => desireOnchange(e, index)}/>
-                        </FormItemCol>
-                        <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
-                            <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={(e) => operationOnchange(e, index)} 
-                            />
-                        </FormItemCol>
-                        <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
-                            <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
-                                    onChange={(e) => typeOnchange(e, index)} 
-                            />
-                        </FormItemCol>
-                        <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
-                            <Button 
-                                type="link" 
-                                danger 
-                                icon={<DeleteOutlined />} 
-                                onClick={() => {
-                                    deleteOnclick(index)
-                                }}
-                            >
-                            </Button>
-                        </FormItemCol>
-                    </Row>
-                </Form>
-            </List.Item>
+                <List.Item>
+                    <Form layout="inline">
+                        <Row gutter={[46, 40]}>
+                            <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
+                                <Input value={item.data?.name} onChange={(e) => fieldNameOnchange(e, index)} />
+                            </FormItemCol>
+                            <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
+                                <Input style={{ width: '6em' }} value={item.data?.desire} onChange={(e) => desireOnchange(e, index)}/>
+                            </FormItemCol>
+                            <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
+                                <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={(e) => operationOnchange(e, index)} 
+                                />
+                            </FormItemCol>
+                            <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
+                                <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
+                                        onChange={(e) => typeOnchange(e, index)} 
+                                />
+                            </FormItemCol>
+                            <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
+                                <Button type="link" danger icon={<DeleteOutlined />} onClick={() => {deleteOnclick(index)}}></Button>
+                            </FormItemCol>
+                        </Row>
+                    </Form>
+                </List.Item>
             )}
         />
     );
@@ -167,6 +155,12 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         },
     ];
 
+    const saveExpect = () => {
+        setStep(internalAction)
+        setSceneList(action)
+        message.success("保存成功")
+        onClose();
+    }
 
     return (
         <>
@@ -178,24 +172,12 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
             width={"41%"}
             footer={
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button key="cancel" onClick={onClose} style={{ marginRight: '16px' }}>
-                  取消
-                </Button>
-                <Button key="save" type="primary" onClick={() => {
-                  setStep(internalAction)
-                  setSceneList(action)
-                  message.success("保存成功")
-                  onClose();
-                }}>
-                  保存
-                </Button>
+                <Button key="cancel" onClick={onClose} style={{ marginRight: '16px' }}>取消</Button>
+                <Button key="save" type="primary" onClick={saveExpect}>保存</Button>
               </div>
             }
             >
-                <Tabs 
-                    defaultActiveKey="1"
-                    items={tabItems}
-                />
+                <Tabs defaultActiveKey="1" items={tabItems} />
             </Drawer>
         </>
   );
