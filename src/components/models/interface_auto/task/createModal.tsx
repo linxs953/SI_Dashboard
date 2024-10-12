@@ -53,7 +53,6 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
 
   const [form] = Form.useForm(); // 创建表单实例
 
-
   const {
     listData, setListData,
     searchValue, setSearchValue,
@@ -87,6 +86,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
     scenePageSize: state.addSceneCurrentPageSize,
     setScenePageSize: state.setAddSceneCurrentPageSize
   }))
+
   // 计算搜索 ApiModal 的分页数据
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -356,6 +356,97 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
     );
   };
 
+
+  const renderNewModalForm = (item: FormItemInfo) => {
+    return (
+      <Form.Item
+        label={item.itemLabel}
+        name={item.itemName}
+        rules={[{ required: true, message: item.itemErrorMsg }]}
+        style={item.itemStyle}
+       >
+        {item.type === "textarea" ? (
+            <Input.TextArea disabled={item.disable} />
+        ) : (
+            <Input
+              disabled={item.disable}
+            />
+        )}
+      </Form.Item>
+    );
+  };
+
+  const renderPagination = () => {
+    if (listData.length > 0) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+          <Pagination
+            current={sceneCurrentPage}
+            pageSize={scenePageSize}
+            total={listData.length}
+            onChange={(page, pageSize) => {
+              setSceneCurrentPage(page);
+              setScenePageSize(pageSize);
+            }}
+          />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderSelectAllButton = () => {
+    if (searchResults.length > 0) {
+      return (
+        <div>
+          <Button
+            type="primary"
+            onClick={() => {
+              if (selectAll) {
+                setSelectedItems([]);
+                setSelectAll(false);
+              } else {
+                setSelectedItems(searchResults);
+                setSelectAll(true);
+              }
+            }}
+          >
+            {selectAll ? '取消全选' : '全选'}
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  };
+
+
+  const renderSearchResultsPagination = () => {
+    if (searchResults.length > 0) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={searchResults.length}
+            onChange={(page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            }}
+          />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const handleSearchModalCancel = () => {
+      setSearchResultsVisible(false);
+      setSearchValue('');
+      setSearchResults([]);
+      setSelectedItems([]);
+      setSelectAll(false);
+  }
+
   return (
       <>
       <Modal
@@ -374,7 +465,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
         layout='inline'
         labelCol={{ span: 5 }} wrapperCol={{ span: 14 }}
       >
-        {newModalFormSpec.map(item => (
+        {/* {newModalFormSpec.map(item => (
           <Form.Item
             label={item.itemLabel}
             name={item.itemName}
@@ -389,7 +480,8 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
                 />
             )}            
            </Form.Item>
-        ))}
+        ))} */}
+        {newModalFormSpec.map(renderNewModalForm)}
       </Form>
 
       <Button type="primary" onClick={showSearchModal}>添加</Button>
@@ -399,9 +491,9 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
           columns={columns}
           dataSource={scenePaginatedData}
           pagination={false}
-        />
+      />
 
-        {listData.length > 0 && (
+        {/* {listData.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
             <Pagination
               current={sceneCurrentPage}
@@ -413,20 +505,14 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
               }}
             />
           </div>
-        )}
-
+        )} */}
+        {renderPagination()}
     </Modal>
     <Modal
         title={searchTitle}
         open={searchResultsVisible}
         onOk={checkAndAddSelectedItems}
-        onCancel={() => {
-          setSearchResultsVisible(false);
-          setSearchValue('');
-          setSearchResults([]);
-          setSelectedItems([]);
-          setSelectAll(false);
-        }}
+        onCancel={handleSearchModalCancel}
         okText="加载到列表"
         cancelText="取消"
         okButtonProps={{ disabled: selectedItems.length === 0 }}
@@ -438,7 +524,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
           onChange={(e) => setSearchValue(e.target.value)}
           style={{ marginBottom: 16 }}
         />
-        {searchResults.length > 0 && (
+        {/* {searchResults.length > 0 && (
           <div>
             <Button
               type="primary"
@@ -455,14 +541,15 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
               {selectAll ? '取消全选' : '全选'}
             </Button>
           </div>
-        )}
+        )} */}
+        {renderSelectAllButton()}
         <List
           style={{ marginTop: 20 }}
           itemLayout="horizontal"
           dataSource={searchResults}
           renderItem={renderSearchResultItem}
         />
-        {searchResults.length > 0 && (
+        {/* {searchResults.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
             <Pagination
               current={currentPage}
@@ -474,7 +561,8 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
               }}
             />
           </div>
-        )}
+        )} */}
+        {renderSearchResultsPagination()}
       </Modal>
     </>
   );
