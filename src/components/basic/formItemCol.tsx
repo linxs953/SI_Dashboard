@@ -22,7 +22,7 @@ const FormItemCol: React.FC<FormItemColProps> = ({ colKey,valuePropName, offset,
     <Col span={span} key={colKey} offset={offset} style={style}>
       <Form.Item
         {...props}
-        // name={name}
+        name={name}
         label={label}
         valuePropName={valuePropName}
         labelCol={labelCol}
