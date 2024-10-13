@@ -37,7 +37,9 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const [internalAction, setInternalAction] = useState(action);
     useEffect(() => {
-    }, [action]);
+        setInternalAction(action)
+        console.log(action)
+    }, []);
 
 
     
@@ -46,9 +48,12 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         setInternalAction({
             ...action,
             actionExpect: {
-                ...action.actionExpect,
-                api: action.actionExpect.api.map((apiItem:any, apiIndex:number) => {
+                ...internalAction.actionExpect,
+                api: internalAction.actionExpect.api.map((apiItem:any, apiIndex:number) => {
                     if (apiIndex === index) {
+                        console.log(index, apiIndex)
+                        const newApiItem = { ...apiItem, data: { ...apiItem.data, name: newName } };
+                        console.log(newApiItem)
                         return { ...apiItem, data: { ...apiItem.data, name: newName } };
                     }
                     return apiItem;
@@ -59,10 +64,10 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const desireOnchange = (value:any, index:number) => {
         setInternalAction({
-            ...action,
+            ...internalAction,
             actionExpect: {
-                ...action.actionExpect,
-                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                ...internalAction.actionExpect,
+                api: internalAction.actionExpect.api.map((apiItem, apiIndex) => {
                     if (apiIndex === index) {   
                         return {...apiItem, data: {...apiItem.data, desire: value.target.value}}
                     }
@@ -74,10 +79,10 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const operationOnchange = (value:any, index:number) => {
         setInternalAction({
-            ...action,
+            ...internalAction,
             actionExpect: {
-                ...action.actionExpect,
-                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                ...internalAction.actionExpect,
+                api: internalAction.actionExpect.api.map((apiItem, apiIndex) => {
                     if (apiIndex === index) {
                         return {...apiItem, data: {...apiItem.data, operation: value}}
                     }
@@ -89,10 +94,10 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const typeOnchange = (value:any, index:number) => {
         setInternalAction({
-            ...action,
+            ...internalAction,
             actionExpect: {
-                ...action.actionExpect,
-                api: action.actionExpect.api.map((apiItem, apiIndex) => {
+                ...internalAction.actionExpect,
+                api: internalAction.actionExpect.api.map((apiItem, apiIndex) => {
                     if (apiIndex === index) {
                         return {...apiItem, data: {...apiItem.data, type: value}}
                     }
@@ -103,13 +108,13 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
     }
 
     const deleteOnclick = (index:any) => {
-        let newExpectApi = action.actionExpect.api.filter((apiItem, apiIndex) => {
+        let newExpectApi = internalAction.actionExpect.api.filter((apiItem, apiIndex) => {
             return apiIndex !== index;
         })
         setInternalAction({
-            ...action,
+            ...internalAction,
             actionExpect: {
-                ...action.actionExpect,
+                ...internalAction.actionExpect,
                 api: newExpectApi
             }
         })
@@ -157,7 +162,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
 
     const saveExpect = () => {
         setStep(internalAction)
-        setSceneList(action)
+        setSceneList(internalAction)
         message.success("保存成功")
         onClose();
     }
