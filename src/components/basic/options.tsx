@@ -13,7 +13,6 @@ interface OptionProps {
 
 
 const Options: React.FC<OptionProps> = ({ data, style, value, onChange, placeholder }) => {
-  console.log(data)
   return (
     <Select style={style} value={value} onChange={onChange} placeholder={placeholder}>
       {data.map((item) => (
