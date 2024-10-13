@@ -5,9 +5,19 @@ import FormItemCol from 'src/components/basic/formItemCol';
 
 const TaskInfo: React.FC<{ taskDetail: TaskDetail; onTaskDetailChange: (updatedTaskDetail: TaskDetail) => void }> = ({ taskDetail, onTaskDetailChange }) => {
   const [form] = Form.useForm();
-
   useEffect(() => {
-    form.setFieldsValue(taskDetail);
+    form.setFieldsValue({
+      taskId: taskDetail.taskId,
+      creator: taskDetail.creator,
+      creationTime: taskDetail.creationTime,
+      updateTime: taskDetail.updateTime,
+      taskName: taskDetail.taskName,
+      relateSceneNum: taskDetail.relateSceneNum,
+      timeout: taskDetail.timeout,
+      retry: taskDetail.retry,
+      description: taskDetail.description
+    });
+    console.log(form.getFieldsValue());
   }, [taskDetail]);
 
   const handleFormChange = () => {
