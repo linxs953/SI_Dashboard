@@ -41,7 +41,7 @@ const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void,
               ...column,
               title: typeof column.title === 'function' ? column.title : <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
             })) as ColumnType<ActionInfo>[]}
-            dataSource={scene.actionList.map((step,index) => ({ ...step, key: `${step.actionId}-${index}` }))}
+            dataSource={scene.actionList.map((step:ActionInfo,index:number) => ({ ...step, key: `${step.actionId}-${index}` }))}
             pagination={{
               pageSize: 1,
               showQuickJumper: true,
@@ -195,6 +195,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
       }
       return scene;
     });
+
+    // console.log(updateAction)
 
     // 调用 updateSceneList 函数更新状态
     updateSceneList(updatedSceneList);
@@ -363,11 +365,16 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
   const updateSceneInfoOK = (upScene: SceneInfo) => {
+    const formValues = form.getFieldsValue()
     let updatedScene = {
       ...upScene,
+      sceneName: formValues.sceneName,
+      sceneDescription: formValues.sceneDescription,
+      sceneTimeout: formValues.sceneTimeout,
+      sceneRetries: formValues.sceneRetries,
       "sceneId": upScene.sceneId,
       "actionList": upScene.actionList.map(action => {
-        action.actionId === currentStep.actionId ? currentStep : action
+        return action.actionId === currentStep.actionId ? currentStep : action
       }),      
     }
     const updatedSceneList = sceneList.map(scene => 
@@ -669,6 +676,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         setActiveTabKey(sceneList[0].sceneId)
       }
     }
+    console.log(sceneList);
   }, [sceneList])
 
   useEffect(() => {
