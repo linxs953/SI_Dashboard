@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, List, Button, Tabs, Form, Input, message, Row } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons'; 
+import { Drawer, List, Button, Tabs, Form, Input, message, Row, Tooltip, Space } from 'antd';
+import { DeleteOutlined, SettingOutlined } from '@ant-design/icons'; 
 import Options from 'src/components/basic/options';
 import FormItemCol from 'src/components/basic/formItemCol';
 
@@ -39,7 +39,7 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
     useEffect(() => {
         setInternalAction(action)
         console.log(action)
-    }, []);
+    }, [action]);
 
 
     
@@ -125,25 +125,31 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
             dataSource={internalAction.actionExpect.api}
             renderItem={(item:any, index:number) => (
                 <List.Item>
-                    <Form layout="inline">
-                        <Row gutter={[46, 40]}>
-                            <FormItemCol label="字段名" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 12 }} >
-                                <Input value={item.data?.name} onChange={(e) => fieldNameOnchange(e, index)} />
+                    <Form layout="horizontal" style={{ width: '100%' }}>
+                        <Row gutter={[8, 16]} align="middle" style={{ width: '100%' }}>
+                            <FormItemCol label="字段名" span={7} wrapperCol={{ span: 17 }} labelCol={{ span: 7 }} >
+                                <Input width={'100%'} value={item.data?.name} onChange={(e) => fieldNameOnchange(e, index)} />
                             </FormItemCol>
-                            <FormItemCol label="预期值" span={6} wrapperCol={{ span: 20 }} labelCol={{ span: 13 }} >
-                                <Input style={{ width: '6em' }} value={item.data?.desire} onChange={(e) => desireOnchange(e, index)}/>
-                            </FormItemCol>
-                            <FormItemCol label="比较" span={5} wrapperCol={{ span: 10 }} labelCol={{ span: 12 }} >
-                                <Options style={{ width: '6em' }} value={item.data?.operation} data={compareOptions} onChange={(e) => operationOnchange(e, index)} 
-                                />
-                            </FormItemCol>
-                            <FormItemCol label="数据类型" span={5} wrapperCol={{ span: 20 }} labelCol={{ span: 18 }} >
-                                <Options style={{ width: '6em' }} value={item.data?.type} data={dataTypeOptions}
+                            <FormItemCol label="数据类型" span={6} wrapperCol={{ span: 17 }} labelCol={{ span: 12 }} >
+                                <Options style={{ width: '100%' }} value={item.data?.type} data={dataTypeOptions}
                                         onChange={(e) => typeOnchange(e, index)} 
                                 />
                             </FormItemCol>
-                            <FormItemCol label="" span={2} wrapperCol={{ span: 10 }} labelCol={{ span: 10 }} style={{ marginLeft: 'auto' }}>
-                                <Button type="link" danger icon={<DeleteOutlined />} onClick={() => {deleteOnclick(index)}}></Button>
+                            <FormItemCol label="比较" span={5}  labelCol={{ span: 7 }} wrapperCol={{ span: 17 }} >
+                                <Options style={{ width: '100%' }} value={item.data?.operation} data={compareOptions} onChange={(e) => operationOnchange(e, index)} />
+                            </FormItemCol>
+                            <FormItemCol label="预期值" span={4} wrapperCol={{ span: 12}} labelCol={{ span: 12 }}>
+                                <Tooltip title="配置数据">
+                                    <Button 
+                                        icon={<SettingOutlined />} 
+                                        onClick={() => {
+                                            message.success("配置预期结果")
+                                        }}
+                                    />
+                                </Tooltip>
+                            </FormItemCol>
+                            <FormItemCol span={1} label='' >
+                                <Button type="link" danger icon={<DeleteOutlined />} onClick={() => {deleteOnclick(index)}} />
                             </FormItemCol>
                         </Row>
                     </Form>

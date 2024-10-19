@@ -1,4 +1,4 @@
-import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Switch, Table, Tabs, Tooltip } from "antd"
+import { Button, Card, Col, Drawer, Form, FormListFieldData, Input, InputNumber, message, Modal, Popconfirm, Row, Select, Switch, Table, Tabs, Tooltip, Space } from "antd"
 import { useForm } from "antd/es/form/Form"
 import React from "react"
 import { useEffect, useState } from "react"
@@ -198,7 +198,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
     // console.log(updateAction)
 
-    // 调用 updateSceneList 函数更新状态
+    // 调 updateSceneList 函数更新状态
     updateSceneList(updatedSceneList);
 
     setActiveTabKey(activeTabKey);
@@ -259,7 +259,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     {
       title: '操作',
       key: 'action',
-      width: 270, // 指定操作列的宽度为250像素
+      width: 270, // 指定操作列宽度为250像
       render: (_: any, record: ActionInfo) => (
           <>
               <Tooltip title="编辑">
@@ -292,17 +292,54 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }
   ];
 
-  const updateActionDepend = (depend:DependInfo) => {
-    let newDepend: ActionInfo = currentStep
-    newDepend.actionDependencies = currentStep.actionDependencies.map(de => {
-        if (de.refer.target === depend.refer.target) {
-          return depend
-        }
-        return de
-    })
-    setCurrentAction(newDepend)
-    setIsMultiDataSourceModalVisible(false)
-  }
+  const updateActionDepend = (depend: DependInfo) => {
+    let newStep = { ...currentStep };
+    const existingDependIndex = newStep.actionDependencies.findIndex(
+      dep => dep.refer.target === depend.refer.target && dep.refer.type === depend.refer.type
+    );
+
+    if (existingDependIndex !== -1) {
+      // 更新现有的依赖项
+      newStep.actionDependencies[existingDependIndex] = depend;
+    } else {
+      // 添加新的依赖项
+      newStep.actionDependencies.push(depend);
+    }
+
+    // 更新当前步骤
+    setCurrentAction(newStep);
+
+    // 更新整个场景列表
+    const updatedSceneList = sceneList.map(scene => {
+      if (scene.sceneId === activeTabKey) {
+        return {
+          ...scene,
+          actionList: scene.actionList.map(action => 
+            action.actionId === newStep.actionId ? newStep : action
+          )
+        };
+      }
+      return scene;
+    });
+
+    // 调用父组件的更新函数
+    updateSceneList(updatedSceneList);
+
+    // // 更新表单字段
+    // const formValues = form.getFieldsValue();
+    // const updatedFormValues = {
+    //   ...formValues,
+    //   [dependSelectTab]: newStep.actionDependencies
+    //     .filter(dep => dep.refer.type === dependSelectTab)
+    //     .map(dep => ({
+    //       refer: { target: dep.refer.target },
+    //       output: { type: dep.output.type }
+    //     }))
+    // };
+    // form.setFieldsValue(updatedFormValues);
+
+    setIsMultiDataSourceModalVisible(false);
+  };
 
   // 编辑步骤
   const showEditModal = (step: ActionInfo) => {
@@ -387,17 +424,16 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
   const showConfigDrawer = (step: ActionInfo) => {
-    console.log(step)
     setCurrentAction(step);
     setIsConfigDrawerVisible(true);
     form.resetFields();
-    form.setFieldsValue({
+    const formValues = {
       headers: step.actionDependencies.filter(dep => dep.refer.type === 'headers'),
       path: step.actionDependencies.filter(dep => dep.refer.type === 'path'),
       params: step.actionDependencies.filter(dep => dep.refer.type === 'params'),
       payload: step.actionDependencies.filter(dep => dep.refer.type === 'payload')
-    });
-    console.log(form.getFieldsValue())
+    };
+    form.setFieldsValue(formValues);
   };
 
   const showExpectDrawer = (step:ActionInfo) => {
@@ -432,35 +468,58 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }
 
   const saveDepend = () => {
-    console.log(form.getFieldsValue());
-    const updatedDependencies = form.getFieldsValue();
-    const updatedActionDependencies = [
-      ...currentStep.actionDependencies.filter(dep => !['headers', 'path', 'params', 'payload'].includes(dep.refer.type)),
-      // ...updatedDependencies.headers || [],
-      // ...updatedDependencies.path || [],
-      // ...updatedDependencies.params || [],
-      // ...updatedDependencies.payload || []
-    ];
+    const formValues = form.getFieldsValue();
+    let updatedDependencies: DependInfo[] = [];
+
+    // 处理每种类型的依赖项
+    ['headers', 'path', 'params', 'payload'].forEach(type => {
+      const typeDependencies = formValues[type] || [];
+      typeDependencies.forEach((formDep: any) => {
+        if (formDep && formDep.refer && formDep.refer.target) {
+          const existingDep = currentStep.actionDependencies.find(
+            dep => dep.refer.target === formDep.refer.target && dep.refer.type === type
+          );
+
+          updatedDependencies.push({
+            ...existingDep,
+            refer: {
+              ...existingDep?.refer,
+              type: type,
+              target: formDep.refer.target,
+            },
+            output: {
+              ...existingDep?.output,
+              type: formDep.output.type,
+            }
+          });
+        }
+      });
+    });
+
     const updatedStep = {
       ...currentStep,
-      actionDependencies: updatedActionDependencies
+      actionDependencies: updatedDependencies
     };
 
+    setCurrentAction(updatedStep);
 
+    // 更新整个场景列表
     const updatedSceneList = sceneList.map(scene => 
       scene.sceneId === activeTabKey
         ? {
             ...scene,
-            actionList: scene.actionList.map(step => 
-              step.actionId === currentStep.actionId ? currentStep : step
+            actionList: scene.actionList.map(action => 
+              action.actionId === updatedStep.actionId ? updatedStep : action
             )
           }
         : scene
     );
 
+    console.log(updatedStep);
+
     updateSceneList(updatedSceneList);
-    setIsConfigDrawerVisible(false)
-  }
+    setIsConfigDrawerVisible(false);
+  };
 
   const handleSideChange = (value: string) => {
     const environmentSwitch = form.getFieldValue('environmentSwitch');
@@ -504,7 +563,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
 
             </Row>
             <Row gutter={20}>
-              <FormItemCol span={20} label="场景描述" name="sceneDescription" rules={[{ required: true, message: '请输入场景描述!' }]}>
+              <FormItemCol span={20} label="场景描述" name="sceneDescription" rules={[{ required: true, message: '请入场景描述!' }]}>
                 <Input.TextArea rows={4} />
               </FormItemCol>
 
@@ -594,74 +653,149 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     }));
   };
 
-  const dependForm2 = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => (
-    <>
-      {fields.map(({ key, name, ...restField }) => (
-        <Row key={key} gutter={20}>
-          <Col span={8}>
-            <Form.Item {...restField} name={[name, 'refer', 'target']} label="目标字段">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item {...restField} name={[name, 'output', 'type']} label="输出字段类型">
-              <Options data={dataTypeOptions} />
-            </Form.Item>
-          </Col>
-          <Col span={2} style={{ paddingLeft: '4px', paddingRight: '4px' }}>
-            <Tooltip title="配置数据">
-              <Button icon={<SettingOutlined />} style={{ padding: '0 8px', marginRight: '8px'}}
+  const dependForm2 = (fields: FormListFieldData[], { add, remove }: { add: () => void; remove: (index: number) => void }) => {
+    const addNewDependency = () => {
+      const newDependency: DependInfo = {
+        output: {
+          type: "",
+          value: "",
+        },
+        dataSource: [],
+        dsSpec: [],
+        extra: "",
+        isMultDs: false,
+        mode: "",
+        refer: {
+          type: dependSelectTab,
+          target: "",
+          dataType: "",
+        }
+      };
+      
+      // 更新 currentStep
+      const newStep = {
+        ...currentStep,
+        actionDependencies: [
+          ...currentStep.actionDependencies,
+          newDependency
+        ]
+      };
+      setCurrentAction(newStep);
+      
+      // 更新场景列表
+      const updatedSceneList = sceneList.map(scene => 
+        scene.sceneId === activeTabKey
+          ? {
+              ...scene,
+              actionList: scene.actionList.map(action => 
+                action.actionId === newStep.actionId ? newStep : action
+              )
+            }
+          : scene
+      );
+      updateSceneList(updatedSceneList);
+      
+      // 只调用一次 add()
+      add();
+    };
+
+    return (
+      <>
+        {fields.map(({ key, name, ...restField }) => (
+          <Row key={key} gutter={16} align="middle">
+            <Col span={8}>
+              <Form.Item {...restField} name={[name, 'refer', 'target']} label="目标字段">
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item {...restField} name={[name, 'output', 'type']} label="输出字段类型">
+                <Options data={dataTypeOptions} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item>
+                <Space>
+                  <Tooltip title="配置数据">
+                    <Button 
+                      icon={<SettingOutlined />} 
                       onClick={() => {
-                        console.log(form.getFieldValue([dependSelectTab, name]))
-                        const formValue = form.getFieldValue([dependSelectTab, name])
-                        console.log(formValue.dataSource)
-                        const depend: DependInfo = currentStep.actionDependencies.find(item => item.refer.target === formValue.refer.target) as DependInfo
-                        
-                        console.log(depend)
-                        setCurrentActionDepend(depend)
+                        const formValue = form.getFieldValue([dependSelectTab, name]);
+                        let depend: DependInfo = currentStep.actionDependencies.find(
+                          item => item.refer.target === formValue?.refer?.target && item.refer.type === dependSelectTab
+                        ) || {
+                          output: {
+                            type: formValue?.output?.type || "",
+                            value: "",
+                          },
+                          dataSource: [],
+                          dsSpec: [],
+                          extra: "",
+                          isMultDs: false,
+                          mode: "",
+                          refer: {
+                            type: dependSelectTab,
+                            target: formValue?.refer?.target || "",
+                            dataType: "",
+                          }
+                        };
+                        // 验证并补全 depend 对象的字段
+                        depend = {
+                          ...depend,
+                          output: {
+                            type: depend.output?.type || "",
+                            value: depend.output?.value || "",
+                          },
+                          dataSource: depend.dataSource || [],
+                          dsSpec: depend.dsSpec || [],
+                          extra: depend.extra || "",
+                          isMultDs: depend.isMultDs !== undefined ? depend.isMultDs : false,
+                          mode: depend.mode || "",
+                          refer: {
+                            ...depend.refer,
+                            type: depend.refer?.type || dependSelectTab,
+                            target: depend.refer?.target || "",
+                            dataType: depend.refer?.dataType || "",
+                          }
+                        };
+                        setCurrentActionDepend(depend);
                         setIsMultiDataSourceModalVisible(true);
                       }}
-              />
-            </Tooltip>
-            <Tooltip title="删除">
-              <Button icon={<DeleteOutlined />} onClick={() => remove(name)} type="link" danger />
-            </Tooltip>
-          </Col>
-        </Row>
-      ))}
-      <Form.Item>
-        <Button type="dashed" onClick={() => {
-          setCurrentAction({
-            ...currentStep,
-            actionDependencies: [
-              ...currentStep.actionDependencies,
-              {
-                name: "",
-                dependType: 'scene',
-                dsType: '1',
-                dependId: "",
-                dataKey: "",
-                actionKey: "",
-                searchCond: []
-              }
-            ]
-          })
-          
-        }} block>
-          添加数据
-        </Button>
-      </Form.Item>
+                    />
+                  </Tooltip>
+                  <Tooltip title="删除">
+                    <Button 
+                      icon={<DeleteOutlined />} 
+                      onClick={() => remove(name)} 
+                      type="link" 
+                      danger 
+                    />
+                  </Tooltip>
+                </Space>
+              </Form.Item>
+            </Col>
+          </Row>
+        ))}
+        <Form.Item>
+          <Button type="dashed" onClick={addNewDependency} block>
+            添加数据
+          </Button>
+        </Form.Item>
 
-      <MultiDataSourceModal 
-        visible={isMultiDataSourceModalVisible}
-        actionDependency={currentActionDepend}
-        sceneList={sceneList}
-        currentAction={currentStep.actionId}
-        updateFn={updateActionDepend}
-        onCancel={() => setIsMultiDataSourceModalVisible(false)}
-      />
-    </>
-  )
+        <MultiDataSourceModal 
+          visible={isMultiDataSourceModalVisible}
+          actionDependency={currentActionDepend}
+          sceneList={sceneList}
+          currentAction={currentStep.actionId}
+          updateFn={updateActionDepend}
+          onCancel={() => {
+            setCurrentActionDepend(currentActionDepend)
+            setIsMultiDataSourceModalVisible(false)
+          }}
+        />
+      </>
+    );
+  };
 
 
   useEffect(() => {

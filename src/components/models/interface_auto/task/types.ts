@@ -83,7 +83,7 @@ interface DependInfo {
         value: any
     }
     dataSource: DataSource[]
-    dsSpec: []
+    dsSpec: DataSourceSpec[]
     extra: string
     isMultDs: boolean
     mode: string
@@ -93,6 +93,13 @@ interface DependInfo {
         dataType: string
     }
     
+}
+
+interface DataSourceSpec{
+    dependId: string
+    dependName: string
+    modelId: string
+    needProcess: boolean
 }
 
 interface DataSource {

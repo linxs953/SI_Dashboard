@@ -33,20 +33,7 @@ const TaskDetails = () => {
   const navigate = useNavigate()
 
   const fetchTaskDetails = async () => {
-    const getDataSource = (type:string) => {
-      if (type === '1') return 'scene';
-      if (type === '2') return 'basic';
-      if (type === '3') return 'custom';
-      return 'event'
-    }
 
-    const processString = (str: string): string => {
-      if (!str.includes('.')) {
-        return str;
-      }
-      const parts = str.split('.');
-      return `${parts.slice(1).join('.')}`;
-    }
     try {
       const response = await axios.get(`${domain}/task/getOne?taskId=${taskId}`);
       if (response.data && response.data.code === 0) {
@@ -54,30 +41,18 @@ const TaskDetails = () => {
             taskId: response.data.data.taskId,
             taskName: response.data.data.taskName,
             relateSceneNum: response.data.data.taskSpec.length,
-            description: response.data.data.description ? response.data.data.description : "无描述",
+            description: response.data.data.description,
             timeout: response.data.data.timeout ? response.data.data.timeout : 1,
             retry: response.data.data.retry ? response.data.data.retry : 1,
             creator: response.data.data.author,
             creationTime: response.data.data.createTime,
             updateTime: response.data.data.updateTime,
-            taskDescription: response.data.data.description || "无描述",
+            taskDescription: response.data.data.description,
             author: response.data.data.author,
             scenesNum: response.data.data.taskSpec.length,
             scenes: response.data.data.taskSpec || []
           });
-          const getRelateStep = (dep:any)=> {
-            if (dep?.type != "1") return ""
-            if (dep?.dataKey != "") return `${dep.actionKey}/${dep.dataKey}`
-            if (dep?.dataKey == "") return `${dep.actionKey}`
-          }
-
-          const getCacheKey = (dep:any) => {
-            if (dep?.type != "2") return ""
-            if (dep?.dataKey != "") return `${dep.actionKey}/${dep.dataKey}`
-            if (dep?.dataKey == "") return `${dep.actionKey}`
-          }
-          
-          
+            
           let sceneInfoList: SceneInfo[] = response.data.data.taskSpec.map((scene: any) => (
 
             {
@@ -104,7 +79,7 @@ const TaskDetails = () => {
                   ...(action.dependency || []).map((dep: any) => ({
                     dataSource: dep.DataSource.map((ds: any) => {
                       return {
-                        name: "",
+                        name: ds.Name,
                         dependType: ds.Type === "1" ? "scene" : ds.Type === "2" ? "basic" : ds.Type === "3" ? "custom" : "event",
                         dataKey: ds.DataKey,
                         actionKey: ds.ActionKey,
@@ -189,6 +164,7 @@ const TaskDetails = () => {
         taskName: taskInfo.taskName,
         author: taskInfo.creator,
         taskType: 'autoapi',
+        description: taskInfo.description,
         taskSpec: scenes.map(scene => ({
           sceneId: scene.sceneId,
           sceneName: scene.sceneName,
@@ -227,10 +203,11 @@ const TaskDetails = () => {
                 },
                 Mode: dep.mode,
                 Extra: dep.extra,
-                IsMultDs: dep.isMultDs,
+                IsMultiDs: dep.isMultDs,
                 DsSpec: dep.dsSpec,
                 DataSource: dep.dataSource.map((ds:any) => {
                   return {
+                    Name: ds.name,
                     ActionKey: ds.actionKey,
                     DataKey: ds.dataKey,
                     Type: ds.dsType,
