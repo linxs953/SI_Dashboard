@@ -77,30 +77,32 @@ const TaskDetails = () => {
                 actionOutput: action.output,
                 actionDependencies: [
                   ...(action.dependency || []).map((dep: any) => ({
-                    dataSource: dep.DataSource.map((ds: any) => {
+                    dataSource: dep.dataSource.map((ds: any) => {
                       return {
-                        name: ds.Name,
-                        dependType: ds.Type === "1" ? "scene" : ds.Type === "2" ? "basic" : ds.Type === "3" ? "custom" : "event",
-                        dataKey: ds.DataKey,
-                        actionKey: ds.ActionKey,
-                        dependId: ds.DependId,
-                        searchCond: ds.SearchCondArr,
-                        dsType: ds.Type
+                        name: ds.name,
+                        dependType: ds.type === "1" ? "scene" : ds.type === "2" ? "basic" : ds.type === "3" ? "custom" : "event",
+                        dataKey: ds.dataKey,
+                        actionKey: ds.actionKey,
+                        dependId: ds.dependId,
+                        searchCond: ds.searchCondArr,
+                        dsType: ds.type,
+                        actionId: ds.actionKey.split('.')[1] || "",
+                        sceneId: ds.actionKey.split('.')[0] || ""
                       }
                     }),
-                    dsSpec: dep.DsSpec,
-                    extra: dep.Extra,
-                    isMultDs: dep.IsMultiDs,
-                    mode: dep.Mode,
-                    refer:{
-                      type: dep.refer.type,
-                      target: dep.refer.target,
-                      dataType: dep.refer.dataType
-                    },
-                    output: {
-                      type: dep.Output.Type,
-                      value: dep.Output.Value
-                    }
+                    dsSpec: dep.dsSpec.map((spec:any) => {
+                      return {
+                        dependId: spec.dependId,
+                        dependName: dep.dataSource.find((ds:any) => ds.dependId === spec.dependId)?.name || "",
+                        modelId: spec.fieldName,
+                        needProcess: spec.needProcess || false
+                      }
+                    }),
+                    extra: dep.extra,
+                    isMultDs: dep.isMultiDs,
+                    mode: dep.mode,
+                    refer:dep.refer,
+                    output: dep.output
                   }))
                 ],
               })) : []
@@ -124,38 +126,6 @@ const TaskDetails = () => {
       if (dsName === 'basic') return '2';
       if (dsName === 'custom') return '3';
       return "4"
-    }
-
-    const getActionKey = (dep:any) =>{
-      if (dep?.dsType == "scene") {
-        if (dep?.relateStep?.includes('/')) {
-          return dep.relateStep.split('/')[0]
-        }
-        return dep?.relateStep
-      }
-      if (dep?.dsType == "basic") {
-        if (dep?.cacheKey?.includes('/')) {
-          return dep.cacheKey.split('/')[0]
-        }
-        return dep?.cacheKey
-      }
-      return ""
-    }
-
-    const getDataKey = (dep:any) =>{
-      if (dep?.dsType == "scene") {
-        if (dep?.relateStep?.includes('/')) {
-          return dep.relateStep.split('/')[1]
-        }
-        return dep?.relateStep
-      }
-      if (dep?.dsType == "basic") {
-        if (dep?.cacheKey?.includes('/')) {
-          return dep.cacheKey.split('/')[1]
-        }
-        return dep?.cacheKey
-      }
-      return ""
     }
     
     try {
@@ -192,27 +162,35 @@ const TaskDetails = () => {
                 actionKey: "",
                 dataKey: "",
                 type: getDataSourceCode(dep.refer.type),
-                Output: {
-                  Type: dep.output.type,
-                  Value: dep.output.value
+                output: {
+                  type: dep.output.type,
+                  value: dep.output.value
                 },
                 refer: {
                   type: dep.refer.type,
                   target: dep.refer.target,
                   dataType: dep.refer.dataType
                 },
-                Mode: dep.mode,
-                Extra: dep.extra,
-                IsMultiDs: dep.isMultDs,
-                DsSpec: dep.dsSpec,
-                DataSource: dep.dataSource.map((ds:any) => {
+                mode: dep.mode,
+                extra: dep.extra,
+                isMultiDs: dep.isMultDs,
+                dsSpec: dep.dsSpec.map((spec:DataSourceSpec) => {
                   return {
-                    Name: ds.name,
-                    ActionKey: ds.actionKey,
-                    DataKey: ds.dataKey,
-                    Type: ds.dsType,
-                    DependId: ds.dependId,
-                    SearchCondArr: ds.searchCond
+                    dependId: spec.dependId,
+                    fieldName: spec.modelId,
+                    needProcess: spec.needProcess
+                  }
+                }),
+                dataSource: dep.dataSource.map((ds:any) => {
+                  return {
+                    name: ds.name,
+                    actionKey: ds.type === "1" ? `${ds.sceneId}.${ds.actionId}` : ds.actionKey,
+                    dataKey: ds.dataKey,
+                    type: ds.dsType,
+                    dependId: ds.dependId,
+                    searchCondArr: ds.searchCond,
+                    sceneId: ds.sceneId || "",
+                    actionId: ds.actionId || ""
                   }
                 })
               };

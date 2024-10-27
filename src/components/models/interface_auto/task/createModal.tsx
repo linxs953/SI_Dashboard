@@ -118,6 +118,7 @@ const NewDataModal: React.FC<NewSceneModalProps> = ({
           // 执行成功回调函数
           onOk()
           form.resetFields()
+          setListData([])
           // closeModel()
           // fetchData()
         } else {

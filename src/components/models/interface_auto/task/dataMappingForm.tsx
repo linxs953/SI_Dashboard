@@ -48,6 +48,7 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
   const [dsMapping, setDsMapping] = useState<DataSourceSpec[]>(dsSpec);
 
   useEffect(() => {
+    console.log(dsSpec)
     setDsMapping(dsSpec);
   }, [dsSpec]);
 
@@ -56,7 +57,6 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
   const parseExtraFields = (extra: string): string[] => {
     const regex = /\$\$(\w+)/g;
     const matches = extra.match(regex);
-    console.log(matches);
     if (matches) {
       return matches.map(match => match.slice(2)); // 去掉$$前缀
     }
@@ -64,16 +64,18 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
   };
 
   // 处理数据映射变化
-  const handleMappingChange = (currentDependId: string, field: keyof DataSourceSpec, value: any) => {
-    const newData = dsMapping.map(item => {
-      if (item.dependId === currentDependId) {
+  const handleMappingChange = (index: number, field: keyof DataSourceSpec, value: any) => {
+    console.log(dsMapping)
+    const newData = dsMapping.map((item, i) => {
+      if (i === index) {
         if (field === 'dependName') {
-          // 当选择绑定数据时,查找对应的 dependId
+          console.log(dataSources)
           const selectedDataSource = dataSources.find(ds => ds.name === value);
+          console.log(dataSources)
           return { 
             ...item, 
             [field]: value,
-            dependId: selectedDataSource ? selectedDataSource.dependId : item.dependId
+            dependId: selectedDataSource ? selectedDataSource.dependId : ''
           };
         }
         return { ...item, [field]: value };
@@ -86,7 +88,7 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
   // 添加新的映射项
   const addMappingItem = () => {
     const newItem: DataSourceSpec = {
-      dependId: '', // 初始为空字符串
+      dependId: '',
       dependName: '',
       modelId: '',
       needProcess: false,
@@ -95,12 +97,19 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
   };
 
   // 删除映射项
-  const removeMappingItem = (depndId: string) => {
-    setDsMapping(dsMapping.filter(item => item.dependId !== depndId));
+  const removeMappingItem = (index: number) => {
+    setDsMapping(dsMapping.filter((_, i) => i !== index));
   };
 
   const updateDsMap = () => {
-    setDsSpec(dsMapping);
+    
+    const newDsSpec = dsMapping.map((item) => ({
+      dependId: item.dependId,
+      dependName: item.dependName,
+      modelId: item.modelId,
+      needProcess: item.needProcess
+    }))
+    setDsSpec(newDsSpec)
   }
 
   return (
@@ -119,15 +128,15 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
         </Empty>
       ) : (
         <>
-          {dsMapping.map((item) => (
-            <div key={item.dependId} style={{ marginBottom: 16, border: '1px solid #d9d9d9', padding: 16, borderRadius: 4 }}>
+          {dsMapping.map((item, index) => (
+            <div key={index} style={{ marginBottom: 16, border: '1px solid #d9d9d9', padding: 16, borderRadius: 4 }}>
               <Form.Item label="">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Form.Item label="绑定数据" style={{ marginRight: 16, marginBottom: 0, flex: 1 }}>
                     <Select
                       style={{ width: '100%' }}
                       value={item.dependName}
-                      onChange={(value) => handleMappingChange(item.dependId, 'dependName', value)}
+                      onChange={(value) => handleMappingChange(index, 'dependName', value)}
                     >
                       {dataSources.map(source => (
                         source.name && <Option key={source.dependId} value={source.name}>{source.name}</Option>
@@ -138,7 +147,7 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
                     <Select
                       style={{ width: '100%' }}
                       value={item.modelId}
-                      onChange={(value) => handleMappingChange(item.dependId, 'modelId', value)}
+                      onChange={(value) => handleMappingChange(index, 'modelId', value)}
                     >
                       {
                         parseExtraFields(extra).map((field, index) => (
@@ -150,12 +159,12 @@ const DataMappingForm: React.FC<DataMappingFormProps> = ({
                   <Form.Item style={{ marginRight: 16, marginBottom: 0 }} label="数据处理">
                     <Switch
                       checked={item.needProcess}
-                      onChange={(checked) => handleMappingChange(item.dependId, 'needProcess', checked)}
+                      onChange={(checked) => handleMappingChange(index, 'needProcess', checked)}
                     />
                   </Form.Item>
                   <Form.Item style={{ marginBottom: 0 }} label="操作">
                     <Space>
-                      <Button type="link" danger icon={<DeleteOutlined />} onClick={() => removeMappingItem(item.dependId)}></Button>
+                      <Button type="link" danger icon={<DeleteOutlined />} onClick={() => removeMappingItem(index)}></Button>
                       <Button type="link" icon={<SaveOutlined />} onClick={updateDsMap}></Button>
                     </Space>
                   </Form.Item>

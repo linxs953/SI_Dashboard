@@ -28,7 +28,11 @@ const sideOptions = [
 
 
 const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void, columns: ColumnType<ActionInfo>[]) => {
-  return sceneList.map(scene => ({
+  // sceneList[0].actionList.forEach((action, index) => {
+  //   const newAction = {...action, key: `${action.actionId}-${index}`}
+  //   console.log(newAction)
+  // })
+  return sceneList.map((scene,idx) => ({
     key: scene.sceneId,
     label: scene.sceneName,
     children: (
@@ -41,7 +45,11 @@ const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void,
               ...column,
               title: typeof column.title === 'function' ? column.title : <div key={`column-${index}`} style={{ textAlign: 'center' }}>{column.title}</div>
             })) as ColumnType<ActionInfo>[]}
-            dataSource={scene.actionList.map((step:ActionInfo,index:number) => ({ ...step, key: `${step.actionId}-${index}` }))}
+            dataSource={scene.actionList.map((step:ActionInfo,index:number) => {
+              const newStep = {...step, key: `${step.actionId}-${index}`}
+              // console.log(JSON.stringify(newStep))
+              return newStep
+            })}
             pagination={{
               pageSize: 1,
               showQuickJumper: true,
@@ -99,11 +107,15 @@ const getDomain = (side: string, environmentSwitch: boolean) => {
 }
 
 
+
+
 const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
   const [form] = useForm()
   const [isMultiDataSourceModalVisible, setIsMultiDataSourceModalVisible] = useState(false);
 
-  const [currentActionDepend, setCurrentActionDepend] = useState<DependInfo>({
+  const [currentActionDepend, setCurrentActionDepend] = useState<DependInfo>(
+    
+    {
     output: {
       type: "",
       value: "",
@@ -118,10 +130,10 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         target: "",
         dataType: "",
     }
-  });
+  }
+);
 
   const {
-    activeTabKey,
     isConfigDrawerVisible,
     isEditModalVisible,
     isEditSceneModalVisible,
@@ -134,7 +146,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     isExpectDrawerModalVisible,
     sceneIndex,
     cacheIndex,
-    setActiveTabKey,
     setIsConfigDrawerVisible,
     setIsEditActionModalVisible,
     setIsEditSceneModalVisible,
@@ -148,7 +159,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setSceneIndex,
     setCacheIndex,
   } = store((state) => ({
-    activeTabKey: state.activeTabKey,
     isConfigDrawerVisible: state.isDependDrawerVisible,
     isEditModalVisible: state.isEditActionModalVisible,
     isEditSceneModalVisible: state.isEditSceneModalVisible,
@@ -161,7 +171,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     isExpectDrawerModalVisible: state.isExpectDrawerModalVisible,
     sceneIndex: state.sceneIndex,
     cacheIndex: state.formBasicDataIndex,
-    setActiveTabKey: state.setActiveTabKey,
     setIsConfigDrawerVisible: state.setIsDependDrawerVisible,
     setIsEditActionModalVisible: state.setIsEditActionModalVisible,
     setIsEditSceneModalVisible: state.setIsEditSceneModalVisible,
@@ -175,6 +184,11 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setSceneIndex: state.setSceneIndex,
     setCacheIndex: state.setFormBasicDataIndex,
   }))
+
+
+
+  const [activeTabKey, setActiveTabKey] = useState(sceneList.length > 0 ? sceneList[0].sceneId : '')
+
 
   const updateCurrentStepExpect = (updateAction: ActionInfo) => {
     // 更新 sceneList
@@ -259,8 +273,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     {
       title: '操作',
       key: 'action',
-      width: 270, // 指定操作列宽度为250像
-      render: (_: any, record: ActionInfo) => (
+      width: 270, // 指定操作��宽度为250像
+      render: (idx: any, record: ActionInfo) => (
           <>
               <Tooltip title="编辑">
                   <Button type="link" onClick={() => showEditModal(record)} style={{ marginRight: 8 }}>
@@ -423,8 +437,10 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     setIsEditSceneModalVisible(false);    
   };
 
-  const showConfigDrawer = (step: ActionInfo) => {
-    setCurrentAction(step);
+  const showConfigDrawer = (record: ActionInfo) => {
+    console.log(record)
+    const step = record
+    setCurrentAction(record);
     setIsConfigDrawerVisible(true);
     form.resetFields();
     const formValues = {
@@ -471,6 +487,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     const formValues = form.getFieldsValue();
     let updatedDependencies: DependInfo[] = [];
 
+
     // 处理每种类型的依赖项
     ['headers', 'path', 'params', 'payload'].forEach(type => {
       const typeDependencies = formValues[type] || [];
@@ -480,21 +497,30 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             dep => dep.refer.target === formDep.refer.target && dep.refer.type === type
           );
 
+          console.log(existingDep)
           updatedDependencies.push({
             ...existingDep,
             refer: {
               ...existingDep?.refer,
               type: type,
               target: formDep.refer.target,
+              dataType: existingDep?.refer.dataType || ''
             },
             output: {
               ...existingDep?.output,
               type: formDep.output.type,
-            }
+              value: existingDep?.output.value || ''
+            },
+            dsSpec: existingDep?.dsSpec || [],
+            dataSource: existingDep?.dataSource || [],
+            extra: existingDep?.extra || '',
+            isMultDs: existingDep?.isMultDs || false,
+            mode: existingDep?.mode || ''
           });
         }
       });
     });
+
 
     const updatedStep = {
       ...currentStep,
@@ -515,7 +541,6 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         : scene
     );
 
-    console.log(updatedStep);
 
     updateSceneList(updatedSceneList);
     setIsConfigDrawerVisible(false);
@@ -721,6 +746,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                       icon={<SettingOutlined />} 
                       onClick={() => {
                         const formValue = form.getFieldValue([dependSelectTab, name]);
+                        console.log(currentStep.actionDependencies.find(item => item.refer.type === dependSelectTab && item.refer.target === formValue?.refer?.target))
+                        console.log(dependSelectTab,name)
                         let depend: DependInfo = currentStep.actionDependencies.find(
                           item => item.refer.target === formValue?.refer?.target && item.refer.type === dependSelectTab
                         ) || {
@@ -739,6 +766,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                             dataType: "",
                           }
                         };
+
                         // 验证并补全 depend 对象的字段
                         depend = {
                           ...depend,
@@ -758,6 +786,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                             dataType: depend.refer?.dataType || "",
                           }
                         };
+
                         setCurrentActionDepend(depend);
                         setIsMultiDataSourceModalVisible(true);
                       }}
@@ -798,6 +827,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   };
 
 
+
   useEffect(() => {
     if (currentStep) {
       setCurrentAction(currentStep)
@@ -805,92 +835,96 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }, [currentStep])
 
   useEffect(() => {
-    if (sceneList.length > 0) {
-      if (activeTabKey === '') {
-        setActiveTabKey(sceneList[0].sceneId)
-      }
+    if (sceneList.length > 0 && (!activeTabKey || activeTabKey === '')) {
+      setActiveTabKey(sceneList[0].sceneId);
     }
-    console.log(sceneList);
-  }, [sceneList])
+  }, [sceneList, activeTabKey]);
 
   useEffect(() => {
-    const scene = sceneList.find(s => s.sceneId === activeTabKey);
-    setCurrentScene(scene as SceneInfo);
-  }, [activeTabKey]);
+    if (activeTabKey) {
+      const scene = sceneList.find(s => s.sceneId === activeTabKey);
+      if (scene) {
+        setCurrentScene(scene);
+      }
+    }
+  }, [activeTabKey, sceneList]);
+
+
 
 
 
   return (
     <>
       <Card title="关联场景列表" style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <Tabs 
-              activeKey={activeTabKey} 
-              onChange={handleTabChange} 
-              items={renderSceneList(sceneList, showEditSceneModal, columns)}
-          />
-          <Drawer
-            title="配置依赖"
-            placement="right"
-            closable={false}
-            onClose={handleConfigDrawerClose}
-            open={isConfigDrawerVisible}
-            width={"40%"}
-            footer={
-              <div
-                style={{
-                  textAlign: 'center',
-                }}
-              >
-                <Button onClick={handleConfigDrawerClose} style={{ marginRight: 20 }}>
-                  取消
-                </Button>
-                <Button type="primary" onClick={saveDepend}>
-                  保存
-                </Button>
-              </div>
-            }
-          >
-            <Tabs
-              onChange={(key) => {
-                setDependSelectTab(key)
+        <Tabs 
+          activeKey={activeTabKey} 
+          onChange={handleTabChange} 
+          items={renderSceneList(sceneList, showEditSceneModal, columns)}
+          destroyInactiveTabPane={true}  // 添加这个属性
+        />
+        <Drawer
+          title="配置依赖"
+          placement="right"
+          closable={false}
+          onClose={handleConfigDrawerClose}
+          open={isConfigDrawerVisible}
+          width={"40%"}
+          footer={
+            <div
+              style={{
+                textAlign: 'center',
               }}
-              items={renderDependencyForms()}
-            />
-          </Drawer>
-          <ActionExpect action={currentStep} setStep={setCurrentAction} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
+            >
+              <Button onClick={handleConfigDrawerClose} style={{ marginRight: 20 }}>
+                取消
+              </Button>
+              <Button type="primary" onClick={saveDepend}>
+                保存
+              </Button>
+            </div>
+          }
+        >
+          <Tabs
+            onChange={(key) => {
+              setDependSelectTab(key)
+            }}
+            items={renderDependencyForms()}
+          />
+        </Drawer>
+        <ActionExpect action={currentStep} setStep={setCurrentAction} setSceneList={updateCurrentStepExpect} visible={isExpectDrawerModalVisible} onClose={() => {setIsExpectDrawerModalVisible(false)}} />
+        <Modal
+          title="编辑Action"
+          open={isEditModalVisible}
+          onCancel={handleEditModalCancel}
+          width={700}
+          footer={[
+            <Button key="cancel" onClick={handleEditModalCancel}>
+              取消
+            </Button>,
+            <Button key="submit" type="primary" onClick={() => updateStepOk(currentStep)}>
+              保存
+            </Button>,
+          ]}
+        >
+          {editActionModalForm()}
+        </Modal>
+        {isEditSceneModalVisible && (
           <Modal
-            title="编辑Action"
-            open={isEditModalVisible}
-            onCancel={handleEditModalCancel}
-            width={700}
+            title="编辑场景"
+            open={true}
+            onCancel={() => setIsEditSceneModalVisible(false)}
             footer={[
-              <Button key="cancel" onClick={handleEditModalCancel}>
+              <Button key="cancel" onClick={() => setIsEditSceneModalVisible(false)}>
                 取消
               </Button>,
-              <Button key="submit" type="primary" onClick={() => updateStepOk(currentStep)}>
+              <Button key="submit" type="primary" onClick={() => updateSceneInfoOK(currentScene)}>
                 保存
               </Button>,
             ]}
           >
-            {editActionModalForm()}
+              {editSceneModalForm()}
           </Modal>
-          {isEditSceneModalVisible && (
-            <Modal
-              title="编辑场景"
-              open={true}
-              onCancel={() => setIsEditSceneModalVisible(false)}
-              footer={[
-                <Button key="cancel" onClick={() => setIsEditSceneModalVisible(false)}>
-                  取消
-                </Button>,
-                <Button key="submit" type="primary" onClick={() => updateSceneInfoOK(currentScene)}>
-                  保存
-                </Button>,
-              ]}
-            >
-                {editSceneModalForm()}
-            </Modal>
-          )}
+        )}
       </Card>
 
     </>

@@ -110,6 +110,8 @@ interface DataSource {
     dependId: string
     dsType: string
     searchCond: []
+    sceneId: string
+    actionId: string
 }
 
 interface TaskDetail {

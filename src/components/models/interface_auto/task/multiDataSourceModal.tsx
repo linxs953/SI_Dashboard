@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import { Modal, Tabs, Form, Select, Switch, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getDsTypeName, getDependType, getActionMap } from './multiDataSourceUtils';
@@ -31,38 +31,52 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
   const [dataSource, setDataSource] = useState<DependInfo>(actionDependency);
   const [currentActionId, setCurrentActionId] = useState<string>(currentAction);
   const [showAllTabs, setShowAllTabs] = useState(dataSource.isMultDs);
-
+  const [dsSpec, setDsSpec] = useState<DataSourceSpec[]>(actionDependency.dsSpec || []);
 
   useEffect(() => {
-    console.log(actionDependency);
+    console.log(actionDependency)
     setShowAllTabs(actionDependency.isMultDs);
   }, [actionDependency]);
 
-  const handleOk = () => {
-    console.log(form.getFieldsValue());
-    const updatedDependency = {
-      ...actionDependency,
-      dataSource: dataSource.dataSource || [],
-      extra: form.getFieldValue('templateData'),
-      isMultDs: showAllTabs
-    };
-    updateFn(updatedDependency);
-  };
-
-  const updateDsSpec: React.Dispatch<React.SetStateAction<DataSourceSpec[]>> = (dsSpec) => {
-    setDataSource((prevState) => ({
-      ...prevState,
-      dsSpec: typeof dsSpec === 'function' ? dsSpec(prevState.dsSpec) : dsSpec
-    }));
-  }
-
   useEffect(() => {
     setDataSource(actionDependency);
+    setDsSpec(actionDependency.dsSpec || []);
   }, [actionDependency]);
 
   useEffect(() => {
     setCurrentActionId(currentAction);
   }, [currentAction]);
+
+  const handleOk = () => {
+    const newDataSource = dataSource.dataSource.map(ds => {
+      if (ds.dsType === '1') {
+        const newActionKey = `${ds.sceneId}.${ds.actionId}`
+        return {
+          ...ds,
+          actionKey: newActionKey,
+          dependId: ds.dependId
+        }
+      }
+      console.log(ds)
+      return ds;
+    })
+
+    
+    const updatedDependency = {
+      ...actionDependency,
+      dataSource: newDataSource || [],
+      extra: form.getFieldValue('templateData') || dataSource.extra,
+      isMultDs: showAllTabs,
+      dsSpec: dsSpec, // 使用最新的 dsSpec 状态
+    };
+
+    console.log(updatedDependency)
+    updateFn(updatedDependency);
+  };
+
+  const updateDsSpec = (value: SetStateAction<DataSourceSpec[]>) => {
+    setDsSpec(typeof value === 'function' ? value(dsSpec) : value);
+  }
 
   const handleExtraChange = (value: Partial<DependInfo>) => {
     console.log(value);
@@ -76,6 +90,11 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
     setShowAllTabs(checked);
     setActiveTab('dataSource');  // 切换到数据源标签页
   };
+
+
+  useEffect(() => {
+    console.log(dataSource)
+  }, [dataSource])
 
   return (
     <Modal
@@ -126,7 +145,13 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
           {showAllTabs && (
             <TabPane tab="关联数据" key="dataMapping">
               {activeTab === 'dataMapping' && (
-                <DataMappingForm setActiveTab={setActiveTab} dataSources={dataSource.dataSource} dsSpec={dataSource.dsSpec} extra={dataSource.extra} setDsSpec={updateDsSpec} />
+                <DataMappingForm 
+                  setActiveTab={setActiveTab} 
+                  dataSources={dataSource.dataSource} 
+                  dsSpec={dsSpec} 
+                  extra={dataSource.extra} 
+                  setDsSpec={updateDsSpec} 
+                />
               )}
             </TabPane>
           )}
@@ -142,3 +167,4 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
 };
 
 export default MultiDataSourceModal;
+

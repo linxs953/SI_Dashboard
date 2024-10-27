@@ -121,6 +121,10 @@ export default function ScenConfig() {
   const fetchData = async (page = 1, pageSize = 10) => {
     try {
       const response = await axios.get(`${domain}/scene/allScenes?page=${page}&pageSize=${pageSize}`); 
+      if (response.data && !response.data.data) {
+        setData([])
+        return
+      }
       if (response.data && response.data.data) {
         response.data.data = response.data.data.map((item: any, index: number) => ({
             ...item,

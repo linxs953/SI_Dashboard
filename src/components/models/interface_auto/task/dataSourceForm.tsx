@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form, Select, Input, Button } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -32,14 +32,25 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
       if (dsIdx === index) {
         let updatedItem = { ...dsItem, [field]: value };
         
-        // 如果改变的是数据源类型,重置相关字段
+        // 如果改变的是数据源类型，重置相关字段
         if (field === 'dsType') {
           updatedItem = {
             ...updatedItem,
             dependType: getDependType(value),
             actionKey: '',
             dataKey: '',
-            searchCond: []
+            searchCond: [],
+            sceneId: '',
+            actionId: ''
+          };
+        }
+
+        // 如果改变的是场景ID，重置步骤ID和数据键
+        if (field === 'sceneId') {
+          updatedItem = {
+            ...updatedItem,
+            sceneId: value,
+            actionId: ' ',
           };
         }
         
@@ -47,6 +58,7 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
       }
       return dsItem;
     });
+
     setDataSource((prevState) => ({
       ...prevState,
       dataSource: newDataSource,
@@ -70,7 +82,7 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
       if (dependId === currentSceneId) {
         
         // 如果是当前编辑的场景，只显示当前步骤之前的步骤
-        console.log(allActions.slice(0, currentActionIndex)[0].actionName)
+        // console.log(allActions.slice(0, currentActionIndex)[0].actionName)
         return allActions.slice(0, currentActionIndex).map((action:ActionInfo,index:number) => (
           <Option key={action.actionId} value={action.actionId}>{`${index+1}-${action.actionName}`}</Option>
         ));
@@ -87,9 +99,9 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
   };
 
   const renderSceneType = (item: DataSource, index: number) => {
-    const actionOptions = getActionOptions(item.dependId);
-    const actionIds = actionOptions.map((option: React.ReactElement) => option.props.value);
-
+    item.sceneId = (item.sceneId != '') ? item.sceneId : item.actionKey.split('.')[0] 
+    item.actionId = (item.actionId != '') ? item.actionId : item.actionKey.split('.')[1]
+    console.log(item)
     return (
       <>
         <Form.Item
@@ -98,8 +110,10 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
         >
           <Select 
             placeholder="选择场景"
-            value={sceneList.some(scene => scene.sceneId === item.actionKey.split('.')[0]) ? item.actionKey.split('.')[0] : undefined}
-            onChange={(value: string) => handleDataSourceChange(index, 'dependId', value)}
+            value={item.sceneId}
+            onChange={(value: string) => {
+              handleDataSourceChange(index, 'sceneId', value);
+            }}
           >
             {sceneList.map((scene: any) => (
               <Option key={scene.sceneId} value={scene.sceneId}>{scene.sceneName}</Option>
@@ -112,11 +126,10 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
         >
           <Select 
             placeholder="选择步骤"
-            value={actionIds.includes(item.actionKey.split('.')[1]) ? item.actionKey.split('.')[1] : undefined}
-            onChange={(value: string) => handleDataSourceChange(index, 'actionKey', value)}
-            disabled={!item.dependId}
+            value={item.actionId}
+            onChange={(value: string) => handleDataSourceChange(index, 'actionId', value)}
           >
-            {actionOptions}
+            {getActionOptions(item.sceneId)}
           </Select>
         </Form.Item>
         <Form.Item
@@ -230,6 +243,10 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
     }
   }
 
+  useEffect(() => {
+    console.log(dataSource.dataSource)
+  }, [])
+
   return (
     <Form form={form} layout="horizontal">
       {dataSource.dataSource.map((item: DataSource, index: number) => renderDataSourceItem(item, index))}
@@ -245,7 +262,9 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
               dataKey: '',
               name: '',
               dependId: dependId,
-              searchCond: []
+              searchCond: [],
+              sceneId: '',
+              actionId: ''
             };
             setDataSource((prevState) => ({
               ...prevState,

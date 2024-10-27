@@ -5,6 +5,14 @@ import {
   PieChartOutlined,
   TeamOutlined,
   UserOutlined,
+  SyncOutlined,
+  SettingOutlined,
+  FileTextOutlined,
+  ApiOutlined,
+  DatabaseOutlined,
+  FileSearchOutlined,
+  RobotOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, theme } from 'antd';
@@ -31,36 +39,81 @@ function getItem(
 // 侧边栏菜单
 const MenuItemKeyMap:any = {
   "inteface": {
-    icon: <TeamOutlined />,
+    icon: <ApiOutlined />,
     label: "接口",
-    key: "inteface",
+    key: "inteface", 
     children: [
       {
         "key": "api-sync",
-        "icon": <PieChartOutlined />,
+        "icon": <FileTextOutlined />,
         "label": <Link to={'/dashboard/api/sync'}>接口列表</Link>,
         "path": "/dashboard/api/sync"
       },
       {
-        "key": "api-scene",
-        "icon": <PieChartOutlined />,
+        "key": "api-scene", 
+        "icon": <RobotOutlined />,
         "label": <Link to={'/dashboard/api/scene'}>场景配置</Link>,
         "path": "/dashboard/api/scene"
       },
       {
         "key": "task-config",
-        "icon": <PieChartOutlined />,
+        "icon": <ClockCircleOutlined />,
         "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
         "path": "/dashboard/api/task"
       },
-      // {
-      //   "key": "api-td-manage",
-      //   "icon": <PieChartOutlined />,
-      //   "label": <Link to={'/dashboard/api/testdata/import'}>数据管理</Link>,
-      //   "path": "/dashboard/api/testdata/import"
-      // },
+
     ]
   },
+  // "sync": {
+  //   "icon": <SyncOutlined />,
+  //   "label": "同步器", 
+  //   "key": "sync",
+  //   "children": [
+  //     {
+  //       "key": "sync-config",
+  //       "icon": <SettingOutlined />,
+  //       "label": <Link to={'/dashboard/sync/config'}>同步器配置</Link>,
+  //       "path": "/dashboard/sync/config"
+  //     },
+  //     {
+  //       "key": "sync-log", 
+  //       "icon": <FileTextOutlined />,
+  //       "label": <Link to={'/dashboard/sync/log'}>同步日志</Link>,
+  //       "path": "/dashboard/sync/log"
+  //     }
+  //   ]
+  // },
+  // "autotest": {
+  //   "icon": <ApiOutlined />,
+  //   "label": "自动化",
+  //   "key": "autotest", 
+  //   "children": [
+  //     {
+  //       "key": "api-metadata",
+  //       "icon": <DatabaseOutlined />,
+  //       "label": <Link to={'/dashboard/autotest/metadata'}>元数据</Link>,
+  //       "path": "/dashboard/autotest/metadata"
+  //     },
+  //     {
+  //       "key": "autotest-caseconfig",
+  //       "icon": <FileTextOutlined />,
+  //       "label": <Link to={'/dashboard/autotest/caseconfig'}>用例配置</Link>,
+  //       "path": "/dashboard/autotest/caseconfig"
+  //     },
+  //     {
+  //       "key": "autotest-task",
+  //       "icon": <SettingOutlined />,
+  //       "label": <Link to={'/dashboard/autotest/task'}>任务配置</Link>,
+  //       "path": "/dashboard/autotest/task"
+  //     },
+  //     {
+  //       "key": "autotest-report",
+  //       "icon": <FileSearchOutlined />,
+  //       "label": <Link to={'/dashboard/autotest/report'}>执行记录</Link>,
+  //       "path": "/dashboard/autotest/report"
+  //     }
+  //   ]
+  // },
   
 }
 
