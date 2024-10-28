@@ -164,8 +164,8 @@ const ReportDetail: React.FC = () => {
             key={selectedRecord.sceneId} 
             pending={selectedRecord.status === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span style={{ marginRight: '10px', color: '#1890ff', fontSize: '8px' }}>任务进行中</span>
-              <span style={{ color: '#808080', fontSize: '18px' }}>已执行: {selectedRecord.duration}ms</span>
+              {/* <span style={{ marginRight: '10px', color: '#1890ff', fontSize: '8px' }}>任务进行中</span>
+              <span style={{ color: '#808080', fontSize: '18px' }}>已执行: {selectedRecord.duration}ms</span> */}
               </div>
             ) : false} 
             style={{ marginBottom: '40px', width: '100%' }}>
