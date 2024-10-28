@@ -3,6 +3,7 @@ import { Drawer, List, Button, Tabs, Form, Input, message, Row, Tooltip, Space }
 import { DeleteOutlined, SettingOutlined } from '@ant-design/icons'; 
 import Options from 'src/components/basic/options';
 import FormItemCol from 'src/components/basic/formItemCol';
+import MultiDataSourceModal from '../task/multiDataSourceModal';
 
 interface ExpectProps {
   action: ActionInfo;
@@ -33,13 +34,29 @@ const dataTypeOptions = [
 
 
 
+
 const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visible, onClose }) => {
 
-    const [internalAction, setInternalAction] = useState(action);
+    const [internalAction, setInternalAction] = useState<ActionInfo>(action);
+    const [multiDataSourceModalVisible, setMultiDataSourceModalVisible] = useState(false);
+    const [desireSetting, setDesireSetting] = useState<DesireSetting>({
+        output: {
+            type: '',
+            value: null
+        },
+        dataSource: [],
+        dsSpec: [],
+        extra: '',
+        isMultiDs: false,
+        mode: '',
+        referTarget: '',
+        referType: ''
+    });
+
     useEffect(() => {
         setInternalAction(action)
-        console.log(action)
     }, [action]);
+
 
 
     
@@ -143,7 +160,12 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
                                     <Button 
                                         icon={<SettingOutlined />} 
                                         onClick={() => {
-                                            message.success("配置预期结果")
+
+                                            console.log(action.actionExpect)
+                                            setDesireSetting(action.actionExpect.api[index].data.desireSetting)
+                                            // 开启多数据源弹窗
+                                            setMultiDataSourceModalVisible(true)
+
                                         }}
                                     />
                                 </Tooltip>
@@ -173,6 +195,43 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
         onClose();
     }
 
+    const updateDesireSetting = (desire:any) => {
+        const newDesireSetting = {
+            ...desire,
+            output: {
+                type: desire?.output?.type || "",
+                value: desire?.output?.value || ""
+            },
+            dataSource: desire?.dataSource || [],
+            dsSpec: desire?.dsSpec || [],
+            extra: desire?.extra || "",
+            isMultiDs: desire?.isMultiDs !== undefined ? desire?.isMultiDs : false,
+            mode: desire?.mode || "",
+            referTarget: desire?.referTarget || "",
+            referType: desire?.referType || ""
+        }
+        console.log(newDesireSetting)
+        setInternalAction({
+            ...internalAction,
+            actionExpect: {
+                ...internalAction.actionExpect,
+                api: internalAction.actionExpect.api.map((apiItem:any) => {
+                    if (apiItem.data.name === newDesireSetting.referTarget) {
+                        return {
+                            ...apiItem,
+                            data: {
+                                ...apiItem.data,
+                                desireSetting: newDesireSetting
+                            }
+                        }
+                    }
+                    return apiItem;
+                })
+            }
+        });
+        setMultiDataSourceModalVisible(false)
+    }
+
     return (
         <>
             <Drawer
@@ -190,6 +249,17 @@ const ActionExpect: React.FC<ExpectProps> = ({ action,setSceneList, setStep,visi
             >
                 <Tabs defaultActiveKey="1" items={tabItems} />
             </Drawer>
+            <MultiDataSourceModal 
+                visible={multiDataSourceModalVisible}
+                customTitle={`期望结果配置 [${desireSetting.referTarget}]`}
+                actionDependency={desireSetting as any}
+                sceneList={[]}
+                currentAction={action.actionId}
+                updateFn={updateDesireSetting}
+                onCancel={() => {
+                    setMultiDataSourceModalVisible(false)
+                }}
+            />
         </>
   );
 };

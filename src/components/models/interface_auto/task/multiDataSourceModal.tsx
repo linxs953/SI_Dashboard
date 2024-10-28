@@ -10,6 +10,7 @@ import DataMappingForm from './dataMappingForm';
 const { TabPane } = Tabs;
 
 interface MultiDataSourceModalProps {
+  customTitle?: string;
   visible: boolean;
   actionDependency: DependInfo;
   sceneList: SceneInfo[];
@@ -19,6 +20,7 @@ interface MultiDataSourceModalProps {
 }
 
 const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
+  customTitle,
   visible,
   actionDependency,
   sceneList,
@@ -30,12 +32,12 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
   const [activeTab, setActiveTab] = useState('dataSource');
   const [dataSource, setDataSource] = useState<DependInfo>(actionDependency);
   const [currentActionId, setCurrentActionId] = useState<string>(currentAction);
-  const [showAllTabs, setShowAllTabs] = useState(dataSource.isMultDs);
+  const [showAllTabs, setShowAllTabs] = useState(dataSource.isMultiDs);
   const [dsSpec, setDsSpec] = useState<DataSourceSpec[]>(actionDependency.dsSpec || []);
 
   useEffect(() => {
     console.log(actionDependency)
-    setShowAllTabs(actionDependency.isMultDs);
+    setShowAllTabs(actionDependency.isMultiDs);
   }, [actionDependency]);
 
   useEffect(() => {
@@ -64,9 +66,10 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
     
     const updatedDependency = {
       ...actionDependency,
+      output: dataSource.output,
       dataSource: newDataSource || [],
       extra: form.getFieldValue('templateData') || dataSource.extra,
-      isMultDs: showAllTabs,
+      isMultiDs: showAllTabs,
       dsSpec: dsSpec, // 使用最新的 dsSpec 状态
     };
 
@@ -98,7 +101,7 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
 
   return (
     <Modal
-      title="多数据源配置"
+      title={customTitle || "多数据源配置"}
       open={visible}
       width={1300}
       okText="保存"

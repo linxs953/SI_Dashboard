@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Button, Modal, Result, message } from 'antd';
 import { Content } from 'antd/es/layout/layout';
-// import "../../../node_modules/antd/dist/reset.css"
 import SceneList from '../models/interface_auto/task/sceneList';
 import TaskInfo from '../models/interface_auto/task/taskInfo';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -73,7 +72,24 @@ const TaskDetails = () => {
                 actionDomain: action.domainKey,
                 actionEnvironment: action.envKey,
                 actionSearchKey: action.searchKey,
-                actionExpect: action.expect,
+                actionExpect: {
+                  ...action.expect,
+                  api: action.expect.api.map((apiItem:any) => {
+                    return {
+                      ...apiItem,
+                      data: {
+                        ...apiItem.data,
+                        desireSetting: {
+                          ...apiItem.data.desireSetting,
+                          dataSource: apiItem.data.desireSetting.dataSource.map((ds:any) => ({
+                            ...ds,
+                            dsType: ds.type,
+                          }))
+                        }
+                      }
+                    }
+                  })
+                },
                 actionOutput: action.output,
                 actionDependencies: [
                   ...(action.dependency || []).map((dep: any) => ({
@@ -99,7 +115,7 @@ const TaskDetails = () => {
                       }
                     }),
                     extra: dep.extra,
-                    isMultDs: dep.isMultiDs,
+                    isMultiDs: dep.isMultiDs,
                     mode: dep.mode,
                     refer:dep.refer,
                     output: dep.output
@@ -155,7 +171,25 @@ const TaskDetails = () => {
             domainKey: action.actionDomain,
             envKey: action.actionEnvironment,
             searchKey: action.actionSearchKey,
-            expect: action.actionExpect,
+            expect: {
+              ...action.actionExpect,
+              api: action.actionExpect.api.map((apiItem:any) => {
+                return {
+                  ...apiItem,
+                  data: {
+                    ...apiItem.data,
+                    desireSetting: {
+                      ...apiItem.data.desireSetting,
+                      dataSource: apiItem.data.desireSetting.dataSource.map((ds:any) => ({
+                        ...ds,
+                        type: ds.dsType,
+                        dsType: undefined
+                      }))
+                    }
+                  }
+                }
+              })
+            },
             output: action.actionOutput,
             dependency: action.actionDependencies.map((dep:any) => {
               const baseDep = {
@@ -173,7 +207,7 @@ const TaskDetails = () => {
                 },
                 mode: dep.mode,
                 extra: dep.extra,
-                isMultiDs: dep.isMultDs,
+                isMultiDs: dep.isMultiDs,
                 dsSpec: dep.dsSpec.map((spec:DataSourceSpec) => {
                   return {
                     dependId: spec.dependId,

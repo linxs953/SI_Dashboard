@@ -62,8 +62,34 @@ interface ActionInfo {
 }
 
 interface expect {
-    api: any[]
+    api: ApiExpect[]
     sql: {}
+}
+
+interface ApiExpect {
+    type: string
+    data: {
+        type: string
+        operator: string
+        name: string
+        desire:string
+        desireSetting: DesireSetting
+    }
+}
+
+
+interface DesireSetting {
+    output: {
+        type: string
+        value: any
+    }
+    dataSource: DataSource[]
+    dsSpec: DataSourceSpec[]
+    extra: string
+    isMultiDs: boolean
+    mode: string,
+    referTarget: string
+    referType: string
 }
 
 interface actionDependencies {
@@ -85,7 +111,7 @@ interface DependInfo {
     dataSource: DataSource[]
     dsSpec: DataSourceSpec[]
     extra: string
-    isMultDs: boolean
+    isMultiDs: boolean
     mode: string
     refer: {
         type: string

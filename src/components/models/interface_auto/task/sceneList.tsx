@@ -123,7 +123,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     dataSource: [],
     dsSpec: [],
     extra: "",
-    isMultDs: false,
+    isMultiDs: false,
     mode: "",
     refer: {
         type: "",
@@ -514,7 +514,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
             dsSpec: existingDep?.dsSpec || [],
             dataSource: existingDep?.dataSource || [],
             extra: existingDep?.extra || '',
-            isMultDs: existingDep?.isMultDs || false,
+            isMultiDs: existingDep?.isMultiDs || false,
             mode: existingDep?.mode || ''
           });
         }
@@ -688,7 +688,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         dataSource: [],
         dsSpec: [],
         extra: "",
-        isMultDs: false,
+        isMultiDs: false,
         mode: "",
         refer: {
           type: dependSelectTab,
@@ -758,7 +758,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                           dataSource: [],
                           dsSpec: [],
                           extra: "",
-                          isMultDs: false,
+                          isMultiDs: false,
                           mode: "",
                           refer: {
                             type: dependSelectTab,
@@ -777,7 +777,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
                           dataSource: depend.dataSource || [],
                           dsSpec: depend.dsSpec || [],
                           extra: depend.extra || "",
-                          isMultDs: depend.isMultDs !== undefined ? depend.isMultDs : false,
+                          isMultiDs: depend.isMultiDs !== undefined ? depend.isMultiDs : false,
                           mode: depend.mode || "",
                           refer: {
                             ...depend.refer,

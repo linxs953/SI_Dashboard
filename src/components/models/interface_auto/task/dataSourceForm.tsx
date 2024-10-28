@@ -27,6 +27,7 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
   getDependType,
   currentActionId
 }) => {
+
   const handleDataSourceChange = (index: number, field: keyof DataSource, value: string) => {
     const newDataSource = dataSource.dataSource.map((dsItem: DataSource, dsIdx: number) => {
       if (dsIdx === index) {

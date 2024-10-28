@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormInstance, Select } from 'antd';
+import { Button, Form, FormInstance, message, Select } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
@@ -22,6 +22,13 @@ export const OutputTypeForm: React.FC<OutputTypeFormProps> = ({ form, dataSpec, 
       }
     };
     setOutputMeta(newOutputMeta);
+    setDataSpec({
+      ...dataSpec,
+      output: {
+        ...dataSpec.output,
+        type: value
+      }
+    });
   }
 
   const getExtraContent = () => {
