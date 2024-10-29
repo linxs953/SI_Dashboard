@@ -5,10 +5,12 @@ import { useEffect, useState } from "react"
 import ActionExpect from "../scene/actionExpect";
 import createTaskSceneListStore from "src/store/task/taskSceneList"
 import { ColumnType } from "antd/es/table"
-import { SettingOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SettingOutlined, DeleteOutlined, PlusOutlined, PlusCircleOutlined, EditOutlined, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import MultiDataSourceModal from "./multiDataSourceModal"
 import Options from "src/components/basic/options"
 import FormItemCol from "src/components/basic/formItemCol"
+import EditSceneListModal from "./EditSceneListModal";
+import TaskAddNewScene from "./taskAddNewScene";
 
 const store = createTaskSceneListStore()
 
@@ -25,7 +27,6 @@ const sideOptions = [
   { label: '平台侧', value: '平台侧' },
   { label: '用户侧', value: '用户侧' },
 ]
-
 
 const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void, columns: ColumnType<ActionInfo>[]) => {
   // sceneList[0].actionList.forEach((action, index) => {
@@ -106,13 +107,10 @@ const getDomain = (side: string, environmentSwitch: boolean) => {
   return '';
 }
 
-
-
-
-const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSceneList: SceneInfo[]) => void }> = ({ sceneList, updateSceneList }) => {
+const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispatch<React.SetStateAction<SceneInfo[]>> }> = ({ sceneList, updateSceneList }) => {
   const [form] = useForm()
   const [isMultiDataSourceModalVisible, setIsMultiDataSourceModalVisible] = useState(false);
-
+  const [isEditSceneListModalVisible, setIsEditSceneListModalVisible] = useState(false);
   const [currentActionDepend, setCurrentActionDepend] = useState<DependInfo>(
     
     {
@@ -186,9 +184,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }))
 
 
-
   const [activeTabKey, setActiveTabKey] = useState(sceneList.length > 0 ? sceneList[0].sceneId : '')
-
+  const [isAddSceneModalVisible, setIsAddSceneModalVisible] = useState(false)
 
   const updateCurrentStepExpect = (updateAction: ActionInfo) => {
     // 更新 sceneList
@@ -243,7 +240,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
         align: 'center',
     },
     {
-      title: '请求方法',
+      title: '请求方',
       dataIndex: 'actionMethod',
       key: 'stepMethod',
       width: 200, 
@@ -273,7 +270,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
     {
       title: '操作',
       key: 'action',
-      width: 270, // 指定操作��宽度为250像
+      width: 270, // 指定操作宽度为250像
       render: (idx: any, record: ActionInfo) => (
           <>
               <Tooltip title="编辑">
@@ -835,6 +832,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }, [currentStep])
 
   useEffect(() => {
+    
     if (sceneList.length > 0 && (!activeTabKey || activeTabKey === '')) {
       setActiveTabKey(sceneList[0].sceneId);
     }
@@ -850,17 +848,59 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
   }, [activeTabKey, sceneList]);
 
 
+  const addScene = () => {
+    setIsAddSceneModalVisible(true)
+  }
+
+  const editSceneList = () => {
+    setIsEditSceneListModalVisible(true)
+  }
+
+  const handlePrevTab = () => {
+    const currentIndex = sceneList.findIndex(scene => scene.sceneId === activeTabKey);
+    if (currentIndex > 0) {
+      setActiveTabKey(sceneList[currentIndex - 1].sceneId);
+    }
+  };
+
+  const handleNextTab = () => {
+    const currentIndex = sceneList.findIndex(scene => scene.sceneId === activeTabKey);
+    if (currentIndex < sceneList.length - 1) {
+      setActiveTabKey(sceneList[currentIndex + 1].sceneId);
+    }
+  };
+
+  const getCardTitle = () => {
+    return (
+      <>
+        <span>关联场景列表</span>
+        <Button type="link" icon={<ArrowLeftOutlined />} onClick={handlePrevTab} disabled={sceneList.findIndex(scene => scene.sceneId === activeTabKey) === 0} />
+        <Button type="link" icon={<ArrowRightOutlined />} onClick={handleNextTab} disabled={sceneList.findIndex(scene => scene.sceneId === activeTabKey) === sceneList.length - 1} />
+        <Button type="link" disabled={sceneList.length === 1} onClick={editSceneList} style={{ marginLeft: 8 }} icon={<EditOutlined />} />
+        <Button type="link" onClick={addScene} style={{ marginLeft: 8 }} icon={<PlusOutlined />} />
+      </>
+    )
+  }
+
+  
 
 
 
   return (
     <>
-      <Card title="关联场景列表" style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <TaskAddNewScene 
+        onModal={setIsAddSceneModalVisible} 
+        updateSceneList={updateSceneList} 
+        open={isAddSceneModalVisible} 
+      />
+      <Card title={getCardTitle()} style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'column' }}>
         <Tabs 
           activeKey={activeTabKey} 
           onChange={handleTabChange} 
           items={renderSceneList(sceneList, showEditSceneModal, columns)}
-          destroyInactiveTabPane={true}  // 添加这个属性
+          destroyInactiveTabPane={true}
+          tabPosition="top"
+          type="line"
         />
         <Drawer
           title="配置依赖"
@@ -926,7 +966,16 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: (updatedSce
           </Modal>
         )}
       </Card>
-
+      <EditSceneListModal 
+        visible={isEditSceneListModalVisible} 
+        onCancel={() => { setIsEditSceneListModalVisible(false); } } 
+        onOk={(scenes: SceneInfo[]) => {
+          updateSceneList(scenes)
+          setActiveTabKey(scenes[0].sceneId)
+          setIsEditSceneListModalVisible(false)
+        }} 
+        sceneList={sceneList} 
+      />
     </>
   );
 };

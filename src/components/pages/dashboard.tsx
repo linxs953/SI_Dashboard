@@ -38,6 +38,25 @@ function getItem(
 
 // 侧边栏菜单
 const MenuItemKeyMap:any = {
+  "sync": {
+    "icon": <SyncOutlined />,
+    "label": "同步器", 
+    "key": "sync",
+    "children": [
+      {
+        "key": "sync-config",
+        "icon": <SettingOutlined />,
+        "label": "同步器配置",
+        "path": "/dashboard/sync/config"
+      },
+      {
+        "key": "sync-log", 
+        "icon": <FileTextOutlined />,
+        "label": "同步日志",
+        "path": "/dashboard/sync/log"
+      }
+    ]
+  },
   "inteface": {
     icon: <ApiOutlined />,
     label: "接口",
@@ -64,56 +83,6 @@ const MenuItemKeyMap:any = {
 
     ]
   },
-  // "sync": {
-  //   "icon": <SyncOutlined />,
-  //   "label": "同步器", 
-  //   "key": "sync",
-  //   "children": [
-  //     {
-  //       "key": "sync-config",
-  //       "icon": <SettingOutlined />,
-  //       "label": <Link to={'/dashboard/sync/config'}>同步器配置</Link>,
-  //       "path": "/dashboard/sync/config"
-  //     },
-  //     {
-  //       "key": "sync-log", 
-  //       "icon": <FileTextOutlined />,
-  //       "label": <Link to={'/dashboard/sync/log'}>同步日志</Link>,
-  //       "path": "/dashboard/sync/log"
-  //     }
-  //   ]
-  // },
-  // "autotest": {
-  //   "icon": <ApiOutlined />,
-  //   "label": "自动化",
-  //   "key": "autotest", 
-  //   "children": [
-  //     {
-  //       "key": "api-metadata",
-  //       "icon": <DatabaseOutlined />,
-  //       "label": <Link to={'/dashboard/autotest/metadata'}>元数据</Link>,
-  //       "path": "/dashboard/autotest/metadata"
-  //     },
-  //     {
-  //       "key": "autotest-caseconfig",
-  //       "icon": <FileTextOutlined />,
-  //       "label": <Link to={'/dashboard/autotest/caseconfig'}>用例配置</Link>,
-  //       "path": "/dashboard/autotest/caseconfig"
-  //     },
-  //     {
-  //       "key": "autotest-task",
-  //       "icon": <SettingOutlined />,
-  //       "label": <Link to={'/dashboard/autotest/task'}>任务配置</Link>,
-  //       "path": "/dashboard/autotest/task"
-  //     },
-  //     {
-  //       "key": "autotest-report",
-  //       "icon": <FileSearchOutlined />,
-  //       "label": <Link to={'/dashboard/autotest/report'}>执行记录</Link>,
-  //       "path": "/dashboard/autotest/report"
-  //     }
-  //   ]
-  // },
   
 }
 
