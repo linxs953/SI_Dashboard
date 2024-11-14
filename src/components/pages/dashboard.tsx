@@ -38,6 +38,19 @@ function getItem(
 
 // 侧边栏菜单
 const MenuItemKeyMap:any = {
+  "define":{
+    "icon": <FileSearchOutlined />,
+    "label": "任务定义",
+    "key": "define",
+    "children": [
+      {
+        "key": "define-task",
+        "icon": <FileSearchOutlined />,
+        "label": <Link to={'/dashboard/idl'}>IDL</Link>,
+        "path": "/dashboard/idl"
+      }
+    ]
+  },
   "sync": {
     "icon": <SyncOutlined />,
     "label": "同步器", 
@@ -67,6 +80,12 @@ const MenuItemKeyMap:any = {
         "icon": <FileTextOutlined />,
         "label": <Link to={'/dashboard/api/sync'}>接口列表</Link>,
         "path": "/dashboard/api/sync"
+      },
+      {
+        "key": "data-manage",
+        "icon": <DatabaseOutlined />,
+        "label": <Link to={'/dashboard/api/data'}>数据管理</Link>,
+        "path": "/dashboard/api/data"
       },
       {
         "key": "api-scene", 

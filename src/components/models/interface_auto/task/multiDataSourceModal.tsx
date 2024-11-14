@@ -1,6 +1,7 @@
 import React, { SetStateAction, useEffect, useState } from 'react';
-import { Modal, Tabs, Form, Select, Switch, Button } from 'antd';
+import { Modal, Tabs, Form, Select, Switch, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import axios from 'axios';
 import { getDsTypeName, getDependType, getActionMap } from './multiDataSourceUtils';
 import { DataSourceForm } from './dataSourceForm';
 import { TemplateDataForm } from './templateDataForm';
@@ -19,6 +20,21 @@ interface MultiDataSourceModalProps {
   onCancel: () => void;
 }
 
+const getDependId = async () => {
+  try {
+    const domain = import.meta.env.VITE_API_URL;
+    const url = `${domain}/toolgen/depId`;
+    const response = await axios.get(url);
+    if (response.status === 200) {
+      return response.data.data || "";
+    }
+    return "";
+  } catch (error) {
+    console.error('获取 dependId 失败:', error);
+    return "";
+  }
+};
+
 const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
   customTitle,
   visible,
@@ -32,49 +48,118 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
   const [activeTab, setActiveTab] = useState('dataSource');
   const [dataSource, setDataSource] = useState<DependInfo>(actionDependency);
   const [currentActionId, setCurrentActionId] = useState<string>(currentAction);
-  const [showAllTabs, setShowAllTabs] = useState(dataSource.isMultiDs);
+  const [showAllTabs, setShowAllTabs] = useState(actionDependency.isMultiDs);
   const [dsSpec, setDsSpec] = useState<DataSourceSpec[]>(actionDependency.dsSpec || []);
-
-  useEffect(() => {
-    console.log(actionDependency)
-    setShowAllTabs(actionDependency.isMultiDs);
-  }, [actionDependency]);
 
   useEffect(() => {
     setDataSource(actionDependency);
     setDsSpec(actionDependency.dsSpec || []);
-  }, [actionDependency]);
+    setShowAllTabs(actionDependency.isMultiDs);
+    form.setFieldsValue({
+      templateData: actionDependency.extra
+    });
+  }, [actionDependency, form]);
 
   useEffect(() => {
     setCurrentActionId(currentAction);
   }, [currentAction]);
 
   const handleOk = () => {
-    const newDataSource = dataSource.dataSource.map(ds => {
-      if (ds.dsType === '1') {
-        const newActionKey = `${ds.sceneId}.${ds.actionId}`
+    form.validateFields().then(values => {
+      const newDataSource = dataSource.dataSource.map(ds => {
+        if (ds.dsType === '1') {
+          const newActionKey = `${ds.sceneId}.${ds.actionId}`;
+          return {
+            ...ds,
+            actionKey: newActionKey,
+            dependType: getDependType(ds.dsType),
+            searchCond: ds.searchCond || [],
+          };
+        }
         return {
           ...ds,
-          actionKey: newActionKey,
-          dependId: ds.dependId
-        }
-      }
-      console.log(ds)
-      return ds;
-    })
+          dependType: getDependType(ds.dsType),
+          searchCond: ds.searchCond || [],
+        };
+      });
 
+      const updatedDependency: DependInfo = {
+        ...dataSource,
+        dataSource: newDataSource,
+        extra: values.templateData || dataSource.extra,
+        isMultiDs: showAllTabs,
+        dsSpec: dsSpec,
+        output: dataSource.output || {},
+      };
+
+      console.log('保存的完整数据:', updatedDependency);
+      updateFn(updatedDependency);
+    }).catch(err => {
+      console.error('表单验证失败:', err);
+    });
+  };
+
+  const addNewDataSource = async () => {
+    const dependId = await getDependId();
+    const newDataSource: DataSource = {
+      dsType: '1',
+      dependType: 'scene',
+      actionKey: '',
+      dataKey: '',
+      name: '',
+      dependId: dependId,
+      searchCond: [],
+      sceneId: '',
+      actionId: ''
+    };
     
-    const updatedDependency = {
+    setDataSource(prevState => ({
+      ...prevState,
+      dataSource: [...prevState.dataSource, newDataSource]
+    }));
+  };
+
+  const handleModalOk = () => {
+    const isValid = dataSource.dataSource.every(ds => {
+      if (ds.dsType === '1') {
+        return ds.sceneId && ds.actionId && ds.name;
+      }
+      return ds.name && ds.dataKey;
+    });
+
+    if (!isValid) {
+      message.error('请填写完整的数据源信息');
+      return;
+    }
+
+    const updatedDependency: DependInfo = {
       ...actionDependency,
-      output: dataSource.output,
-      dataSource: newDataSource || [],
+      dataSource: dataSource.dataSource.map(ds => {
+        if (ds.dsType === '1') {
+          return {
+            ...ds,
+            actionKey: `${ds.sceneId}.${ds.actionId}`,
+            dependType: getDependType(ds.dsType),
+            searchCond: ds.searchCond || [],
+          };
+        }
+        return {
+          ...ds,
+          dependType: getDependType(ds.dsType),
+          searchCond: ds.searchCond || [],
+        };
+      }),
       extra: form.getFieldValue('templateData') || dataSource.extra,
       isMultiDs: showAllTabs,
-      dsSpec: dsSpec, // 使用最新的 dsSpec 状态
+      dsSpec: dsSpec,
+      output: dataSource.output || {},
     };
 
-    console.log(updatedDependency)
+    console.log('即将保存的数据:', updatedDependency);
+    
     updateFn(updatedDependency);
+    
+    message.success('保存成功');
   };
 
   const updateDsSpec = (value: SetStateAction<DataSourceSpec[]>) => {
@@ -106,7 +191,7 @@ const MultiDataSourceModal: React.FC<MultiDataSourceModalProps> = ({
       width={1300}
       okText="保存"
       cancelText="取消"
-      onOk={handleOk}
+      onOk={handleModalOk}
       onCancel={onCancel}
       style={{ minHeight: '300px', overflowY: 'auto' }}
     >

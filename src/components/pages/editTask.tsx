@@ -5,6 +5,7 @@ import SceneList from '../models/interface_auto/task/sceneList';
 import TaskInfo from '../models/interface_auto/task/taskInfo';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { skip } from 'node:test';
 
 
 const domain = import.meta.env.VITE_API_URL
@@ -56,6 +57,7 @@ const TaskDetails = () => {
 
             {
               sceneId: scene.sceneId,
+              skip: scene.skip,
               sceneName: scene.sceneName,
               sceneDescription: scene.description || "无描述",
               sceneTimeout: scene.timeout || 1,
@@ -153,6 +155,7 @@ const TaskDetails = () => {
         description: taskInfo.description,
         taskSpec: scenes.map(scene => ({
           sceneId: scene.sceneId,
+          skip: scene.skip,
           sceneName: scene.sceneName,
           description: scene.sceneDescription,
           timeout: scene.sceneTimeout,
@@ -161,6 +164,7 @@ const TaskDetails = () => {
           searchKey: scene.searchKey,
           envKey: scene.environment,
           actions: scene.actionList.map(action => ({
+            skip: scene.skip?scene.skip:action.skip,
             actionId: action.actionId,
             relateId: action.relateId,
             actionName: action.actionName,

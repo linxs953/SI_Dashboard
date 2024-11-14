@@ -42,9 +42,11 @@ interface SceneInfo {
     searchKey: string
     environment: string
     actionList: ActionInfo[]
+    skip: boolean
   }
   
 interface ActionInfo {    
+    skip: boolean
     actionId: string
     relateId:string
     actionName: string

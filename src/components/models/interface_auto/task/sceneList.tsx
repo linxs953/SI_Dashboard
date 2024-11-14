@@ -19,7 +19,8 @@ const dataTypeOptions = [
   { value: 'number', label: '数字' },
   { value: 'boolean', label: '布尔值' },
   { value: 'object', label: '对象' },
-  { value: 'array', label: '数组' }
+  { value: 'array', label: '数组' },
+  { value: 'binary', label: '文件' }
 ]
 
 const sideOptions = [
@@ -29,10 +30,6 @@ const sideOptions = [
 ]
 
 const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void, columns: ColumnType<ActionInfo>[]) => {
-  // sceneList[0].actionList.forEach((action, index) => {
-  //   const newAction = {...action, key: `${action.actionId}-${index}`}
-  //   console.log(newAction)
-  // })
   return sceneList.map((scene,idx) => ({
     key: scene.sceneId,
     label: scene.sceneName,
@@ -48,7 +45,6 @@ const renderSceneList = (sceneList: SceneInfo[], showEditSceneModal: () => void,
             })) as ColumnType<ActionInfo>[]}
             dataSource={scene.actionList.map((step:ActionInfo,index:number) => {
               const newStep = {...step, key: `${step.actionId}-${index}`}
-              // console.log(JSON.stringify(newStep))
               return newStep
             })}
             pagination={{
@@ -268,6 +264,33 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispa
       align: 'center',
     },
     {
+      title: '是否跳过',
+      dataIndex: 'skip', 
+      key: 'stepSkip',
+      width: 200,
+      align: 'center',
+      render: (skip: boolean, record: ActionInfo) => (
+        <Switch
+          checked={skip}
+          onChange={(checked) => {
+            const updatedSceneList = sceneList.map(scene =>
+              scene.sceneId === activeTabKey
+                ? {
+                    ...scene,
+                    actionList: scene.actionList.map(action =>
+                      action.actionId === record.actionId 
+                        ? { ...action, skip: checked }
+                        : action
+                    )
+                  }
+                : scene
+            );
+            updateSceneList(updatedSceneList);
+          }}
+        />
+      )
+    },
+    {
       title: '操作',
       key: 'action',
       width: 270, // 指定操作宽度为250像
@@ -316,6 +339,8 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispa
       // 添加新的依赖项
       newStep.actionDependencies.push(depend);
     }
+
+    console.log(newStep)
 
     // 更新当前步骤
     setCurrentAction(newStep);
@@ -418,6 +443,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispa
       ...upScene,
       sceneName: formValues.sceneName,
       sceneDescription: formValues.sceneDescription,
+      skip: formValues.skip,
       sceneTimeout: formValues.sceneTimeout,
       sceneRetries: formValues.sceneRetries,
       "sceneId": upScene.sceneId,
@@ -583,6 +609,11 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispa
                 <Input />
               </FormItemCol>
 
+            </Row>
+            <Row gutter={20}>
+              <FormItemCol span={10} offset={0.5} label="是否跳过" name="skip" valuePropName="checked">
+                <Switch />
+              </FormItemCol>
             </Row>
             <Row gutter={20}>
               <FormItemCol span={20} label="场景描述" name="sceneDescription" rules={[{ required: true, message: '请入场景描述!' }]}>
@@ -832,7 +863,7 @@ const SceneList: React.FC<{ sceneList: SceneInfo[], updateSceneList: React.Dispa
   }, [currentStep])
 
   useEffect(() => {
-    
+    console.log(sceneList)
     if (sceneList.length > 0 && (!activeTabKey || activeTabKey === '')) {
       setActiveTabKey(sceneList[0].sceneId);
     }

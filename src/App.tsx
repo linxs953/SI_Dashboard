@@ -13,6 +13,8 @@ import Reports from './components/pages/reports'
 import MultiDataSourceModal from './components/models/interface_auto/task/multiDataSourceModal'
 import ProjectOverview from './components/pages/ProjectOverview'
 import NotFound from './components/pages/404'
+import DataManage from './components/pages/dataManage'
+import IdlList from './components/pages/idlList'
 
 function App() {
 
@@ -31,6 +33,8 @@ function App() {
           <Route path='/dashboard/api/task/edit' element={<EditTask />} />
           <Route path='/dashboard/api/task/reportDetail' element={<ReportDetail />} />
           <Route path='/dashboard/api/task/reports' element={<Reports />} />
+          <Route path='/dashboard/api/data' element={<DataManage />} />
+          <Route path='/dashboard/idl' element={<IdlList />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

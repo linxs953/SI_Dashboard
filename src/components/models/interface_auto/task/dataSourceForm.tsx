@@ -46,12 +46,12 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
           };
         }
 
-        // 如果改变的是场景ID，重置步骤ID和数据键
+        // 如果改变的是场景ID，重置步骤ID
         if (field === 'sceneId') {
           updatedItem = {
             ...updatedItem,
             sceneId: value,
-            actionId: ' ',
+            actionId: '',
           };
         }
         
@@ -60,6 +60,7 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
       return dsItem;
     });
 
+    // 确保更新整个 dataSource 对象
     setDataSource((prevState) => ({
       ...prevState,
       dataSource: newDataSource,
@@ -246,7 +247,7 @@ export const DataSourceForm: React.FC<DataSourceFormProps> = ({
 
   useEffect(() => {
     console.log(dataSource.dataSource)
-  }, [])
+  }, [dataSource])
 
   return (
     <Form form={form} layout="horizontal">
