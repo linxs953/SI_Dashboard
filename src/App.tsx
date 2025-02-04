@@ -15,6 +15,7 @@ import ProjectOverview from './components/pages/ProjectOverview'
 import NotFound from './components/pages/404'
 import DataManage from './components/pages/dataManage'
 import IdlList from './components/pages/idlList'
+import ImageBuild from './components/pages/imageBuild'
 
 function App() {
 
@@ -35,6 +36,7 @@ function App() {
           <Route path='/dashboard/api/task/reports' element={<Reports />} />
           <Route path='/dashboard/api/data' element={<DataManage />} />
           <Route path='/dashboard/idl' element={<IdlList />} />
+          <Route path='/dashboard/api/image-build' element={<ImageBuild />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

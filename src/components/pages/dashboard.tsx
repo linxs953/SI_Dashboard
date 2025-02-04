@@ -38,71 +38,125 @@ function getItem(
 
 // 侧边栏菜单
 const MenuItemKeyMap:any = {
-  "define":{
-    "icon": <FileSearchOutlined />,
-    "label": "任务定义",
-    "key": "define",
-    "children": [
+  // "define":{
+  //   "icon": <FileSearchOutlined />,
+  //   "label": "任务定义",
+  //   "key": "define",
+  //   "children": [
+  //     {
+  //       "key": "define-task",
+  //       "icon": <FileSearchOutlined />,
+  //       "label": <Link to={'/dashboard/idl'}>IDL</Link>,
+  //       "path": "/dashboard/idl"
+  //     }
+  //   ]
+  // },
+  // "sync": {
+  //   "icon": <SyncOutlined />,
+  //   "label": "同步器", 
+  //   "key": "sync",
+  //   "children": [
+  //     {
+  //       "key": "sync-config",
+  //       "icon": <SettingOutlined />,
+  //       "label": "同步器配置",
+  //       "path": "/dashboard/sync/config"
+  //     },
+  //     {
+  //       "key": "sync-log", 
+  //       "icon": <FileTextOutlined />,
+  //       "label": "同步日志",
+  //       "path": "/dashboard/sync/log"
+  //     }
+  //   ]
+  // },
+  // "inteface": {
+  //   icon: <ApiOutlined />,
+  //   label: "接口",
+  //   key: "inteface", 
+  //   children: [
+  //     {
+  //       "key": "api-sync",
+  //       "icon": <FileTextOutlined />,
+  //       "label": <Link to={'/dashboard/api/sync'}>接口列表</Link>,
+  //       "path": "/dashboard/api/sync"
+  //     },
+  //     {
+  //       "key": "data-manage",
+  //       "icon": <DatabaseOutlined />,
+  //       "label": <Link to={'/dashboard/api/data'}>数据管理</Link>,
+  //       "path": "/dashboard/api/data"
+  //     },
+  //     {
+  //       "key": "api-scene", 
+  //       "icon": <RobotOutlined />,
+  //       "label": <Link to={'/dashboard/api/scene'}>场景配置</Link>,
+  //       "path": "/dashboard/api/scene"
+  //     },
+  //     {
+  //       "key": "task-config",
+  //       "icon": <ClockCircleOutlined />,
+  //       "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
+  //       "path": "/dashboard/api/task"
+  //     }
+  //   ]
+  // },
+  "configuration": {
+    icon: <SettingOutlined />,
+    label: "任务配置",
+    key: "configuration",
+    children: [
       {
-        "key": "define-task",
-        "icon": <FileSearchOutlined />,
-        "label": <Link to={'/dashboard/idl'}>IDL</Link>,
-        "path": "/dashboard/idl"
-      }
-    ]
-  },
-  "sync": {
-    "icon": <SyncOutlined />,
-    "label": "同步器", 
-    "key": "sync",
-    "children": [
+        "key": "image-build",
+        "icon": <SettingOutlined />,
+        "label": <Link to={'/dashboard/api/image-build'}>镜像构建</Link>,
+        "path": "/dashboard/api/image-build"
+      },
       {
         "key": "sync-config",
         "icon": <SettingOutlined />,
-        "label": "同步器配置",
+        "label": "同步器",
         "path": "/dashboard/sync/config"
       },
       {
-        "key": "sync-log", 
-        "icon": <FileTextOutlined />,
-        "label": "同步日志",
-        "path": "/dashboard/sync/log"
+        "key": "api-automation-config",
+        "icon": <FileSearchOutlined />,
+        "label": "API自动化",
+        "path": "/dashboard/api/scene"
       }
     ]
   },
-  "inteface": {
-    icon: <ApiOutlined />,
-    label: "接口",
-    key: "inteface", 
+  "data": {
+    icon: <SettingOutlined />,
+    label: "数据管理",
+    key: "data",
     children: [
       {
-        "key": "api-sync",
-        "icon": <FileTextOutlined />,
-        "label": <Link to={'/dashboard/api/sync'}>接口列表</Link>,
-        "path": "/dashboard/api/sync"
+        "key": "API-data",
+        "icon": <SettingOutlined />,
+        "label": <Link to={'/dashboard/api/apidata'}>API数据</Link>,
+        "path": "/dashboard/api/apidata"
       },
       {
-        "key": "data-manage",
-        "icon": <DatabaseOutlined />,
-        "label": <Link to={'/dashboard/api/data'}>数据管理</Link>,
-        "path": "/dashboard/api/data"
+        "key": "api-automation-runrecord",
+        "icon": <SettingOutlined />,
+        "label": "执行记录",
+        "path": "/dashboard/api/runrecord"
       },
       {
-        "key": "api-scene", 
-        "icon": <RobotOutlined />,
-        "label": <Link to={'/dashboard/api/scene'}>场景配置</Link>,
-        "path": "/dashboard/api/scene"
+        "key": "sync-record",
+        "icon": <FileSearchOutlined />,
+        "label": "同步记录",
+        "path": "/dashboard/sync/record"
       },
       {
-        "key": "task-config",
-        "icon": <ClockCircleOutlined />,
-        "label": <Link to={'/dashboard/api/task'}>任务配置</Link>,
-        "path": "/dashboard/api/task"
-      },
-
+        "key": "api-automation-testdata",
+        "icon": <FileSearchOutlined />,
+        "label": "测试数据",
+        "path": "/dashboard/api/testdata"
+      }
     ]
-  },
-  
+  }
 }
 
 
