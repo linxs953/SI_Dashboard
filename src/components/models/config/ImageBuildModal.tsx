@@ -72,6 +72,7 @@ const ImageBuildModal: React.FC<ImageBuildModalProps> = ({
               placeholder="请输入git仓库地址，例如：https://github.com/username/repo.git"
               style={{ borderRadius: '6px' }}
               onChange={handleRepoUrlChange}
+              defaultValue={"https://github.com/linxs/code.git"}
             />
           </Form.Item>
 
@@ -93,6 +94,7 @@ const ImageBuildModal: React.FC<ImageBuildModalProps> = ({
               }}
               rows={4}
               autoSize={{ minRows: 4, maxRows: 8 }}
+              defaultValue={"apikey"}
             />
           </Form.Item>
         </div>
@@ -126,6 +128,7 @@ const ImageBuildModal: React.FC<ImageBuildModalProps> = ({
             <Input 
               placeholder="请输入推送地址"
               style={{ borderRadius: '6px' }}
+              defaultValue={"registry.example.com/namespace"}
             />
           </Form.Item>
 
@@ -198,6 +201,7 @@ const ImageBuildModal: React.FC<ImageBuildModalProps> = ({
             <Input 
               placeholder="请输入分支名称"
               style={{ borderRadius: '6px' }}
+              defaultValue={"main"}
             />
           </Form.Item>
         </div>

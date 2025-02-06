@@ -151,8 +151,8 @@ const ImageBuild: React.FC = () => {
     try {
       const values = await form.validateFields();
       const isEditing = !!editingRecord;
-      // const url = isEditing ? '/api/image-build/update' : '/api/image-build/create';
       const url = `${domain}/resource/dispatch`;
+      
       const createSpec: ImageBuildSpec = {
         type: 1,
         spec: values
@@ -165,9 +165,18 @@ const ImageBuild: React.FC = () => {
         }
       };
       const data = isEditing ? updateSpec : createSpec;
-      console.log(data)
+
 
       const resp = await axios.post(url, data);
+      // const resp = await fetch(url,{
+      //   method: 'POST', // 请求方法
+      //   mode: 'no-cors',
+      //   headers: {
+      //     'Content-Type': 'application/json', // 设置请求头，告知服务器发送的数据格式
+      //   },
+      //   body: JSON.stringify(data), // 将数据转换为JSON字符串
+      // })
+      
       if (resp.status !== 200) {
         message.error('操作失败');
         return

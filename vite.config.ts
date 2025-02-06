@@ -6,9 +6,8 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   server: {
     proxy: {
-      // "/api": "http://template.josephxia.com",
+      "/resource": "http://template.josephxia.com",
     },
-    host: "0.0.0.0"
   },
 
   plugins: [tsconfigPaths(), react()],

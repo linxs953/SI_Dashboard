@@ -27,7 +27,7 @@ function App() {
 
         <Route path='/dashboard' element={<Dashboard />}>
           <Route index element={<Navigate to="/dashboard/api/task" replace />} />
-          <Route path='/dashboard/api/scene' element = {<ScenConfig />} />
+          {/* <Route path='/dashboard/api/scene' element = {<ScenConfig />} />
           <Route path='/dashboard/api/sync' element={<ApiSyncList  />} />
           <Route path='/dashboard/api/scene/edit' element={<EditScene />} />
           <Route path='/dashboard/api/task' element={<TaskList />} />
@@ -35,7 +35,7 @@ function App() {
           <Route path='/dashboard/api/task/reportDetail' element={<ReportDetail />} />
           <Route path='/dashboard/api/task/reports' element={<Reports />} />
           <Route path='/dashboard/api/data' element={<DataManage />} />
-          <Route path='/dashboard/idl' element={<IdlList />} />
+          <Route path='/dashboard/idl' element={<IdlList />} /> */}
           <Route path='/dashboard/api/image-build' element={<ImageBuild />} />
         </Route>
 
